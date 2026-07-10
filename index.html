@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bypass Error System</title>
+    <title>System Error - Report Service</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            background-color: #0b0f19;
+            background-color: #090d16;
             color: #f3f4f6;
             display: flex;
             justify-content: center;
@@ -23,190 +23,160 @@
             position: relative;
         }
 
-        /* Background Glow Effect ala Gen Z */
+        /* Ambient Glow Background */
         body::before {
             content: '';
             position: absolute;
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(45deg, #ff007f, #7928ca);
-            filter: blur(150px);
-            top: 10%;
-            left: 15%;
+            width: 350px;
+            height: 350px;
+            background: linear-gradient(45deg, #ff3366, #7928ca);
+            filter: blur(160px);
+            top: 15%;
+            left: 10%;
             z-index: 0;
-            opacity: 0.5;
+            opacity: 0.4;
         }
 
         body::after {
             content: '';
             position: absolute;
-            width: 300px;
-            height: 300px;
-            background: linear-gradient(45deg, #00dfd8, #0070f3);
+            width: 320px;
+            height: 320px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
             filter: blur(150px);
-            bottom: 10%;
-            right: 15%;
+            bottom: 15%;
+            right: 10%;
             z-index: 0;
-            opacity: 0.5;
+            opacity: 0.4;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 2.5rem;
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 3rem 2rem;
+            border-radius: 28px;
             text-align: center;
-            max-width: 450px;
+            max-width: 440px;
             width: 90%;
             z-index: 1;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .error-tag {
-            background: linear-gradient(90deg, #ff007f, #7928ca);
-            color: white;
+        .badge {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
             padding: 6px 16px;
             border-radius: 50px;
             font-size: 0.75rem;
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             display: inline-block;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
         }
 
         h1 {
             font-size: 2.2rem;
             font-weight: 800;
-            background: linear-gradient(to right, #ffffff, #a5b4fc);
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 1rem;
         }
 
-        p.subtitle {
+        p.desc {
             color: #9ca3af;
             font-size: 0.95rem;
             line-height: 1.6;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
-        .status-box {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed rgba(255, 255, 255, 0.15);
+        .error-code-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 16px;
             padding: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
-        .status-title {
-            font-size: 0.8rem;
-            color: #6b7280;
+        .code-label {
+            font-size: 0.75rem;
+            color: #4b5563;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.3rem;
-        }
-
-        .status-text {
-            color: #10b981;
             font-weight: 600;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.2rem;
         }
 
-        .status-dots {
-            width: 8px;
-            height: 8px;
-            background-color: #10b981;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
+        .code-text {
+            color: #e2e8f0;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
         }
 
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 0.8rem;
         }
 
-        .btn {
+        .btn-grup-kendala {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            gap: 10px;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 700;
             text-decoration: none;
+            color: #ffffff;
+            background: linear-gradient(135deg, #7928ca, #ff007f);
+            box-shadow: 0 8px 24px rgba(121, 40, 202, 0.3);
             transition: all 0.3s ease;
             cursor: pointer;
         }
 
-        .btn-primary {
-            background: #ffffff;
-            color: #0b0f19;
+        .btn-grup-kendala:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(121, 40, 202, 0.5);
+            opacity: 0.95;
         }
 
-        .btn-primary:hover {
-            background: #e5e7eb;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.9); opacity: 0.6; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(0.9); opacity: 0.6; }
+        .btn-grup-kendala:active {
+            transform: translateY(-1px);
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Tag Gimmick -->
-        <div class="error-tag">System Bypassed</div>
+        <!-- Status Badge -->
+        <div class="badge">System Blocked</div>
         
-        <!-- Kalimat Utama -->
-        <h1>Waduh, Ketahan Bentar!</h1>
+        <!-- Judul -->
+        <h1>Yah, Mentok Di Sini!</h1>
         
-        <!-- Kata-kata Santai / Gen Z -->
-        <p class="subtitle">
-            Aman, nggak usah panik alias *chill aja*. Sistemnya lagi disensor dikit, tapi kita udah siapin jalan tikusnya buat kamu. Tinggal sekali klik langsung tembus!
+        <!-- Kalimat Gen Z Direct -->
+        <p class="desc">
+            Sistemnya mendadak mogok dan nggak bisa di-bypass otomatis. Daripada pusing sendirian, mending langsung masuk grup buat lapor kendalana biar langsung dibantu sama tim!
         </p>
 
-        <!-- Status Box -->
-        <div class="status-box">
-            <div class="status-title">Status Jaringan</div>
-            <div class="status-text">
-                <div class="status-dots"></div>
-                Bypass Ready to Launch
-            </div>
+        <!-- Informasi Error Gimmick -->
+        <div class="error-code-box">
+            <div class="code-label">Status Log</div>
+            <div class="code-text">BYPASS_FAILED_403</div>
         </div>
 
-        <!-- Tombol Aksi & Grup Kendala -->
+        <!-- Tombol Utama Langsung ke Grup -->
         <div class="btn-group">
-            <!-- Ganti '#' dengan link bypass tujuanmu -->
-            <a href="#" class="btn btn-primary" onclick="alert('Bypassing system... gas!')">Lanjut ke Tujuan</a>
-            
-            <!-- Ganti '#' dengan link grup Telegram/WhatsApp kamu -->
-            <a href="https://t.me/lukyyplr" target="_blank" class="btn btn-secondary">
-                💬 Ada Kendala? Masuk Grup Sini
+            <!-- Ganti '#' dengan link Telegram / WhatsApp / Discord kamu -->
+            <a href="#" target="_blank" class="btn btn-grup-kendala">
+                💬 Masuk Grup / Lapor Kendala
             </a>
         </div>
     </div>
