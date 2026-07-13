@@ -321,7 +321,7 @@
   }
 
   // ============================================================
-  // CYBER PARTICLES (JARINGAN TITIK)
+  // CYBER PARTICLES
   // ============================================================
   function initCyberParticles() {
     const old = document.getElementById("cyber-particles");
@@ -423,7 +423,7 @@
   }
 
   // ============================================================
-  // BUILD MAIN PANEL (HOLOGRAPHIC)
+  // BUILD MAIN PANEL (HOLOGRAPHIC) - Avatar kiri atas
   // ============================================================
   function buildMainPanel() {
     const old = document.getElementById("lukyy-auth");
@@ -459,14 +459,13 @@
 
       .panel-content { position: relative; z-index: 2; }
 
-      /* AVATAR - FIXED CENTER */
+      /* AVATAR - KIRI ATAS */
       .holo-avatar {
         position: absolute;
-        top: -30px;
-        left: 50%;
-        transform: translateX(-50%) scale(0.9);
-        width: 72px;
-        height: 72px;
+        top: -20px;
+        left: -20px;
+        width: 64px;
+        height: 64px;
         border-radius: 50%;
         border: 2px solid rgba(0,240,255,0.6);
         box-shadow: 0 0 40px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.1);
@@ -478,7 +477,7 @@
         padding: 0;
       }
       .holo-avatar:hover {
-        transform: translateX(-50%) scale(1.1) rotate(0deg);
+        transform: scale(1.15) rotate(0deg);
         box-shadow: 0 0 80px rgba(0,240,255,0.5);
         border-color: #ff00ff;
       }
@@ -495,12 +494,14 @@
 
       .holo-music {
         position: absolute;
-        top: -20px; right: -10px;
+        top: -20px;
+        right: -10px;
         background: rgba(0,10,25,0.8);
         border: 1px solid rgba(255,0,255,0.3);
         color: #ff00ff;
         border-radius: 50%;
-        width: 48px; height: 48px;
+        width: 48px;
+        height: 48px;
         cursor: pointer;
         font-size: 20px;
         display: flex;
@@ -527,6 +528,8 @@
         font-weight: 700;
         text-transform: uppercase;
         font-family: 'Orbitron', sans-serif;
+        margin-left: auto;
+        margin-right: auto;
       }
       .holo-badge-dot {
         width: 8px; height: 8px;
@@ -946,7 +949,7 @@
       @media (max-width: 500px) {
         #lukyy-auth { padding: 24px 16px; }
         .holo-title { font-size: 28px; }
-        .holo-avatar { width: 60px; height: 60px; top: -25px; }
+        .holo-avatar { width: 54px; height: 54px; top: -18px; left: -18px; }
         .holo-music { width: 40px; height: 40px; font-size: 16px; top: -16px; right: -6px; }
         .holo-countdown-card { padding: 30px 20px; }
         .holo-countdown-circle { width: 110px; height: 110px; font-size: 38px; }
