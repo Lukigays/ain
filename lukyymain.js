@@ -51,11 +51,17 @@
   let deviceHWID = "";
 
   // ============================================================
+  // [TAMBAHAN] Variabel untuk performa & cache
+  // ============================================================
+  let isPanelVisible = true;
+  let particleAnimationId = null;
+  const apiCache = {};
+
+  // ============================================================
   // HWID GENERATOR - UNIK PER PERANGKAT
   // ============================================================
   function generateHWID() {
     try {
-      // Kombinasi berbagai informasi perangkat
       const components = [
         navigator.userAgent || "",
         navigator.language || "",
@@ -67,7 +73,6 @@
         navigator.deviceMemory || "",
         navigator.maxTouchPoints || "",
         Intl.DateTimeFormat().resolvedOptions().timeZone || "",
-        // Canvas fingerprint (sederhana)
         (function() {
           try {
             const canvas = document.createElement('canvas');
@@ -87,10 +92,8 @@
         })()
       ];
 
-      // Gabungkan semua komponen
       const raw = components.join('|||');
 
-      // Hash sederhana SHA-256 (built-in)
       async function sha256(message) {
         const msgBuffer = new TextEncoder().encode(message);
         const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -98,9 +101,7 @@
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       }
 
-      // Return promise yang di-resolve dengan HWID
       return sha256(raw).then(hash => {
-        // Simpan ke localStorage agar konsisten
         const saved = localStorage.getItem('lukyy_hwid');
         if (saved && saved.length === 64) {
           return saved;
@@ -109,7 +110,6 @@
         return hash;
       });
     } catch (e) {
-      // Fallback: pakai random + timestamp
       const fallback = 'HWID-FALLBACK-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10);
       localStorage.setItem('lukyy_hwid', fallback);
       return Promise.resolve(fallback);
@@ -422,7 +422,11 @@
   }
 
   function updateReactive() {
-    if (!isReactive) return;
+    // [TAMBAHAN] Hentikan jika panel tidak terlihat
+    if (!isReactive || !isPanelVisible) {
+      requestAnimationFrame(updateReactive);
+      return;
+    }
     if (audioAnalyser && audioData) {
       audioAnalyser.getByteFrequencyData(audioData);
       let bassSum = 0;
@@ -452,7 +456,7 @@
   }
 
   // ============================================================
-  // CYBER PARTICLES
+  // CYBER PARTICLES (dengan optimasi performa)
   // ============================================================
   function initCyberParticles() {
     const old = document.getElementById("cyber-particles");
@@ -466,7 +470,11 @@
     const ctx = canvas.getContext("2d");
     let w, h;
     const dots = [];
-    const COUNT = 60;
+    // [TAMBAHAN] Deteksi perangkat untuk batas partikel
+    let COUNT = 60;
+    if (window.innerWidth < 600 || (navigator.deviceMemory && navigator.deviceMemory < 4)) {
+      COUNT = 30;
+    }
     const DIST = 120;
 
     function resize() {
@@ -486,6 +494,11 @@
     }
 
     function draw() {
+      // [TAMBAHAN] Jika panel tidak terlihat, tetap request frame tapi skip gambar
+      if (!isPanelVisible) {
+        particleAnimationId = requestAnimationFrame(draw);
+        return;
+      }
       ctx.clearRect(0, 0, w, h);
       for (let d of dots) {
         d.x += d.vx;
@@ -518,7 +531,7 @@
         ctx.fill();
       }
       ctx.shadowBlur = 0;
-      requestAnimationFrame(draw);
+      particleAnimationId = requestAnimationFrame(draw);
     }
     draw();
   }
@@ -587,6 +600,18 @@
       #lukyy-auth::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.3); border-radius: 10px; }
 
       .panel-content { position: relative; z-index: 2; }
+
+      /* [TAMBAHAN] Animasi transisi panel */
+      .panel-slide-out {
+        transform: translateX(30px) scale(0.96);
+        opacity: 0;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .panel-slide-in {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
 
       .holo-avatar {
         position: absolute;
@@ -1131,13 +1156,19 @@
       }
       .holo-bio-close:hover { background: rgba(255,0,85,0.12); border-color: rgba(255,0,85,0.3); }
 
-      @media (max-width: 500px) {
-        #lukyy-auth { padding: 24px 16px 16px; }
-        .holo-title { font-size: 28px; }
-        .holo-avatar { width: 54px; height: 54px; top: -20px; left: -20px; }
-        .holo-music { width: 40px; height: 40px; font-size: 16px; top: -20px; right: -10px; }
-        .holo-loader-spinner { width: 90px; height: 90px; }
-        .holo-status .hwid-badge { max-width: 120px; font-size: 8px; }
+      /* [TAMBAHAN] Responsif lebih agresif */
+      @media (max-width: 480px) {
+        #lukyy-auth { padding: 16px 12px 12px; width: 96vw; }
+        .holo-title { font-size: 22px; letter-spacing: 2px; }
+        .holo-input { font-size: 14px; padding: 14px 80px 14px 16px; }
+        .holo-btn-primary, .holo-btn-secondary { font-size: 13px; padding: 14px; }
+        .holo-avatar { width: 44px; height: 44px; top: -16px; left: -16px; }
+        .holo-music { width: 36px; height: 36px; font-size: 14px; top: -16px; right: -8px; }
+        .holo-badge { font-size: 9px; padding: 4px 12px; }
+        .holo-quote { font-size: 13px; min-height: 32px; }
+        .holo-menu-btn, .holo-speed-btn { font-size: 12px; padding: 12px; }
+        .holo-loader-card { padding: 30px 20px; }
+        .holo-loader-spinner { width: 80px; height: 80px; }
       }
     `;
     document.head.appendChild(style);
@@ -1148,10 +1179,10 @@
     panel.id = "lukyy-auth";
     panel.innerHTML = `
       <div class="panel-content">
-        <div class="holo-avatar" id="profile-trigger">
+        <div class="holo-avatar" id="profile-trigger" title="Lihat Biodata Owner">
           <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
         </div>
-        <button class="holo-music" id="music-btn" title="Play/Pause/Skip">🔇</button>
+        <button class="holo-music" id="music-btn" title="Putar/Jeda/Skip Musik">🔇</button>
 
         <div style="text-align:center; margin-top:14px;">
           <div class="holo-badge" id="system-badge">
@@ -1167,8 +1198,8 @@
           <div class="holo-input-wrap">
             <input type="password" id="key-input" class="holo-input" placeholder="✦ INSERT ACCESS KEY ✦" autocomplete="off">
             <div class="holo-actions">
-              <button id="toggle-visibility-btn" class="holo-icon-btn" title="View/Hide">👁</button>
-              <button id="auto-paste-btn" class="holo-icon-btn" title="Paste">📋</button>
+              <button id="toggle-visibility-btn" class="holo-icon-btn" title="Tampilkan/Sembunyikan Key">👁</button>
+              <button id="auto-paste-btn" class="holo-icon-btn" title="Tempel dari Clipboard">📋</button>
             </div>
           </div>
           <div id="interactive-area" style="margin-bottom:12px;">
@@ -1176,7 +1207,7 @@
           </div>
         </div>
 
-        <button id="support-btn" class="holo-btn-secondary">💬 JOIN TELEGRAM</button>
+        <button id="support-btn" class="holo-btn-secondary" title="Gabung Grup Telegram">💬 JOIN TELEGRAM</button>
         <div id="status-msg" class="holo-status">
           <span>⚙️ WONG_PUSAT_STANDBY</span>
           <span class="hwid-badge" id="hwid-display">🔑 HWID: LOADING...</span>
@@ -1195,6 +1226,23 @@
       </div>
     `;
     document.body.appendChild(panel);
+
+    // ============================================================
+    // [TAMBAHAN] IntersectionObserver untuk menjeda visualizer & partikel
+    // ============================================================
+    const panelElement = document.getElementById("lukyy-auth");
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isPanelVisible = entry.isIntersecting;
+        if (!isPanelVisible) {
+          isReactive = false;
+        } else {
+          isReactive = true;
+          // Restart animasi jika perlu
+        }
+      });
+    }, { threshold: 0.1 });
+    observer.observe(panelElement);
 
     // --- ELEMENTS ---
     const musicBtn = document.getElementById("music-btn");
@@ -1322,35 +1370,50 @@
       }
     }
 
+    // ============================================================
+    // [TAMBAHAN] Fungsi untuk animasi transisi panel
+    // ============================================================
+    function animatePanelTransition(container, newHTML, callback) {
+      container.classList.add('panel-slide-out');
+      setTimeout(() => {
+        container.innerHTML = newHTML;
+        container.classList.remove('panel-slide-out');
+        container.classList.add('panel-slide-in');
+        if (callback) callback();
+      }, 350);
+    }
+
     function showMainMenu() {
       isReactive = false;
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
-      container.innerHTML = `
+      const newHTML = `
         <div style="position:relative; width:100%;">
-          <button id="mini-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;">❮</button>
+          <button id="mini-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;" title="Kembali ke Panel Utama">❮</button>
           <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:24px; font-weight:700; color:#00f0ff; text-align:center; text-shadow:0 0 30px rgba(0,240,255,0.3); letter-spacing:2px;">COMMAND CENTER</h3>
           <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Pilih target eksekusi</p>
           <div class="holo-menu-grid">
-            <button class="holo-menu-btn aincrad" data-target="2">🏰 Aincrad Protocol</button>
-            <button class="holo-menu-btn proxy" data-target="1">🌐 Aincrad Proxy</button>
-            <button class="holo-menu-btn vipteam" data-target="vp">💎 VIP Team Byps</button>
-            <button class="holo-menu-btn universal" data-target="uni_vp">🌍 Universal Vplink</button>
+            <button class="holo-menu-btn aincrad" data-target="2" title="Aincrad Protocol">🏰 Aincrad Protocol</button>
+            <button class="holo-menu-btn proxy" data-target="1" title="Aincrad Proxy">🌐 Aincrad Proxy</button>
+            <button class="holo-menu-btn vipteam" data-target="vp" title="VIP Team Bypass">💎 VIP Team Byps</button>
+            <button class="holo-menu-btn universal" data-target="uni_vp" title="Universal Vplink">🌍 Universal Vplink</button>
           </div>
         </div>
       `;
 
-      document.getElementById("mini-back-btn").addEventListener("click", () => location.reload());
+      animatePanelTransition(container, newHTML, () => {
+        document.getElementById("mini-back-btn").addEventListener("click", () => location.reload());
 
-      container.querySelectorAll(".holo-menu-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          const target = btn.dataset.target;
-          if (target === "uni_vp") showUniversalPanel();
-          else {
-            if (userTier === "premium") showSpeedPanel(target);
-            else triggerExecution(60, target);
-          }
+        container.querySelectorAll(".holo-menu-btn").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            const target = btn.dataset.target;
+            if (target === "uni_vp") showUniversalPanel();
+            else {
+              if (userTier === "premium") showSpeedPanel(target);
+              else triggerExecution(60, target);
+            }
+          });
         });
       });
     }
@@ -1359,9 +1422,9 @@
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
-      container.innerHTML = `
+      const newHTML = `
         <div style="position:relative; width:100%;">
-          <button id="uni-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;">❮</button>
+          <button id="uni-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;" title="Kembali ke Menu Utama">❮</button>
           <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:22px; font-weight:700; color:#00cc88; text-align:center; text-shadow:0 0 30px rgba(0,204,136,0.3); letter-spacing:2px;">UNIVERSAL VPLINK</h3>
           <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Paste link vplink.in</p>
           <input type="text" id="uni-vplink-input" class="holo-uni-input" placeholder="https://vplink.in/xxxxx">
@@ -1370,36 +1433,38 @@
         </div>
       `;
 
-      document.getElementById("uni-back-btn").addEventListener("click", showMainMenu);
+      animatePanelTransition(container, newHTML, () => {
+        document.getElementById("uni-back-btn").addEventListener("click", showMainMenu);
 
-      const input = document.getElementById("uni-vplink-input");
-      input.addEventListener("focus", () => {
-        input.style.borderColor = "#00cc88";
-        input.style.boxShadow = "0 0 40px rgba(0,204,136,0.15)";
-      });
-      input.addEventListener("blur", () => {
-        input.style.borderColor = "rgba(0,240,255,0.1)";
-        input.style.boxShadow = "none";
-      });
+        const input = document.getElementById("uni-vplink-input");
+        input.addEventListener("focus", () => {
+          input.style.borderColor = "#00cc88";
+          input.style.boxShadow = "0 0 40px rgba(0,204,136,0.15)";
+        });
+        input.addEventListener("blur", () => {
+          input.style.borderColor = "rgba(0,240,255,0.1)";
+          input.style.boxShadow = "none";
+        });
 
-      document.getElementById("uni-submit-btn").addEventListener("click", () => {
-        const val = input.value.trim();
-        const err = document.getElementById("uni-error-msg");
-        if (!val.includes("vplink.in")) {
-          err.innerText = "Target invalid! Kudu vplink.in cuy.";
-          err.style.display = "block";
-          input.style.borderColor = "#ff0055";
-          return;
-        }
-        const vpKey = extractVpKey(val);
-        if (!vpKey) {
-          err.innerText = "Gagal ekstrak key, cek format link.";
-          err.style.display = "block";
-          input.style.borderColor = "#ff0055";
-          return;
-        }
-        if (userTier === "premium") showSpeedPanel("uni_vp", vpKey);
-        else triggerExecution(60, "uni_vp", vpKey);
+        document.getElementById("uni-submit-btn").addEventListener("click", () => {
+          const val = input.value.trim();
+          const err = document.getElementById("uni-error-msg");
+          if (!val.includes("vplink.in")) {
+            err.innerText = "Target invalid! Kudu vplink.in cuy.";
+            err.style.display = "block";
+            input.style.borderColor = "#ff0055";
+            return;
+          }
+          const vpKey = extractVpKey(val);
+          if (!vpKey) {
+            err.innerText = "Gagal ekstrak key, cek format link.";
+            err.style.display = "block";
+            input.style.borderColor = "#ff0055";
+            return;
+          }
+          if (userTier === "premium") showSpeedPanel("uni_vp", vpKey);
+          else triggerExecution(60, "uni_vp", vpKey);
+        });
       });
     }
 
@@ -1407,31 +1472,33 @@
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
-      container.innerHTML = `
+      const newHTML = `
         <div style="position:relative; width:100%;">
-          <button id="speed-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;">❮</button>
+          <button id="speed-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;" title="Kembali ke Menu Utama">❮</button>
           <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:22px; font-weight:700; color:#ffd700; text-align:center; text-shadow:0 0 30px rgba(255,215,0,0.3); letter-spacing:2px;">VELOCITY SPEED</h3>
           <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Atur kecepatan injeksi</p>
           <div class="holo-speed-grid">
-            <button class="holo-speed-btn fast" data-sec="20">💨 FAST</button>
-            <button class="holo-speed-btn secure" data-sec="30">🛡️ SECURE</button>
-            <button class="holo-speed-btn slow" data-sec="45">🐌 SLOW</button>
+            <button class="holo-speed-btn fast" data-sec="20" title="Kecepatan tinggi">💨 FAST</button>
+            <button class="holo-speed-btn secure" data-sec="30" title="Seimbang">🛡️ SECURE</button>
+            <button class="holo-speed-btn slow" data-sec="45" title="Kecepatan rendah">🐌 SLOW</button>
           </div>
         </div>
       `;
 
-      document.getElementById("speed-back-btn").addEventListener("click", showMainMenu);
+      animatePanelTransition(container, newHTML, () => {
+        document.getElementById("speed-back-btn").addEventListener("click", showMainMenu);
 
-      container.querySelectorAll(".holo-speed-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const sec = parseInt(btn.dataset.sec, 10);
-          triggerExecution(sec, targetType, customVpKey);
+        container.querySelectorAll(".holo-speed-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const sec = parseInt(btn.dataset.sec, 10);
+            triggerExecution(sec, targetType, customVpKey);
+          });
         });
       });
     }
 
     // ============================================================
-    // TRIGGER EXECUTION
+    // TRIGGER EXECUTION (dengan informasi lebih detail)
     // ============================================================
     async function triggerExecution(seconds, targetType, customVpKey = null) {
       const panel = document.getElementById("lukyy-auth");
@@ -1466,19 +1533,31 @@
 
       if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") apiType = "vp";
 
+      // Informasi status lebih detail
       if (targetType === "vp") {
-        statusEl.innerText = "SCANNING";
-        subEl.innerText = "Mencari vplink.in...";
+        statusEl.innerText = "🔍 SCANNING TARGET";
+        subEl.innerText = "Mencari vplink.in di halaman...";
         const vpUrl = extractVpLinkUrl();
-        if (vpUrl) vpKey = extractVpKey(vpUrl);
+        if (vpUrl) {
+          vpKey = extractVpKey(vpUrl);
+          subEl.innerText = `✅ Key ditemukan: ${vpKey.substring(0,8)}...`;
+        } else {
+          subEl.innerText = "❌ Tidak ditemukan vplink.in!";
+        }
       } else if (targetType === "pc") {
-        statusEl.innerText = "SCANNING";
+        statusEl.innerText = "🔍 SCANNING";
         subEl.innerText = "Mencari PowerCheats...";
         const vpUrl = extractPowerCheatsUrl();
-        if (vpUrl) vpKey = extractVpKey(vpUrl);
+        if (vpUrl) {
+          vpKey = extractVpKey(vpUrl);
+          subEl.innerText = `✅ Key ditemukan: ${vpKey.substring(0,8)}...`;
+        } else {
+          subEl.innerText = "❌ Tidak ditemukan PowerCheats!";
+        }
       } else if (targetType === "uni_vp") {
-        statusEl.innerText = "PARSING";
-        subEl.innerText = "Memproses link...";
+        statusEl.innerText = "📡 PARSING";
+        subEl.innerText = `Memproses link...`;
+        if (vpKey) subEl.innerText = `✅ Key: ${vpKey.substring(0,8)}...`;
       }
 
       if ((targetType === "vp" || targetType === "pc" || targetType === "uni_vp") && !vpKey) {
@@ -1495,12 +1574,17 @@
         }, 3500);
         return;
       }
-      if (vpKey) {
-        subEl.innerText = `Key: ${vpKey.substring(0,8)}...`;
-      }
 
+      // Mulai fetch destination
       let finalUrl = CONFIG.fallbackRedirectUrl;
-      fetchDestination(apiType, 1, vpKey).then(url => { finalUrl = url; }).catch(() => {});
+      statusEl.innerText = "📡 MENGHUBUNGI SERVER";
+      subEl.innerText = "Mengambil link bypass...";
+      fetchDestination(apiType, 1, vpKey).then(url => {
+        finalUrl = url;
+        subEl.innerText = "✅ Link berhasil didapatkan!";
+      }).catch(() => {
+        subEl.innerText = "⚠️ Gagal fetch, pakai fallback...";
+      });
 
       const totalSteps = seconds;
       let currentStep = 0;
@@ -1516,7 +1600,7 @@
           clearInterval(timer);
           progressBar.style.width = "100%";
           percentEl.innerText = "100%";
-          statusEl.innerText = "SUCCESS ✓";
+          statusEl.innerText = "✅ SUCCESS";
           statusEl.style.color = "#00ff88";
           subEl.innerText = "Bypass berhasil, mengarahkan...";
           playSound('bypass_done');
@@ -1526,22 +1610,20 @@
           }, 1200);
         } else {
           const dots = ".".repeat((currentStep % 3) + 1);
-          subEl.innerText = `Memproses${dots}`;
+          subEl.innerText = `⏳ Memproses${dots} (${currentStep}/${totalSteps}s)`;
         }
       }, interval);
 
-      statusEl.innerText = "EXECUTING";
-      subEl.innerText = "Memulai...";
+      statusEl.innerText = "⚡ EXECUTING";
     }
 
     // ============================================================
-    // VERIFY KEY - dengan HWID
+    // VERIFY KEY - dengan HWID + Cache
     // ============================================================
     async function verifyKey(rawKey, isAuto = false) {
       const clean = rawKey.trim();
       rawPremiumKey = clean;
 
-      // Tunggu HWID siap
       let hwid = deviceHWID;
       if (!hwid) {
         try {
@@ -1552,59 +1634,23 @@
         }
       }
 
+      // [TAMBAHAN] Cache API 5 menit
+      const cacheKey = clean + hwid;
+      if (apiCache[cacheKey] && Date.now() - apiCache[cacheKey].timestamp < 300000) {
+        const result = apiCache[cacheKey].data;
+        // Proses seperti biasa dari result
+        processVerificationResult(result, hwid);
+        return;
+      }
+
       try {
         const url = `${CONFIG.keyUrl}?key=${encodeURIComponent(clean)}&hwid=${encodeURIComponent(hwid)}`;
         const resp = await fetch(url);
         const result = await resp.json();
 
         if (resp.ok && result.status === "success") {
-          userTier = result.type ? result.type.toLowerCase().trim() : "biasa";
-          localStorage.setItem("lukyy_saved_key", clean);
-          if (keyInput) keyInput.value = clean;
-
-          let formatted = "LIFETIME / PERMANENT";
-          if (result.expiry && result.expiry !== "permanent" && !isNaN(result.expiry)) {
-            const d = new Date(Number(result.expiry));
-            const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
-            formatted = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} | ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} WIB`;
-          }
-
-          const hwidShort = hwid.substring(0, 8) + '...' + hwid.substring(hwid.length - 6);
-
-          if (userTier === "premium") {
-            document.getElementById("badge-text").innerText = "VIP ACTIVE";
-            document.getElementById("badge-dot").style.background = "#ffd700";
-            document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
-            statusMsg.innerHTML = `
-              <span>👑 WONG PUSAT PRIVILEGE</span>
-              <span class="hwid-badge">🔑 ${hwidShort}</span>
-            `;
-            statusMsg.style.color = "#ffd700";
-            statusMsg.style.borderColor = "rgba(255,215,0,0.15)";
-            statusMsg.style.background = "rgba(255,215,0,0.03)";
-            musicBtn.textContent = "⏭️";
-
-            playSound('success');
-            showHoloModal(
-              "👑 SEPUH DETECTED",
-              `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🔑 HWID: ${hwid}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
-              "👑",
-              () => lockDashboard(formatted)
-            );
-          } else {
-            statusMsg.innerHTML = `
-              <span>✅ STANDARD KEY OK!</span>
-              <span class="hwid-badge">🔑 ${hwidShort}</span>
-            `;
-            statusMsg.style.color = "#00f0ff";
-            playSound('success');
-            showHoloModal(
-              "⚡ ACCESS GRANTED",
-              `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🔑 HWID: ${hwid}\n\n🚀 Default Auto Redirect (60s)`,
-              "⚡",
-              () => lockDashboard(formatted)
-            );
-          }
+          apiCache[cacheKey] = { data: result, timestamp: Date.now() };
+          processVerificationResult(result, hwid);
         } else {
           localStorage.removeItem("lukyy_saved_key");
           const hwidShort = hwid ? hwid.substring(0, 8) + '...' + hwid.substring(hwid.length - 6) : 'unknown';
@@ -1630,6 +1676,57 @@
         statusMsg.style.color = "#ff0055";
         playSound('error');
         loginBtn.disabled = supportBtn.disabled = true;
+      }
+    }
+
+    // Fungsi pembantu untuk memproses hasil verifikasi (dipisah agar bisa dipakai dari cache)
+    function processVerificationResult(result, hwid) {
+      userTier = result.type ? result.type.toLowerCase().trim() : "biasa";
+      localStorage.setItem("lukyy_saved_key", rawPremiumKey);
+      if (keyInput) keyInput.value = rawPremiumKey;
+
+      let formatted = "LIFETIME / PERMANENT";
+      if (result.expiry && result.expiry !== "permanent" && !isNaN(result.expiry)) {
+        const d = new Date(Number(result.expiry));
+        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+        formatted = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} | ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} WIB`;
+      }
+
+      const hwidShort = hwid.substring(0, 8) + '...' + hwid.substring(hwid.length - 6);
+
+      if (userTier === "premium") {
+        document.getElementById("badge-text").innerText = "VIP ACTIVE";
+        document.getElementById("badge-dot").style.background = "#ffd700";
+        document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
+        statusMsg.innerHTML = `
+          <span>👑 WONG PUSAT PRIVILEGE</span>
+          <span class="hwid-badge">🔑 ${hwidShort}</span>
+        `;
+        statusMsg.style.color = "#ffd700";
+        statusMsg.style.borderColor = "rgba(255,215,0,0.15)";
+        statusMsg.style.background = "rgba(255,215,0,0.03)";
+        musicBtn.textContent = "⏭️";
+
+        playSound('success');
+        showHoloModal(
+          "👑 SEPUH DETECTED",
+          `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🔑 HWID: ${hwid}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
+          "👑",
+          () => lockDashboard(formatted)
+        );
+      } else {
+        statusMsg.innerHTML = `
+          <span>✅ STANDARD KEY OK!</span>
+          <span class="hwid-badge">🔑 ${hwidShort}</span>
+        `;
+        statusMsg.style.color = "#00f0ff";
+        playSound('success');
+        showHoloModal(
+          "⚡ ACCESS GRANTED",
+          `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🔑 HWID: ${hwid}\n\n🚀 Default Auto Redirect (60s)`,
+          "⚡",
+          () => lockDashboard(formatted)
+        );
       }
     }
 
@@ -1668,7 +1765,7 @@
       statusMsg.style.color = "#ff8c00";
     }
 
-    // --- START PARTICLES ONLY ---
+    // --- START PARTICLES ---
     initCyberParticles();
   }
 
