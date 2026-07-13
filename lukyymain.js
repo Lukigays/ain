@@ -7,9 +7,8 @@
   }
 
   // --- CONFIGURATION ---
-  const _0x439d89 = {
+  const CONFIG = {
     keyUrl: "https://database-nine-flax.vercel.app/getkeys",
-    validKeys: null,
     apiBaseUrl: "https://lol.a2mbd3.workers.dev",
     apiKey: "abdullah",
     totpSecret: "6ZQ4X3VPEK5XG2Q",
@@ -38,21 +37,21 @@
     ]
   };
 
-  let _0x3e130f = null;
-  let audioContext = null;
+  let audioPlayer = null;
+  let audioCtx = null;
   let audioAnalyser = null;
-  let audioDataArray = null;
-  let audioSourceNode = null;
-  let isReactiveRunning = true;
-  let currentUserTier = "biasa";
-  let originalPremiumKeyRaw = "";
-  let isPanelMinimized = false;
+  let audioData = null;
+  let audioSource = null;
+  let isReactive = true;
+  let userTier = "biasa";
+  let rawPremiumKey = "";
+  let currentMusicIndex = 0;
 
-  // --- UTILITY FUNCTIONS (SAME AS ORIGINAL) ---
+  // --- UTILITY FUNCTIONS (SAME) ---
   function extractVpLinkUrl() {
     try {
-      const aTags = document.querySelectorAll("a");
-      for (let a of aTags) {
+      const anchors = document.querySelectorAll("a");
+      for (let a of anchors) {
         const href = a.getAttribute("href");
         if (href && href.includes("vplink.in")) {
           const match = href.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
@@ -68,7 +67,6 @@
       const bodyText = document.body.innerText;
       const matchBody = bodyText.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
       if (matchBody) return matchBody[0].replace(/[.,;:'")\]}]+$/, "");
-      
       const allElements = document.querySelectorAll("*");
       for (let el of allElements) {
         for (let attr of el.attributes) {
@@ -79,9 +77,7 @@
         }
       }
       return null;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
   function extractPowerCheatsUrl() {
@@ -104,9 +100,7 @@
       const matchHtml = html.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
       if (matchHtml) return matchHtml[0].replace(/[.,;:'")\]}]+$/, "");
       return null;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
   function extractVpKey(urlStr) {
@@ -125,11 +119,11 @@
     }
   }
 
-  // --- TOTP & API (SAME AS ORIGINAL) ---
-  class TOTPGenerator {
+  // --- TOTP & API (SAME) ---
+  class TOTP {
     constructor(secret) {
       this.secret = secret;
-      this.timeStep = 30;
+      this.step = 30;
       this.digits = 6;
     }
     _sha1(data) {
@@ -195,7 +189,7 @@
     async generate(offset = 0) {
       const hexSecret = this.base32ToHex(this.secret);
       const epoch = Math.floor(Date.now() / 1000);
-      const timeWindow = Math.floor(epoch / this.timeStep) + offset;
+      const timeWindow = Math.floor(epoch / this.step) + offset;
       const buffer = new ArrayBuffer(8);
       const view = new DataView(buffer);
       view.setUint32(4, timeWindow, false);
@@ -208,159 +202,149 @@
     }
   }
 
-  async function fetchDestinationUrl(type, attempt = 1, vpKey = null) {
-    const totpGen = new TOTPGenerator(_0x439d89.totpSecret);
+  async function fetchDestination(type, attempt = 1, vpKey = null) {
+    const totp = new TOTP(CONFIG.totpSecret);
     const maxAttempts = 3;
-
     try {
-      const pin = await totpGen.generate();
-      let url = `${_0x439d89.apiBaseUrl}?file=crx.json&type=${type}&key=${_0x439d89.apiKey}&pin=${pin}`;
+      const pin = await totp.generate();
+      let url = `${CONFIG.apiBaseUrl}?file=crx.json&type=${type}&key=${CONFIG.apiKey}&pin=${pin}`;
       if (vpKey) url += `&vp=${vpKey}`;
-
-      const response = await fetch(url, { headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
-
-      if (!response.ok) {
-        const prevPin = await totpGen.generate(-1);
-        let retryUrl = `${_0x439d89.apiBaseUrl}?file=crx.json&type=${type}&key=${_0x439d89.apiKey}&pin=${prevPin}`;
+      const resp = await fetch(url, { headers: { Accept: "application/json", "Cache-Control": "no-cache" } });
+      if (!resp.ok) {
+        const prevPin = await totp.generate(-1);
+        let retryUrl = `${CONFIG.apiBaseUrl}?file=crx.json&type=${type}&key=${CONFIG.apiKey}&pin=${prevPin}`;
         if (vpKey) retryUrl += `&vp=${vpKey}`;
-        
-        const retryResponse = await fetch(retryUrl, { headers: { Accept: "application/json" } });
-
-        if (!retryResponse.ok) {
+        const retryResp = await fetch(retryUrl, { headers: { Accept: "application/json" } });
+        if (!retryResp.ok) {
           if (attempt < maxAttempts) {
             await new Promise(r => setTimeout(r, 2000));
-            return fetchDestinationUrl(type, attempt + 1, vpKey);
+            return fetchDestination(type, attempt + 1, vpKey);
           }
-          throw new Error("API completely rejected");
+          throw new Error("API rejected");
         }
-        const data = await retryResponse.json();
+        const data = await retryResp.json();
         return processApiResponse(data, type, attempt, vpKey);
       }
-      const data = await response.json();
+      const data = await resp.json();
       return processApiResponse(data, type, attempt, vpKey);
     } catch (err) {
       if (attempt < maxAttempts) {
         await new Promise(r => setTimeout(r, 2000));
-        return fetchDestinationUrl(type, attempt + 1, vpKey);
+        return fetchDestination(type, attempt + 1, vpKey);
       }
-      return _0x439d89.fallbackRedirectUrl;
+      return CONFIG.fallbackRedirectUrl;
     }
   }
 
   function processApiResponse(data, type, attempt, vpKey) {
-    const dest = data.destinationLink || _0x439d89.fallbackRedirectUrl;
-    
+    const dest = data.destinationLink || CONFIG.fallbackRedirectUrl;
     if (dest.includes("t.me/") || dest.includes("telegram.me/") || dest.includes("telegram.org/")) {
-      if (attempt < 3) return fetchDestinationUrl(type, attempt + 1, vpKey);
-      return _0x439d89.fallbackRedirectUrl;
+      if (attempt < 3) return fetchDestination(type, attempt + 1, vpKey);
+      return CONFIG.fallbackRedirectUrl;
     }
-
     try {
       const u = new URL(dest);
-      if (u.protocol === "http:" || u.protocol === "https:") {
-        return dest;
-      }
+      if (u.protocol === "http:" || u.protocol === "https:") return dest;
     } catch (e) {}
-
-    if (attempt < 3) return fetchDestinationUrl(type, attempt + 1, vpKey);
-    return _0x439d89.fallbackRedirectUrl;
+    if (attempt < 3) return fetchDestination(type, attempt + 1, vpKey);
+    return CONFIG.fallbackRedirectUrl;
   }
 
-  // --- MUSIC & VISUALIZER (SAME) ---
-  function _0x58cd45() {
-    const randomIndex = Math.floor(Math.random() * _0x439d89.musicList.length);
-    const chosenMusic = _0x439d89.musicList[randomIndex];
-    
-    if (!_0x3e130f) { _0x3e130f = new Audio(chosenMusic); _0x3e130f.crossOrigin = "anonymous"; } 
-    else { _0x3e130f.src = chosenMusic; }
-    
-    _0x3e130f.loop = false; _0x3e130f.volume = 1.0;
-    _0x3e130f.onended = function() { _0x58cd45(); };
-    _0x3e130f.play().then(() => { initAudioVisualizer(); }).catch(() => {});
+  // --- MUSIC ---
+  function playRandomMusic() {
+    const idx = Math.floor(Math.random() * CONFIG.musicList.length);
+    const src = CONFIG.musicList[idx];
+    if (!audioPlayer) {
+      audioPlayer = new Audio(src);
+      audioPlayer.crossOrigin = "anonymous";
+    } else {
+      audioPlayer.src = src;
+    }
+    audioPlayer.loop = false;
+    audioPlayer.volume = 1.0;
+    audioPlayer.onended = playRandomMusic;
+    audioPlayer.play().then(() => initAudioVisualizer()).catch(() => {});
   }
 
   function initAudioVisualizer() {
-    if (audioContext || !_0x3e130f) return;
+    if (audioCtx || !audioPlayer) return;
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      audioContext = new AudioCtx();
-      audioAnalyser = audioContext.createAnalyser();
+      audioCtx = new AudioCtx();
+      audioAnalyser = audioCtx.createAnalyser();
       audioAnalyser.fftSize = 256;
-      audioSourceNode = audioContext.createMediaElementSource(_0x3e130f);
-      audioSourceNode.connect(audioAnalyser);
-      audioAnalyser.connect(audioContext.destination);
-      const bufferLength = audioAnalyser.frequencyBinCount;
-      audioDataArray = new Uint8Array(bufferLength);
-      requestAnimationFrame(updateSoundReactiveElements);
+      audioSource = audioCtx.createMediaElementSource(audioPlayer);
+      audioSource.connect(audioAnalyser);
+      audioAnalyser.connect(audioCtx.destination);
+      audioData = new Uint8Array(audioAnalyser.frequencyBinCount);
+      requestAnimationFrame(updateReactive);
     } catch (e) {}
   }
 
-  function updateSoundReactiveElements() {
-    if (!isReactiveRunning) return;
-    if (audioAnalyser && audioDataArray) {
-      audioAnalyser.getByteFrequencyData(audioDataArray);
-      let bassSum = 0; const bassRange = 8;
-      for (let i = 0; i < bassRange; i++) { bassSum += audioDataArray[i]; }
-      let bassIntensity = bassSum / bassRange; 
-      
-      let multiplier = currentUserTier === "premium" ? 1.5 : 1.0;
-      let glowRadius = ((bassIntensity / 255) * 35) * multiplier; 
-      let borderOpacity = 0.3 + (bassIntensity / 255) * 0.7; 
-      let scaleValue = 1 + ((bassIntensity / 255) * 0.02) * multiplier; 
-      
-      const keyInput = document.getElementById("key-input");
-      const systemBadge = document.getElementById("system-badge");
-      const mainPanel = document.getElementById("lukyy-auth");
+  function updateReactive() {
+    if (!isReactive) return;
+    if (audioAnalyser && audioData) {
+      audioAnalyser.getByteFrequencyData(audioData);
+      let bassSum = 0;
+      for (let i = 0; i < 8; i++) bassSum += audioData[i];
+      let intensity = bassSum / 8;
+      let mult = userTier === "premium" ? 1.5 : 1.0;
+      let glow = ((intensity / 255) * 35) * mult;
+      let opacity = 0.3 + (intensity / 255) * 0.7;
+      let scale = 1 + ((intensity / 255) * 0.02) * mult;
 
-      if (keyInput && document.activeElement !== keyInput && !keyInput.classList.contains("shake-error")) { 
-        let glowColor = currentUserTier === "premium" ? "255, 215, 0" : "120, 80, 255"; 
-        keyInput.style.borderColor = `rgba(${glowColor}, ${borderOpacity})`;
-        keyInput.style.boxShadow = `0 0 ${glowRadius}px rgba(${glowColor}, ${(bassIntensity / 255) * 0.4}), inset 0 2px 10px rgba(0,0,0,0.5)`;
+      const input = document.getElementById("key-input");
+      const badge = document.getElementById("system-badge");
+      const panel = document.getElementById("lukyy-auth");
+
+      if (input && document.activeElement !== input && !input.classList.contains("shake-error")) {
+        let color = userTier === "premium" ? "255,215,0" : "120,80,255";
+        input.style.borderColor = `rgba(${color}, ${opacity})`;
+        input.style.boxShadow = `0 0 ${glow}px rgba(${color}, ${(intensity/255)*0.4}), inset 0 2px 10px rgba(0,0,0,0.5)`;
       }
-      if (mainPanel && !mainPanel.classList.contains("panel-minimized")) {
-        let shadowColor = currentUserTier === "premium" ? "255, 215, 0, 0.2" : "120, 80, 255, 0.2";
-        mainPanel.style.boxShadow = `0 40px 100px rgba(0,0,0,0.8), 0 0 ${(bassIntensity / 255) * 40}px rgba(${shadowColor}), inset 0 1px 1px rgba(255,255,255,0.1)`;
+      if (panel) {
+        let shadowColor = userTier === "premium" ? "255,215,0,0.2" : "120,80,255,0.2";
+        panel.style.boxShadow = `0 40px 100px rgba(0,0,0,0.8), 0 0 ${(intensity/255)*40}px rgba(${shadowColor}), inset 0 1px 1px rgba(255,255,255,0.05)`;
       }
-      if (systemBadge) { systemBadge.style.transform = `scale(${scaleValue})`; }
+      if (badge) badge.style.transform = `scale(${scale})`;
     }
-    requestAnimationFrame(updateSoundReactiveElements);
+    requestAnimationFrame(updateReactive);
   }
 
-  // --- PARTICLES (NEW ENHANCED) ---
-  function createParticles(theme = "default") {
-    const oldParticles = document.getElementById("lukyy-particles");
-    if (oldParticles) oldParticles.remove();
+  // --- PARTICLES (NEW) ---
+  function spawnParticles(theme = "default") {
+    const old = document.getElementById("lukyy-particles");
+    if (old) old.remove();
 
     const container = document.createElement("div");
     container.id = "lukyy-particles";
     container.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483646;overflow:hidden;";
-    
-    let emojis = ["✦", "◈", "◇", "❖", "✧", "✦", "◈"];
-    if (currentUserTier === "premium") emojis = ["✦", "◆", "◈", "◉", "✦", "✧", "◆"];
-    if (theme === "success") emojis = currentUserTier === "premium" ? ["✦", "✦", "✦", "✦", "✦"] : ["✦", "✦", "✦", "✦", "✦"];
-    else if (theme === "error") emojis = ["✖", "✖", "✖", "✖", "✖"];
 
-    const particleCount = window.innerWidth < 600 ? 20 : 35;
-    let particleColor = currentUserTier === "premium" ? "rgba(255,215,0,0.5)" : "rgba(120,80,255,0.4)";
-    
-    for (let i = 0; i < particleCount; i++) {
+    let chars = ["✦", "◈", "◇", "❖", "✧", "✦", "◈"];
+    if (userTier === "premium") chars = ["✦", "◆", "◈", "◉", "✦", "✧", "◆"];
+    if (theme === "success") chars = ["✦", "✦", "✦", "✦", "✦"];
+    if (theme === "error") chars = ["✖", "✖", "✖", "✖", "✖"];
+
+    const count = window.innerWidth < 600 ? 20 : 35;
+    const color = userTier === "premium" ? "rgba(255,215,0,0.5)" : "rgba(120,80,255,0.4)";
+
+    for (let i = 0; i < count; i++) {
       const el = document.createElement("div");
-      el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-      const fontSize = Math.random() * 14 + 8;
-      const duration = Math.random() * 12 + 8;
+      el.textContent = chars[Math.floor(Math.random() * chars.length)];
+      const size = Math.random() * 14 + 8;
+      const dur = Math.random() * 12 + 8;
       const delay = Math.random() * 6;
       const x = Math.random() * 100;
       const drift = (Math.random() - 0.5) * 80;
-      el.style.cssText = `position:absolute; font-size:${fontSize}px; left:${x}%; bottom:-10%; user-select:none; pointer-events:none; color:${particleColor}; filter: drop-shadow(0 0 8px ${particleColor}); animation:lukyy-float-${i} ${duration}s linear infinite; animation-delay:${delay}s; opacity:${Math.random() * 0.4 + 0.3};`;
-      
-      const style = document.createElement('style');
+      el.style.cssText = `position:absolute; font-size:${size}px; left:${x}%; bottom:-10%; user-select:none; pointer-events:none; color:${color}; filter: drop-shadow(0 0 8px ${color}); animation:float-${i} ${dur}s linear infinite; animation-delay:${delay}s; opacity:${Math.random()*0.4+0.3};`;
+      const style = document.createElement("style");
       style.textContent = `
-        @keyframes lukyy-float-${i} {
+        @keyframes float-${i} {
           0% { transform: translateY(0) translateX(0) rotate(0deg) scale(0.6); opacity: 0; }
           15% { opacity: 0.9; transform: translateY(10px) scale(1); }
           50% { transform: translateY(-45vh) translateX(${drift}px) rotate(180deg) scale(1.2); }
           85% { opacity: 0.7; }
-          100% { transform: translateY(-110vh) translateX(${-drift * 0.5}px) rotate(360deg) scale(0.8); opacity: 0; }
+          100% { transform: translateY(-110vh) translateX(${-drift*0.5}px) rotate(360deg) scale(0.8); opacity: 0; }
         }
       `;
       document.head.appendChild(style);
@@ -369,78 +353,70 @@
     document.body.appendChild(container);
   }
 
-  // --- MODAL (NEW STYLE) ---
-  function showCustomModal(title, message, icon, onConfirm) {
-    const modalOverlay = document.createElement("div");
-    modalOverlay.id = "lukyy-modal-overlay";
-    modalOverlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);";
-    
-    let colorGradient = currentUserTier === "premium" ? "#ffd700,#f7971e" : "#7850ff,#4a2c8a";
-    let btnGradient = currentUserTier === "premium" ? "linear-gradient(135deg,#ffd700,#f7971e)" : "linear-gradient(135deg,#7850ff,#4a2c8a)";
-    let shadowColor = currentUserTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(120,80,255,0.4)";
-    let borderColor = currentUserTier === "premium" ? "rgba(255,215,0,0.2)" : "rgba(120,80,255,0.2)";
+  // --- MODAL (NEW) ---
+  function showModal(title, msg, icon, onConfirm) {
+    const overlay = document.createElement("div");
+    overlay.id = "lukyy-modal";
+    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.5s;background:rgba(0,0,0,0.8);backdrop-filter:blur(20px);";
+    const grad = userTier === "premium" ? "#ffd700,#f7971e" : "#7850ff,#4a2c8a";
+    const btnGrad = userTier === "premium" ? "linear-gradient(135deg,#ffd700,#f7971e)" : "linear-gradient(135deg,#7850ff,#4a2c8a)";
+    const shadow = userTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(120,80,255,0.4)";
+    const border = userTier === "premium" ? "rgba(255,215,0,0.2)" : "rgba(120,80,255,0.2)";
 
-    modalOverlay.innerHTML = `
-      <div id="lukyy-modal-card" style="padding:40px 32px; border:1px solid ${borderColor}; border-radius:32px; width:min(420px,90vw); text-align:center; transform:scale(0.9) translateY(30px); transition:all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); box-sizing:border-box; background: rgba(10, 12, 28, 0.92); backdrop-filter:blur(40px); box-shadow: 0 40px 120px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.05);">
-        <div style="font-size:72px; margin-bottom:12px; filter:drop-shadow(0 0 40px ${shadowColor});">${icon}</div>
-        <h4 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:800; background:linear-gradient(135deg,${colorGradient}); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.5px;">${title}</h4>
-        <p id="lukyy-modal-text" style="font-size:15px; line-height:1.9; margin:0 0 28px 0; font-weight:500; color:#a0b4d0; white-space:pre-line; text-align:left;">${message}</p>
-        <button id="modal-confirm-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:18px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 40px ${shadowColor}; transition:all 0.3s ease;">⚡ Gaskeun</button>
+    overlay.innerHTML = `
+      <div style="padding:40px 32px;border:1px solid ${border};border-radius:40px;width:min(420px,90vw);text-align:center;transform:scale(0.9) translateY(30px);transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);box-sizing:border-box;background:rgba(10,12,28,0.92);backdrop-filter:blur(40px);box-shadow:0 40px 120px rgba(0,0,0,0.9),inset 0 1px 1px rgba(255,255,255,0.05);">
+        <div style="font-size:72px;margin-bottom:12px;filter:drop-shadow(0 0 40px ${shadow});">${icon}</div>
+        <h4 style="margin:0 0 10px 0;font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:800;background:linear-gradient(135deg,${grad});-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;">${title}</h4>
+        <p style="font-size:15px;line-height:1.9;margin:0 0 28px 0;font-weight:500;color:#a0b4d0;white-space:pre-line;text-align:left;">${msg}</p>
+        <button id="modal-ok" style="width:100%;background:${btnGrad};color:#000;border:none;padding:18px;border-radius:20px;font-weight:800;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:15px;text-transform:uppercase;letter-spacing:1.5px;box-shadow:0 10px 40px ${shadow};transition:all 0.3s;">⚡ Gaskeun</button>
       </div>
     `;
-    document.body.appendChild(modalOverlay);
-
-    setTimeout(() => { 
-      modalOverlay.style.opacity = "1"; 
-      const card = document.getElementById("lukyy-modal-card");
-      card.style.transform = "scale(1) translateY(0)"; 
+    document.body.appendChild(overlay);
+    setTimeout(() => {
+      overlay.style.opacity = "1";
+      const card = overlay.querySelector("div");
+      card.style.transform = "scale(1) translateY(0)";
     }, 50);
-
-    document.getElementById("modal-confirm-btn").addEventListener("click", () => {
-      modalOverlay.style.opacity = "0";
-      document.getElementById("lukyy-modal-card").style.transform = "scale(0.95) translateY(-20px)";
-      setTimeout(() => { modalOverlay.remove(); if (onConfirm) onConfirm(); }, 400);
+    document.getElementById("modal-ok").addEventListener("click", () => {
+      overlay.style.opacity = "0";
+      overlay.querySelector("div").style.transform = "scale(0.95) translateY(-20px)";
+      setTimeout(() => { overlay.remove(); if (onConfirm) onConfirm(); }, 400);
     });
   }
 
-  function fakeVisualizer(url) { window.location.href = url; }
+  function redirectTo(url) { window.location.href = url; }
 
   // ============================================================
-  // NEW UI - MAIN FUNCTION
+  // MAIN UI - BRAND NEW
   // ============================================================
-  (async function () {
-    createParticles("default");
+  (function init() {
+    spawnParticles("default");
 
-    const _0x19bd78 = document.getElementById("lukyy-auth");
-    if (_0x19bd78) _0x19bd78.remove();
+    const oldPanel = document.getElementById("lukyy-auth");
+    if (oldPanel) oldPanel.remove();
 
-    // --- GLOBAL STYLES ---
+    // --- STYLES ---
     const style = document.createElement("style");
     style.textContent = `
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap');
-      
-      * {
-        box-sizing: border-box;
-      }
-      
+      * { box-sizing: border-box; }
       #lukyy-auth {
         font-family: 'Inter', sans-serif;
         position: fixed;
-        top: 50%;
-        left: 50%;
+        top: 50%; left: 50%;
         transform: translate(-50%, -50%);
         z-index: 2147483647;
         width: min(440px, 94vw);
         max-height: 95vh;
         overflow-y: auto;
-        background: radial-gradient(ellipse at 30% 20%, rgba(40, 20, 80, 0.7), rgba(8, 6, 18, 0.95));
+        background: radial-gradient(ellipse at 30% 20%, rgba(40,20,80,0.7), rgba(8,6,18,0.95));
         backdrop-filter: blur(40px);
         -webkit-backdrop-filter: blur(40px);
-        border: 1px solid rgba(120, 80, 255, 0.2);
+        border: 1px solid rgba(120,80,255,0.2);
         border-radius: 40px;
         padding: 40px 32px 32px;
         box-shadow: 0 60px 160px rgba(0,0,0,0.95), 0 0 80px rgba(120,80,255,0.05), inset 0 1px 1px rgba(255,255,255,0.04);
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
         color: #fff;
         scrollbar-width: thin;
         scrollbar-color: rgba(120,80,255,0.3) transparent;
@@ -449,35 +425,8 @@
       #lukyy-auth::-webkit-scrollbar-track { background: transparent; }
       #lukyy-auth::-webkit-scrollbar-thumb { background: rgba(120,80,255,0.3); border-radius: 20px; }
 
-      #lukyy-auth.panel-minimized {
-        padding: 16px 24px;
-        width: auto;
-        max-height: none;
-        border-radius: 60px;
-        cursor: pointer;
-        transform: translate(-50%, -50%) scale(0.95);
-      }
-      #lukyy-auth.panel-minimized .panel-content { display: none; }
-      #lukyy-auth.panel-minimized .panel-mini-label { display: block; }
+      .panel-content { position: relative; z-index: 1; }
 
-      .panel-mini-label {
-        display: none;
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-        letter-spacing: 2px;
-        color: #a0b4d0;
-        text-align: center;
-        padding: 4px 0;
-      }
-      .panel-mini-label span { color: #7850ff; }
-
-      .panel-content {
-        position: relative;
-        z-index: 1;
-      }
-
-      /* --- BADGE --- */
       .neo-badge {
         display: inline-flex;
         align-items: center;
@@ -488,12 +437,11 @@
         border: 1px solid rgba(120,80,255,0.15);
         backdrop-filter: blur(8px);
         box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
-        transition: all 0.3s ease;
         margin-bottom: 18px;
+        transition: all 0.3s ease;
       }
       .neo-badge-dot {
-        width: 10px;
-        height: 10px;
+        width: 10px; height: 10px;
         border-radius: 50%;
         background: #7850ff;
         box-shadow: 0 0 20px #7850ff, 0 0 40px #7850ff;
@@ -508,7 +456,6 @@
         font-family: 'Space Grotesk', sans-serif;
       }
 
-      /* --- TITLE --- */
       .neo-title {
         font-family: 'Space Grotesk', sans-serif;
         font-size: 40px;
@@ -521,8 +468,8 @@
         margin: 0 0 6px 0;
         filter: drop-shadow(0 0 30px rgba(120,80,255,0.2));
         animation: gradientShift 6s ease infinite;
+        text-align: center;
       }
-
       .neo-quote {
         font-size: 15px;
         font-weight: 500;
@@ -534,9 +481,8 @@
         align-items: center;
         justify-content: center;
         padding: 0 8px;
+        text-align: center;
       }
-
-      /* --- INPUT --- */
       .neo-input-wrapper {
         position: relative;
         width: 100%;
@@ -557,6 +503,7 @@
         transition: all 0.3s ease;
         letter-spacing: 0.5px;
         box-sizing: border-box;
+        text-align: left;
       }
       .neo-input:focus {
         border-color: #7850ff;
@@ -579,7 +526,6 @@
         -webkit-text-fill-color: #ffd700 !important;
         text-shadow: 0 0 20px rgba(255,215,0,0.1);
       }
-
       .neo-input-actions {
         position: absolute;
         right: 14px;
@@ -614,7 +560,6 @@
         box-shadow: 0 0 25px rgba(120,80,255,0.2);
       }
 
-      /* --- BUTTONS --- */
       .neo-btn-primary {
         width: 100%;
         padding: 20px;
@@ -626,20 +571,19 @@
         text-transform: uppercase;
         letter-spacing: 1.5px;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
         position: relative;
         overflow: hidden;
         background: linear-gradient(135deg, #7850ff, #4a2c8a);
         color: #fff;
         box-shadow: 0 15px 45px rgba(120,80,255,0.35);
+        text-align: center;
       }
       .neo-btn-primary::after {
         content: '';
         position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
         background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
         opacity: 0;
         transform: scale(0.5);
@@ -673,6 +617,7 @@
         border: 1px solid rgba(255,255,255,0.04);
         color: #cbd5e1;
         transition: all 0.3s ease;
+        text-align: center;
       }
       .neo-btn-secondary:hover {
         background: rgba(120,80,255,0.08);
@@ -682,7 +627,6 @@
         box-shadow: 0 10px 30px rgba(120,80,255,0.08);
       }
 
-      /* --- STATUS --- */
       .neo-status {
         margin-top: 28px;
         font-size: 12px;
@@ -700,7 +644,6 @@
         text-align: center;
       }
 
-      /* --- PROFILE AVATAR --- */
       .neo-avatar {
         position: absolute;
         top: -26px;
@@ -712,7 +655,7 @@
         border: 2px solid rgba(120,80,255,0.4);
         box-shadow: 0 15px 40px rgba(120,80,255,0.25);
         backdrop-filter: blur(15px);
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
         transform: rotate(-6deg) scale(0.95);
         cursor: pointer;
       }
@@ -721,14 +664,8 @@
         box-shadow: 0 25px 60px rgba(120,80,255,0.45);
         border-color: #7850ff;
       }
-      .neo-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 24px;
-      }
+      .neo-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 24px; }
 
-      /* --- MUSIC BUTTON --- */
       .neo-music-btn {
         position: absolute;
         top: -28px;
@@ -745,7 +682,7 @@
         align-items: center;
         justify-content: center;
         backdrop-filter: blur(15px);
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
         box-shadow: 0 15px 35px rgba(120,80,255,0.15);
         transform: rotate(6deg) scale(0.95);
       }
@@ -756,13 +693,10 @@
         color: #fff;
       }
 
-      /* --- BIODATA OVERLAY --- */
       .neo-biodata {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         border-radius: 40px;
         display: flex;
         flex-direction: column;
@@ -772,10 +706,10 @@
         opacity: 0;
         pointer-events: none;
         transform: scale(0.92) translateY(15px);
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
         padding: 40px 32px;
         box-sizing: border-box;
-        background: rgba(8, 6, 18, 0.94);
+        background: rgba(8,6,18,0.94);
         backdrop-filter: blur(50px);
         -webkit-backdrop-filter: blur(50px);
       }
@@ -810,12 +744,11 @@
         box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);
       }
       .neo-biodata-card strong { color: #7850ff; font-weight: 700; }
-
       .neo-btn-close-bio {
         width: 100%;
-        background: rgba(255, 0, 85, 0.08);
+        background: rgba(255,0,85,0.08);
         color: #ff0055;
-        border: 1px solid rgba(255, 0, 85, 0.15);
+        border: 1px solid rgba(255,0,85,0.15);
         padding: 18px;
         border-radius: 18px;
         font-weight: 800;
@@ -826,6 +759,7 @@
         letter-spacing: 1.5px;
         margin-top: 24px;
         transition: all 0.3s ease;
+        text-align: center;
       }
       .neo-btn-close-bio:hover {
         background: rgba(255,0,85,0.15);
@@ -834,7 +768,6 @@
         box-shadow: 0 10px 30px rgba(255,0,85,0.1);
       }
 
-      /* --- TIMER INFO --- */
       .neo-timer {
         font-size: 13px;
         font-weight: 700;
@@ -849,12 +782,12 @@
         text-align: center;
       }
 
-      /* --- MENU COMMAND CENTER --- */
       .neo-menu-grid {
         display: flex;
         flex-direction: column;
         gap: 14px;
         margin-top: 6px;
+        width: 100%;
       }
       .neo-menu-btn {
         padding: 18px;
@@ -866,20 +799,19 @@
         text-transform: uppercase;
         letter-spacing: 1.2px;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
         position: relative;
         overflow: hidden;
         box-shadow: 0 8px 30px rgba(0,0,0,0.2);
         color: #fff;
         text-align: center;
+        width: 100%;
       }
       .neo-menu-btn::after {
         content: '';
         position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
         background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
         opacity: 0;
         transform: scale(0.5);
@@ -893,15 +825,14 @@
       .neo-menu-btn.proxy { background: linear-gradient(135deg, #0055ff, #0033aa); color: #fff; }
       .neo-menu-btn.vipteam { background: linear-gradient(135deg, #ff00ea, #8a2be2); color: #fff; }
       .neo-menu-btn.universal { background: linear-gradient(135deg, #00cc88, #008855); color: #fff; }
-
       .neo-menu-btn.premium-gold { background: linear-gradient(135deg, #ffd700, #f7971e); color: #000; }
 
-      /* --- SPEED SELECTION --- */
       .neo-speed-grid {
         display: flex;
         flex-direction: column;
         gap: 14px;
         margin-top: 6px;
+        width: 100%;
       }
       .neo-speed-btn {
         padding: 18px;
@@ -917,6 +848,7 @@
         background: rgba(255,255,255,0.02);
         color: #cbd5e1;
         text-align: center;
+        width: 100%;
       }
       .neo-speed-btn:hover {
         transform: translateY(-3px) scale(1.02);
@@ -929,13 +861,10 @@
       .neo-speed-btn.slow { border-color: rgba(255,0,85,0.2); color: #ff0055; }
       .neo-speed-btn.slow:hover { background: rgba(255,0,85,0.06); border-color: rgba(255,0,85,0.4); }
 
-      /* --- BACK BUTTON --- */
       .neo-back-btn {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 40px;
-        height: 40px;
+        top: 0; left: 0;
+        width: 40px; height: 40px;
         border-radius: 14px;
         background: rgba(255,255,255,0.03);
         border: 1px solid rgba(255,255,255,0.04);
@@ -954,7 +883,6 @@
         transform: scale(1.05);
       }
 
-      /* --- UNIVERSAL INPUT --- */
       .neo-uni-input {
         width: 100%;
         padding: 18px 24px;
@@ -968,19 +896,17 @@
         box-sizing: border-box;
         outline: none;
         transition: all 0.3s ease;
+        text-align: left;
       }
       .neo-uni-input:focus {
         border-color: #00cc88;
         box-shadow: 0 0 40px rgba(0,204,136,0.15);
       }
 
-      /* --- COUNTDOWN OVERLAY --- */
       .neo-countdown-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background: radial-gradient(ellipse at center, rgba(8,6,18,0.95), rgba(0,0,0,0.98));
         z-index: 2147483647;
         display: flex;
@@ -1002,8 +928,7 @@
         overflow: hidden;
       }
       .neo-countdown-circle {
-        width: 140px;
-        height: 140px;
+        width: 140px; height: 140px;
         border-radius: 50%;
         border: 3px solid #7850ff;
         background: rgba(0,0,0,0.6);
@@ -1034,7 +959,6 @@
         font-weight: 500;
       }
 
-      /* --- ANIMATIONS --- */
       @keyframes neonPulse {
         0%, 100% { box-shadow: 0 0 20px #7850ff, 0 0 40px #7850ff; }
         50% { box-shadow: 0 0 40px #7850ff, 0 0 80px #7850ff; }
@@ -1051,7 +975,6 @@
       }
       .shake-error { animation: shake 0.5s ease-in-out !important; border-color: #ff0055 !important; box-shadow: 0 0 40px rgba(255,0,85,0.5) !important; }
 
-      /* responsive */
       @media (max-width: 500px) {
         #lukyy-auth { padding: 30px 20px 24px; border-radius: 32px; }
         .neo-title { font-size: 32px; }
@@ -1063,8 +986,8 @@
     `;
     document.head.appendChild(style);
 
-    // --- BUILD MAIN PANEL ---
-    const randomQuote = _0x439d89.quotesList[Math.floor(Math.random() * _0x439d89.quotesList.length)];
+    // --- BUILD PANEL ---
+    const quote = CONFIG.quotesList[Math.floor(Math.random() * CONFIG.quotesList.length)];
 
     const panel = document.createElement("div");
     panel.id = "lukyy-auth";
@@ -1073,7 +996,6 @@
         <div class="neo-avatar" id="profile-trigger" title="Profil Owner">
           <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
         </div>
-
         <button id="music-btn" class="neo-music-btn" title="Play / Pause / Skip">🎵</button>
 
         <div style="text-align:center; margin-bottom:24px;">
@@ -1082,7 +1004,7 @@
             <span class="neo-badge-text" id="badge-text">SYSTEM STANDBY</span>
           </div>
           <h1 class="neo-title">LUKYYPLR</h1>
-          <div class="neo-quote" id="quote-display">${randomQuote}</div>
+          <div class="neo-quote" id="quote-display">${quote}</div>
           <div id="premium-timer-info" class="neo-timer"></div>
         </div>
 
@@ -1094,14 +1016,12 @@
               <button id="auto-paste-btn" class="neo-icon-btn" title="Auto Paste">📋</button>
             </div>
           </div>
-
           <div id="interactive-area" style="margin-bottom:18px;">
             <button id="login-btn" class="neo-btn-primary">⚡ Unlock Dashboard</button>
           </div>
         </div>
 
         <button id="support-btn" class="neo-btn-secondary">💬 Join Telegram Circle</button>
-
         <div id="status-msg" class="neo-status">⚙️ WONG_PUSAT_STANDBY</div>
       </div>
 
@@ -1115,12 +1035,10 @@
         </div>
         <button id="close-biodata-btn" class="neo-btn-close-bio">✖ Close Profile</button>
       </div>
-
-      <div class="panel-mini-label">⏺ <span>LUKYYPLR</span> · minimized</div>
     `;
     document.body.appendChild(panel);
 
-    // --- ELEMENTS REFS ---
+    // --- ELEMENTS ---
     const musicBtn = document.getElementById("music-btn");
     const keyInput = document.getElementById("key-input");
     const loginBtn = document.getElementById("login-btn");
@@ -1131,49 +1049,37 @@
     const closeBiodataBtn = document.getElementById("close-biodata-btn");
     const autoPasteBtn = document.getElementById("auto-paste-btn");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
-    const panelContent = panel.querySelector(".panel-content");
 
-    // minimize toggle (double click panel)
-    let minimizeTimeout = null;
-    panel.addEventListener("dblclick", () => {
-      isPanelMinimized = !isPanelMinimized;
-      if (isPanelMinimized) {
-        panel.classList.add("panel-minimized");
-      } else {
-        panel.classList.remove("panel-minimized");
-      }
-    });
-
-    // --- EVENT BINDINGS ---
+    // --- EVENTS ---
     profileTrigger.addEventListener("click", () => biodataPanel.classList.add("active"));
     closeBiodataBtn.addEventListener("click", () => biodataPanel.classList.remove("active"));
 
     musicBtn.addEventListener("click", () => {
-      if (currentUserTier === "premium") { console.log("[🎵 VIP] Melewati lagu..."); _0x58cd45(); return; }
-      if (!_0x3e130f) { _0x58cd45(); musicBtn.textContent = "🎵"; return; }
-      if (_0x3e130f.paused) {
-        _0x3e130f.play().catch(() => {});
-        if(audioContext && audioContext.state === "suspended") audioContext.resume();
+      if (userTier === "premium") { playRandomMusic(); return; }
+      if (!audioPlayer) { playRandomMusic(); musicBtn.textContent = "🎵"; return; }
+      if (audioPlayer.paused) {
+        audioPlayer.play().catch(() => {});
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
         musicBtn.textContent = "🎵";
       } else {
-        _0x3e130f.pause();
+        audioPlayer.pause();
         musicBtn.textContent = "🔇";
       }
     });
 
-    supportBtn.addEventListener("click", () => window.open(_0x439d89.telegramUrl, "_blank"));
+    supportBtn.addEventListener("click", () => window.open(CONFIG.telegramUrl, "_blank"));
 
     toggleVisibilityBtn.addEventListener("click", () => {
       if (keyInput.type === "password") {
         keyInput.type = "text";
         toggleVisibilityBtn.textContent = "🙈";
         toggleVisibilityBtn.title = "Sembunyikan Key";
-        if (currentUserTier === "premium") keyInput.value = "👑 VIP: " + originalPremiumKeyRaw;
+        if (userTier === "premium") keyInput.value = "👑 VIP: " + rawPremiumKey;
       } else {
         keyInput.type = "password";
         toggleVisibilityBtn.textContent = "👁️";
         toggleVisibilityBtn.title = "Lihat Key";
-        if (currentUserTier === "premium") keyInput.value = originalPremiumKeyRaw;
+        if (userTier === "premium") keyInput.value = rawPremiumKey;
       }
     });
 
@@ -1194,8 +1100,8 @@
       }
     });
 
-    // --- LOCK DASHBOARD MENU (after login) ---
-    function lockDashboardMenu(formattedWIB) {
+    // --- LOCK DASHBOARD ---
+    function lockDashboard(formattedWIB) {
       const keyInput = document.getElementById("key-input");
       const autoPasteBtn = document.getElementById("auto-paste-btn");
       const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
@@ -1204,9 +1110,9 @@
 
       if (keyInput) {
         keyInput.type = "password";
-        keyInput.value = originalPremiumKeyRaw;
+        keyInput.value = rawPremiumKey;
         keyInput.disabled = true;
-        if (currentUserTier === "premium") {
+        if (userTier === "premium") {
           keyInput.style.cssText += "background: rgba(255,215,0,0.04) !important; color: #ffd700 !important; border-color: rgba(255,215,0,0.2) !important;";
         } else {
           keyInput.style.cssText += "background: rgba(120,80,255,0.04) !important; color: #7850ff !important; border-color: rgba(120,80,255,0.2) !important;";
@@ -1217,7 +1123,7 @@
       if (timerInfo) {
         timerInfo.innerText = `⏳ EXPIRED: ${formattedWIB}`;
         timerInfo.style.display = "block";
-        if (currentUserTier !== "premium") {
+        if (userTier !== "premium") {
           timerInfo.style.color = "#7850ff";
           timerInfo.style.background = "rgba(120,80,255,0.04)";
           timerInfo.style.borderColor = "rgba(120,80,255,0.08)";
@@ -1225,33 +1131,32 @@
       }
 
       if (interactiveArea) {
-        let btnClass = currentUserTier === "premium" ? "neo-menu-btn premium-gold" : "neo-menu-btn aincrad";
-        let label = currentUserTier === "premium" ? "🏰 Access Menu Bypass" : "🏰 Access Menu Bypass";
-        interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="${btnClass}">${label}</button>`;
+        const btnClass = userTier === "premium" ? "neo-menu-btn premium-gold" : "neo-menu-btn aincrad";
+        interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="${btnClass}" style="width:100%;">🏰 Access Menu Bypass</button>`;
         document.getElementById("open-aincrad-btn").addEventListener("click", () => {
-          if (currentUserTier === "premium") showMainOptionsPanel();
-          else triggerAincradExecutionFlow(60, "2");
+          if (userTier === "premium") showMainMenu();
+          else triggerExecution(60, "2");
         });
       }
     }
 
-    // --- SHOW MAIN OPTIONS PANEL (Command Center) ---
-    function showMainOptionsPanel() {
-      isReactiveRunning = false;
+    // --- MAIN MENU (Command Center) ---
+    function showMainMenu() {
+      isReactive = false;
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
-      let titleGrad = currentUserTier === "premium"
+      const titleGrad = userTier === "premium"
         ? "linear-gradient(135deg, #ffd700, #f7971e)"
         : "linear-gradient(135deg, #7850ff, #4a2c8a)";
 
       container.innerHTML = `
-        <div style="position:relative;">
+        <div style="position:relative; width:100%;">
           <button id="mini-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
           <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:900; background:${titleGrad}; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; filter: drop-shadow(0 0 20px rgba(0,0,0,0.3));">COMMAND CENTER</h3>
           <p style="font-size:14px; margin-bottom:24px; text-align:center; font-weight:500; color:#94a3b8;">Pilih target eksekusi bypass</p>
           <div class="neo-menu-grid">
-            <button class="neo-menu-btn aincrad" data-target="2">🏰 Aincrad Protocol</button>
+            <button class="neo-menu-btn aincrad" data-target="2">🏰 Aincrad</button>
             <button class="neo-menu-btn proxy" data-target="1">🌐 Aincrad Proxy</button>
             <button class="neo-menu-btn vipteam" data-target="vp">💎 VIP Team Byps</button>
             <button class="neo-menu-btn universal" data-target="uni_vp">🌍 Universal Vplink</button>
@@ -1259,30 +1164,27 @@
         </div>
       `;
 
-      document.getElementById("mini-back-btn").addEventListener("click", () => {
-        location.reload();
-      });
+      document.getElementById("mini-back-btn").addEventListener("click", () => location.reload());
 
       container.querySelectorAll(".neo-menu-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const target = btn.dataset.target;
-          if (target === "uni_vp") {
-            showUniversalVplinkPanel();
-          } else {
-            if (currentUserTier === "premium") showAincradSpeedPanel(target);
-            else triggerAincradExecutionFlow(60, target);
+          if (target === "uni_vp") showUniversalPanel();
+          else {
+            if (userTier === "premium") showSpeedPanel(target);
+            else triggerExecution(60, target);
           }
         });
       });
     }
 
     // --- UNIVERSAL VPLINK PANEL ---
-    function showUniversalVplinkPanel() {
+    function showUniversalPanel() {
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
       container.innerHTML = `
-        <div style="position:relative;">
+        <div style="position:relative; width:100%;">
           <button id="uni-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
           <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,#00cc88,#008855); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center;">UNIVERSAL VPLINK</h3>
           <p style="font-size:14px; margin-bottom:22px; text-align:center; font-weight:500; color:#94a3b8;">Paste link vplink.in di bawah</p>
@@ -1292,46 +1194,46 @@
         </div>
       `;
 
-      document.getElementById("uni-back-btn").addEventListener("click", showMainOptionsPanel);
+      document.getElementById("uni-back-btn").addEventListener("click", showMainMenu);
 
-      const inputField = document.getElementById("uni-vplink-input");
-      inputField.addEventListener("focus", () => {
-        inputField.style.border = "1px solid #00cc88";
-        inputField.style.boxShadow = "0 0 30px rgba(0,204,136,0.15)";
+      const input = document.getElementById("uni-vplink-input");
+      input.addEventListener("focus", () => {
+        input.style.border = "1px solid #00cc88";
+        input.style.boxShadow = "0 0 30px rgba(0,204,136,0.15)";
       });
-      inputField.addEventListener("blur", () => {
-        inputField.style.border = "1px solid rgba(255,255,255,0.06)";
-        inputField.style.boxShadow = "none";
+      input.addEventListener("blur", () => {
+        input.style.border = "1px solid rgba(255,255,255,0.06)";
+        input.style.boxShadow = "none";
       });
 
       document.getElementById("uni-submit-btn").addEventListener("click", () => {
-        const val = inputField.value.trim();
+        const val = input.value.trim();
         const err = document.getElementById("uni-error-msg");
         if (!val.includes("vplink.in")) {
           err.innerText = "Target invalid! Kudu vplink.in cuy.";
           err.style.display = "block";
-          inputField.style.border = "1px solid #ff0055";
+          input.style.border = "1px solid #ff0055";
           return;
         }
         const vpKey = extractVpKey(val);
         if (!vpKey) {
           err.innerText = "Gagal ekstrak key, cek format link.";
           err.style.display = "block";
-          inputField.style.border = "1px solid #ff0055";
+          input.style.border = "1px solid #ff0055";
           return;
         }
-        if (currentUserTier === "premium") showAincradSpeedPanel("uni_vp", vpKey);
-        else triggerAincradExecutionFlow(60, "uni_vp", vpKey);
+        if (userTier === "premium") showSpeedPanel("uni_vp", vpKey);
+        else triggerExecution(60, "uni_vp", vpKey);
       });
     }
 
-    // --- SPEED SELECTION PANEL (VIP) ---
-    function showAincradSpeedPanel(targetType, customVpKey = null) {
+    // --- SPEED PANEL (VIP) ---
+    function showSpeedPanel(targetType, customVpKey = null) {
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
       container.innerHTML = `
-        <div style="position:relative;">
+        <div style="position:relative; width:100%;">
           <button id="speed-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
           <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,#ffd700,#f7971e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center;">VELOCITY SPEED</h3>
           <p style="font-size:14px; margin-bottom:24px; text-align:center; font-weight:500; color:#94a3b8;">Atur kecepatan injeksi</p>
@@ -1343,34 +1245,34 @@
         </div>
       `;
 
-      document.getElementById("speed-back-btn").addEventListener("click", showMainOptionsPanel);
+      document.getElementById("speed-back-btn").addEventListener("click", showMainMenu);
 
       container.querySelectorAll(".neo-speed-btn").forEach(btn => {
         btn.addEventListener("click", () => {
           const sec = parseInt(btn.dataset.sec, 10);
-          triggerAincradExecutionFlow(sec, targetType, customVpKey);
+          triggerExecution(sec, targetType, customVpKey);
         });
       });
     }
 
-    // --- COUNTDOWN / EXECUTION FLOW ---
-    async function triggerAincradExecutionFlow(selectedSeconds, targetType, customVpKey = null) {
-      const mainPanel = document.getElementById("lukyy-auth");
-      if (mainPanel) mainPanel.remove();
+    // --- EXECUTION (COUNTDOWN) ---
+    async function triggerExecution(seconds, targetType, customVpKey = null) {
+      const panel = document.getElementById("lukyy-auth");
+      if (panel) panel.remove();
 
       const overlay = document.createElement("div");
       overlay.className = "neo-countdown-overlay";
       overlay.id = "lukyy-countdown";
-      
-      let borderColor = currentUserTier === "premium" ? "#ffd700" : "#7850ff";
-      let numColor = currentUserTier === "premium" ? "#ffd700" : "#7850ff";
+
+      let borderColor = userTier === "premium" ? "#ffd700" : "#7850ff";
+      let numColor = userTier === "premium" ? "#ffd700" : "#7850ff";
 
       overlay.innerHTML = `
         <div class="neo-countdown-card">
           <canvas id="lukyy-lava-canvas" width="400" height="440" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.3;pointer-events:none;"></canvas>
           <div style="position:relative;z-index:2;">
             <div class="neo-countdown-circle" id="countdown-container">
-              <span id="countdown-text">${selectedSeconds}</span>
+              <span id="countdown-text">${seconds}</span>
             </div>
             <p class="neo-countdown-text" id="lukyy-check-text">Injecting Payload...</p>
             <p class="neo-countdown-sub">Biarin kita memasak di dapur 🍳🔥</p>
@@ -1379,7 +1281,7 @@
       `;
       document.body.appendChild(overlay);
 
-      if (audioContext && audioContext.state === "suspended") audioContext.resume();
+      if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
 
       const countdownText = document.getElementById("countdown-text");
       const checkText = document.getElementById("lukyy-check-text");
@@ -1387,15 +1289,12 @@
       const canvas = document.getElementById("lukyy-lava-canvas");
       const ctx = canvas.getContext("2d");
 
-      let isTimerRunning = true;
+      let isRunning = true;
       let vpKey = customVpKey;
-      let apiTargetType = targetType;
+      let apiType = targetType;
 
-      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") {
-        apiTargetType = "vp";
-      }
+      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") apiType = "vp";
 
-      // Extraction for vplink targets
       if (targetType === "vp") {
         checkText.innerText = "Scanning vplink.in... 🔍";
         const vpUrl = extractVpLinkUrl();
@@ -1414,28 +1313,23 @@
         countdownText.innerText = "!";
         countdownText.style.color = "#ff0055";
         countdownContainer.style.borderColor = "#ff0055";
-        isTimerRunning = false;
+        isRunning = false;
         setTimeout(() => {
           overlay.remove();
           document.body.appendChild(panel);
-          showMainOptionsPanel();
+          showMainMenu();
         }, 3500);
         return;
       }
-      if (vpKey) {
-        checkText.innerText = `Key Acquired: ${vpKey.substring(0,8)}... 🔥`;
-      }
+      if (vpKey) checkText.innerText = `Key Acquired: ${vpKey.substring(0,8)}... 🔥`;
 
-      // Start fetching in background
-      let finalRedirectUrl = _0x439d89.fallbackRedirectUrl;
-      fetchDestinationUrl(apiTargetType, 1, vpKey).then(fetchedUrl => {
-        finalRedirectUrl = fetchedUrl;
-      }).catch(err => console.error("API Error:", err));
+      let finalUrl = CONFIG.fallbackRedirectUrl;
+      fetchDestination(apiType, 1, vpKey).then(url => { finalUrl = url; }).catch(() => {});
 
-      let timeLeft = selectedSeconds;
+      let timeLeft = seconds;
       let globs = [];
-      let lavaHue = currentUserTier === "premium" ? 45 : 240;
-      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") lavaHue = 300;
+      let hue = userTier === "premium" ? 45 : 240;
+      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") hue = 300;
 
       for (let i = 0; i < 14; i++) {
         globs.push({
@@ -1444,28 +1338,27 @@
           baseY: canvas.height + (Math.random() * 120),
           r: Math.random() * 32 + 14,
           speed: Math.random() * 0.7 + 0.2,
-          color: `hsla(${Math.random() * 30 + lavaHue}, 100%, 55%, 0.6)`,
+          color: `hsla(${Math.random() * 30 + hue}, 100%, 55%, 0.6)`,
           phase: Math.random() * Math.PI * 2
         });
       }
 
       function renderLava() {
-        if (!isTimerRunning) return;
+        if (!isRunning) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let audioIntensity = 0;
-        let bassIntensity = 0;
-        if (audioAnalyser && audioDataArray) {
-          audioAnalyser.getByteFrequencyData(audioDataArray);
+        let audioIntensity = 0, bassIntensity = 0;
+        if (audioAnalyser && audioData) {
+          audioAnalyser.getByteFrequencyData(audioData);
           let sum = 0;
-          for (let i = 0; i < audioDataArray.length; i++) sum += audioDataArray[i];
-          audioIntensity = sum / audioDataArray.length;
+          for (let i = 0; i < audioData.length; i++) sum += audioData[i];
+          audioIntensity = sum / audioData.length;
           let bSum = 0;
-          for (let i = 0; i < 8; i++) bSum += audioDataArray[i];
+          for (let i = 0; i < 8; i++) bSum += audioData[i];
           bassIntensity = bSum / 8;
 
           let scaleVal = 1.0 + (bassIntensity / 255) * 0.15;
           let glowVal = 20 + (bassIntensity / 255) * 40;
-          let glowC = currentUserTier === "premium" ? "255,215,0" : "120,80,255";
+          let glowC = userTier === "premium" ? "255,215,0" : "120,80,255";
           if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") glowC = "255,0,234";
           countdownContainer.style.transform = `scale(${scaleVal})`;
           countdownContainer.style.boxShadow = `0 0 ${glowVal}px rgba(${glowC},${0.3 + (bassIntensity/255)*0.5}), inset 0 0 40px rgba(0,0,0,0.8)`;
@@ -1490,51 +1383,47 @@
       }
       requestAnimationFrame(renderLava);
 
-      const timerInterval = setInterval(() => {
+      const timer = setInterval(() => {
         timeLeft--;
         if (countdownText) countdownText.innerText = timeLeft;
         if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          isTimerRunning = false;
-          executeFinalRedirect();
+          clearInterval(timer);
+          isRunning = false;
+          countdownText.innerText = "✓";
+          countdownText.style.color = "#00ff88";
+          countdownContainer.style.borderColor = "#00ff88";
+          checkText.innerText = "BYPASS SUCCESS 🔥";
+          checkText.style.color = "#00ff88";
+          setTimeout(() => {
+            overlay.remove();
+            redirectTo(finalUrl);
+          }, 1500);
         }
       }, 1000);
-
-      function executeFinalRedirect() {
-        countdownText.innerText = "✓";
-        countdownText.style.color = "#00ff88";
-        countdownContainer.style.borderColor = "#00ff88";
-        checkText.innerText = "BYPASS SUCCESS 🔥";
-        checkText.style.color = "#00ff88";
-        setTimeout(() => {
-          overlay.remove();
-          fakeVisualizer(finalRedirectUrl);
-        }, 1500);
-      }
     }
 
     // --- KEY VERIFICATION ---
-    async function processKeyVerification(rawKey, isAutoLogin = false) {
-      const inputKeyClean = rawKey.trim();
-      originalPremiumKeyRaw = inputKeyClean;
+    async function verifyKey(rawKey, isAuto = false) {
+      const clean = rawKey.trim();
+      rawPremiumKey = clean;
 
       try {
-        const response = await fetch(`${_0x439d89.keyUrl}?key=${encodeURIComponent(inputKeyClean)}`);
-        const result = await response.json();
+        const resp = await fetch(`${CONFIG.keyUrl}?key=${encodeURIComponent(clean)}`);
+        const result = await resp.json();
 
-        if (response.ok && result.status === "success") {
-          currentUserTier = result.type ? result.type.toLowerCase().trim() : "biasa";
-          localStorage.setItem("lukyy_saved_key", inputKeyClean);
-          if (keyInput) keyInput.value = inputKeyClean;
+        if (resp.ok && result.status === "success") {
+          userTier = result.type ? result.type.toLowerCase().trim() : "biasa";
+          localStorage.setItem("lukyy_saved_key", clean);
+          if (keyInput) keyInput.value = clean;
 
-          let formattedWIB = "LIFETIME / PERMANENT";
+          let formatted = "LIFETIME / PERMANENT";
           if (result.expiry && result.expiry !== "permanent" && !isNaN(result.expiry)) {
-            const expiryDate = new Date(Number(result.expiry));
+            const d = new Date(Number(result.expiry));
             const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
-            formattedWIB = `${expiryDate.getDate()} ${months[expiryDate.getMonth()]} ${expiryDate.getFullYear()} | ${String(expiryDate.getHours()).padStart(2, '0')}:${String(expiryDate.getMinutes()).padStart(2, '0')} WIB`;
+            formatted = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} | ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} WIB`;
           }
 
-          if (currentUserTier === "premium") {
+          if (userTier === "premium") {
             document.getElementById("badge-text").innerText = "👑 VIP SYSTEM ACTIVE";
             document.getElementById("badge-dot").style.background = "#ffd700";
             document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
@@ -1544,21 +1433,21 @@
             statusMsg.style.background = "rgba(255,215,0,0.03)";
             musicBtn.textContent = "⏭️";
 
-            showCustomModal(
+            showModal(
               "👑 SEPUH DETECTED",
-              `Welcome back Wong Pusat!\n\nExpired: ${formattedWIB}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
+              `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
               "👑",
-              () => lockDashboardMenu(formattedWIB)
+              () => lockDashboard(formatted)
             );
           } else {
             statusMsg.innerText = "✅ STANDARD KEY OK!";
             statusMsg.style.color = "#7850ff";
-            createParticles("success");
-            showCustomModal(
+            spawnParticles("success");
+            showModal(
               "⚡ ACCESS GRANTED",
-              `Key Biasa Valid.\n\nExpired: ${formattedWIB}\n\n🚀 Default Auto Redirect (60s)`,
+              `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🚀 Default Auto Redirect (60s)`,
               "⚡",
-              () => lockDashboardMenu(formattedWIB)
+              () => lockDashboard(formatted)
             );
           }
         } else {
@@ -1567,28 +1456,28 @@
           statusMsg.style.color = "#ff0055";
           statusMsg.style.borderColor = "rgba(255,0,85,0.12)";
           statusMsg.style.background = "rgba(255,0,85,0.03)";
-          createParticles("error");
+          spawnParticles("error");
           if (keyInput) {
             keyInput.classList.add("shake-error");
             setTimeout(() => keyInput.classList.remove("shake-error"), 500);
           }
         }
       } catch (err) {
-        console.error("[✗] API Vercel error:", err);
+        console.error("[✗] API error:", err);
         statusMsg.innerText = "❌ SERVER CONNECTION FAILED!";
         statusMsg.style.color = "#ff0055";
-        createParticles("error");
+        spawnParticles("error");
         loginBtn.disabled = supportBtn.disabled = true;
       }
     }
 
-    // --- LOGIN CLICK ---
+    // --- LOGIN ---
     loginBtn.addEventListener("click", async () => {
-      const inputVal = keyInput.value.trim();
-      if (!inputVal) {
+      const val = keyInput.value.trim();
+      if (!val) {
         statusMsg.innerText = "🛑 KEY KOSONG CUY!";
         statusMsg.style.color = "#ff0055";
-        createParticles("error");
+        spawnParticles("error");
         keyInput.classList.add("shake-error");
         setTimeout(() => keyInput.classList.remove("shake-error"), 500);
         return;
@@ -1597,19 +1486,19 @@
       statusMsg.style.color = "#7850ff";
       loginBtn.disabled = supportBtn.disabled = true;
 
-      setTimeout(() => processKeyVerification(inputVal, false), 1200);
+      setTimeout(() => verifyKey(val, false), 1200);
     });
 
-    // --- AUTO LOAD SAVED KEY ---
-    const savedKey = localStorage.getItem("lukyy_saved_key");
-    if (savedKey) {
-      keyInput.value = savedKey;
+    // --- AUTO LOAD ---
+    const saved = localStorage.getItem("lukyy_saved_key");
+    if (saved) {
+      keyInput.value = saved;
       statusMsg.innerText = "💾 SAVED KEY LOADED. CLICK UNLOCK!";
       statusMsg.style.color = "#ff8c00";
     }
 
-    // start music
-    _0x58cd45();
+    // --- START MUSIC ---
+    playRandomMusic();
 
   })();
 })();
