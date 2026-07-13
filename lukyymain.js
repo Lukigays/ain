@@ -130,11 +130,13 @@
 
   // --- TOTP & API SYSTEM INTEGRATION ---
   class TOTPGenerator {
-    constructor(secret {
+    constructor(secret) {
       this.secret = secret;
       this.timeStep = 30;
       this.digits = 6;
+      this._checkCrypto();
     }
+      
     _sha1(data) {
       function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
       let h0 = 1732584193, h1 = 4023233417, h2 = 2562383102, h3 = 271733878, h4 = 3285377520;
