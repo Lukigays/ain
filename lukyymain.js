@@ -47,6 +47,7 @@
   let isReactive = true;
   let userTier = "biasa";
   let rawPremiumKey = "";
+  let isMusicPlaying = false; // status musik
 
   // ============================================================
   // SOUND EFFECT (Web Audio API)
@@ -58,7 +59,6 @@
       const now = ctx.currentTime;
 
       if (type === 'success') {
-        // dua nada pendek positif: 880Hz, 1100Hz
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();
         osc1.type = 'sine';
@@ -82,7 +82,6 @@
         osc2.stop(now + 0.3);
       } 
       else if (type === 'error') {
-        // nada rendah panjang (buzzer)
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
@@ -95,7 +94,6 @@
         osc.stop(now + 0.5);
       } 
       else if (type === 'bypass_done') {
-        // nada naik (ascending)
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -109,7 +107,7 @@
         osc.stop(now + 0.35);
       }
     } catch (e) {
-      // Silent fail if audio context not supported
+      // Silent fail
     }
   }
 
@@ -337,7 +335,10 @@
     audioPlayer.loop = false;
     audioPlayer.volume = 1.0;
     audioPlayer.onended = playRandomMusic;
-    audioPlayer.play().then(() => initAudioVisualizer()).catch(() => {});
+    audioPlayer.play().then(() => {
+      isMusicPlaying = true;
+      initAudioVisualizer();
+    }).catch(() => {});
   }
 
   function initAudioVisualizer() {
@@ -892,7 +893,7 @@
       }
       .holo-uni-input:focus { border-color: #00cc88; box-shadow: 0 0 40px rgba(0,204,136,0.1); }
 
-      /* LOADING OVERLAY - spinner holografik + progress */
+      /* LOADING OVERLAY */
       .holo-loader-overlay {
         position: fixed;
         top: 0; left: 0;
@@ -1068,7 +1069,7 @@
         <div class="holo-avatar" id="profile-trigger">
           <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
         </div>
-        <button class="holo-music" id="music-btn" title="Play/Pause/Skip">🎵</button>
+        <button class="holo-music" id="music-btn" title="Play/Pause/Skip">🔇</button>
 
         <div style="text-align:center; margin-top:14px;">
           <div class="holo-badge" id="system-badge">
@@ -1126,16 +1127,24 @@
     profileTrigger.addEventListener("click", () => biodataPanel.classList.add("active"));
     closeBiodataBtn.addEventListener("click", () => biodataPanel.classList.remove("active"));
 
+    // === MUSIC BUTTON - TIDAK PLAY OTOMATIS ===
     musicBtn.addEventListener("click", () => {
-      if (userTier === "premium") { playRandomMusic(); return; }
-      if (!audioPlayer) { playRandomMusic(); musicBtn.textContent = "🎵"; return; }
+      if (!audioPlayer) {
+        // pertama kali ditekan, mulai musik
+        playRandomMusic();
+        musicBtn.textContent = "🎵";
+        return;
+      }
+      // jika sudah ada, toggle play/pause
       if (audioPlayer.paused) {
         audioPlayer.play().catch(() => {});
         if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
         musicBtn.textContent = "🎵";
+        isMusicPlaying = true;
       } else {
         audioPlayer.pause();
         musicBtn.textContent = "🔇";
+        isMusicPlaying = false;
       }
     });
 
@@ -1172,8 +1181,7 @@
       }
     });
 
-    // --- UI FUNCTIONS ---
-
+    // --- UI FUNCTIONS (sama seperti sebelumnya) ---
     function lockDashboard(formattedWIB) {
       const keyInput = document.getElementById("key-input");
       const autoPasteBtn = document.getElementById("auto-paste-btn");
@@ -1411,7 +1419,7 @@
           statusEl.innerText = "SUCCESS ✓";
           statusEl.style.color = "#00ff88";
           subEl.innerText = "Bypass berhasil, mengarahkan...";
-          playSound('bypass_done'); // <--- SOUND BYPASS DONE
+          playSound('bypass_done');
           setTimeout(() => {
             overlay.remove();
             redirectTo(finalUrl);
@@ -1459,7 +1467,7 @@
             statusMsg.style.background = "rgba(255,215,0,0.03)";
             musicBtn.textContent = "⏭️";
 
-            playSound('success'); // <--- SOUND SUCCESS
+            playSound('success');
             showHoloModal(
               "👑 SEPUH DETECTED",
               `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
@@ -1469,7 +1477,7 @@
           } else {
             statusMsg.innerText = "✅ STANDARD KEY OK!";
             statusMsg.style.color = "#00f0ff";
-            playSound('success'); // <--- SOUND SUCCESS
+            playSound('success');
             showHoloModal(
               "⚡ ACCESS GRANTED",
               `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🚀 Default Auto Redirect (60s)`,
@@ -1483,7 +1491,7 @@
           statusMsg.style.color = "#ff0055";
           statusMsg.style.borderColor = "rgba(255,0,85,0.12)";
           statusMsg.style.background = "rgba(255,0,85,0.03)";
-          playSound('error'); // <--- SOUND ERROR
+          playSound('error');
           if (keyInput) {
             keyInput.classList.add("shake-error");
             setTimeout(() => keyInput.classList.remove("shake-error"), 500);
@@ -1524,8 +1532,7 @@
       statusMsg.style.color = "#ff8c00";
     }
 
-    // --- START MUSIC & PARTICLES ---
-    playRandomMusic();
+    // --- START PARTICLES ONLY (MUSIK TIDAK PLAY OTOMATIS) ---
     initCyberParticles();
   }
 
