@@ -6,17 +6,14 @@
     return;
   }
 
-  // --- CONFIGURATION SETUP ---
+  // --- CONFIGURATION ---
   const _0x439d89 = {
     keyUrl: "https://database-nine-flax.vercel.app/getkeys",
     validKeys: null,
-
-    // API AINCRAD BARU
     apiBaseUrl: "https://lol.a2mbd3.workers.dev",
     apiKey: "abdullah",
     totpSecret: "6ZQ4X3VPEK5XG2Q",
     fallbackRedirectUrl: "https://raw.githubusercontent.com/Lukigays/ain/main/index.html",
-
     telegramUrl: "https://t.me/lukyyarch",
     musicList: [
       "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(1).mp3",
@@ -49,8 +46,9 @@
   let isReactiveRunning = true;
   let currentUserTier = "biasa";
   let originalPremiumKeyRaw = "";
+  let isPanelMinimized = false;
 
-  // --- VIP TEAM EXTRACTOR MODULE ---
+  // --- UTILITY FUNCTIONS (SAME AS ORIGINAL) ---
   function extractVpLinkUrl() {
     try {
       const aTags = document.querySelectorAll("a");
@@ -86,7 +84,6 @@
     }
   }
 
-  // --- POWERCHEATS EXTRACTOR MODULE ---
   function extractPowerCheatsUrl() {
     try {
       const href = window.location.href;
@@ -128,7 +125,7 @@
     }
   }
 
-  // --- TOTP & API SYSTEM INTEGRATION ---
+  // --- TOTP & API (SAME AS ORIGINAL) ---
   class TOTPGenerator {
     constructor(secret) {
       this.secret = secret;
@@ -268,8 +265,8 @@
     if (attempt < 3) return fetchDestinationUrl(type, attempt + 1, vpKey);
     return _0x439d89.fallbackRedirectUrl;
   }
-  // --- END OF API SYSTEM ---
 
+  // --- MUSIC & VISUALIZER (SAME) ---
   function _0x58cd45() {
     const randomIndex = Math.floor(Math.random() * _0x439d89.musicList.length);
     const chosenMusic = _0x439d89.musicList[randomIndex];
@@ -316,12 +313,12 @@
       const mainPanel = document.getElementById("lukyy-auth");
 
       if (keyInput && document.activeElement !== keyInput && !keyInput.classList.contains("shake-error")) { 
-        let glowColor = currentUserTier === "premium" ? "255, 215, 0" : "0, 243, 255"; 
+        let glowColor = currentUserTier === "premium" ? "255, 215, 0" : "120, 80, 255"; 
         keyInput.style.borderColor = `rgba(${glowColor}, ${borderOpacity})`;
         keyInput.style.boxShadow = `0 0 ${glowRadius}px rgba(${glowColor}, ${(bassIntensity / 255) * 0.4}), inset 0 2px 10px rgba(0,0,0,0.5)`;
       }
       if (mainPanel && !mainPanel.classList.contains("panel-minimized")) {
-        let shadowColor = currentUserTier === "premium" ? "255, 215, 0, 0.2" : "0, 243, 255, 0.2";
+        let shadowColor = currentUserTier === "premium" ? "255, 215, 0, 0.2" : "120, 80, 255, 0.2";
         mainPanel.style.boxShadow = `0 40px 100px rgba(0,0,0,0.8), 0 0 ${(bassIntensity / 255) * 40}px rgba(${shadowColor}), inset 0 1px 1px rgba(255,255,255,0.1)`;
       }
       if (systemBadge) { systemBadge.style.transform = `scale(${scaleValue})`; }
@@ -329,49 +326,66 @@
     requestAnimationFrame(updateSoundReactiveElements);
   }
 
-  function _0x51e42d(theme = "default") {
+  // --- PARTICLES (NEW ENHANCED) ---
+  function createParticles(theme = "default") {
     const oldParticles = document.getElementById("lukyy-particles");
     if (oldParticles) oldParticles.remove();
 
-    const _0x2e92fb = document.createElement("div");
-    _0x2e92fb.id = "lukyy-particles";
-    _0x2e92fb.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483646;overflow:hidden;";
+    const container = document.createElement("div");
+    container.id = "lukyy-particles";
+    container.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483646;overflow:hidden;";
     
-    let emojis = ["💎", "⚡", "👾", "🌀", "🛸", "⚔️", "💠"];
-    if (currentUserTier === "premium") emojis = ["👑", "🌟", "💎", "✨", "🔥", "🪙"]; 
-    if (theme === "success") emojis = currentUserTier === "premium" ? ["👑", "✨", "🚀", "🔥", "🏆"] : ["🎉", "🔥", "✨", "🚀", "🟢"];
-    else if (theme === "error") emojis = ["❌", "⚠️", "🛑", "💀", "💔"];
+    let emojis = ["✦", "◈", "◇", "❖", "✧", "✦", "◈"];
+    if (currentUserTier === "premium") emojis = ["✦", "◆", "◈", "◉", "✦", "✧", "◆"];
+    if (theme === "success") emojis = currentUserTier === "premium" ? ["✦", "✦", "✦", "✦", "✦"] : ["✦", "✦", "✦", "✦", "✦"];
+    else if (theme === "error") emojis = ["✖", "✖", "✖", "✖", "✖"];
 
-    const particleCount = window.innerWidth < 600 ? 25 : 45;
-    let particleGlow = currentUserTier === "premium" ? "rgba(255, 215, 0, 0.6)" : "rgba(0, 243, 255, 0.5)";
+    const particleCount = window.innerWidth < 600 ? 20 : 35;
+    let particleColor = currentUserTier === "premium" ? "rgba(255,215,0,0.5)" : "rgba(120,80,255,0.4)";
     
-    for (let _0x24f0fa = 0; _0x24f0fa < particleCount; _0x24f0fa++) {
-      const _0x1de953 = document.createElement("div");
-      _0x1de953.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-      const fontSize = Math.random() * 16 + 10;
-      const duration = Math.random() * 15 + 10;
-      const delay = Math.random() * 5;
-      _0x1de953.style.cssText = `position:absolute; font-size:${fontSize}px; left:${Math.random() * 100}%; bottom:-15%; user-select:none; pointer-events:none; filter: drop-shadow(0 0 10px ${particleGlow}); animation:lukyy-emoji-float ${duration}s linear infinite; animation-delay:${delay}s; opacity:${Math.random() * 0.5 + 0.3};`;
-      _0x2e92fb.appendChild(_0x1de953);
+    for (let i = 0; i < particleCount; i++) {
+      const el = document.createElement("div");
+      el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+      const fontSize = Math.random() * 14 + 8;
+      const duration = Math.random() * 12 + 8;
+      const delay = Math.random() * 6;
+      const x = Math.random() * 100;
+      const drift = (Math.random() - 0.5) * 80;
+      el.style.cssText = `position:absolute; font-size:${fontSize}px; left:${x}%; bottom:-10%; user-select:none; pointer-events:none; color:${particleColor}; filter: drop-shadow(0 0 8px ${particleColor}); animation:lukyy-float-${i} ${duration}s linear infinite; animation-delay:${delay}s; opacity:${Math.random() * 0.4 + 0.3};`;
+      
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes lukyy-float-${i} {
+          0% { transform: translateY(0) translateX(0) rotate(0deg) scale(0.6); opacity: 0; }
+          15% { opacity: 0.9; transform: translateY(10px) scale(1); }
+          50% { transform: translateY(-45vh) translateX(${drift}px) rotate(180deg) scale(1.2); }
+          85% { opacity: 0.7; }
+          100% { transform: translateY(-110vh) translateX(${-drift * 0.5}px) rotate(360deg) scale(0.8); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+      container.appendChild(el);
     }
-    document.body.appendChild(_0x2e92fb);
+    document.body.appendChild(container);
   }
 
+  // --- MODAL (NEW STYLE) ---
   function showCustomModal(title, message, icon, onConfirm) {
     const modalOverlay = document.createElement("div");
     modalOverlay.id = "lukyy-modal-overlay";
-    modalOverlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(12px);";
+    modalOverlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);";
     
-    let colorGradient = currentUserTier === "premium" ? "#ffd700,#ff8c00" : "#00f3ff,#0055ff";
-    let btnGradient = currentUserTier === "premium" ? "linear-gradient(135deg,#ffd700,#ff8c00)" : "linear-gradient(135deg,#00f3ff,#0055ff)";
-    let shadowColor = currentUserTier === "premium" ? "rgba(255,215,0,0.5)" : "rgba(0,243,255,0.5)";
+    let colorGradient = currentUserTier === "premium" ? "#ffd700,#f7971e" : "#7850ff,#4a2c8a";
+    let btnGradient = currentUserTier === "premium" ? "linear-gradient(135deg,#ffd700,#f7971e)" : "linear-gradient(135deg,#7850ff,#4a2c8a)";
+    let shadowColor = currentUserTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(120,80,255,0.4)";
+    let borderColor = currentUserTier === "premium" ? "rgba(255,215,0,0.2)" : "rgba(120,80,255,0.2)";
 
     modalOverlay.innerHTML = `
-      <div id="lukyy-modal-card" style="padding:40px 32px; border:1px solid rgba(255,255,255,0.08); border-radius:32px; width:min(400px,90vw); text-align:center; transform:scale(0.9) translateY(30px); transition:all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); box-sizing:border-box; background: rgba(10, 14, 30, 0.85); backdrop-filter:blur(40px); box-shadow: 0 40px 120px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.06);">
-        <div style="font-size:64px; margin-bottom:16px; filter:drop-shadow(0 0 30px ${shadowColor});">${icon}</div>
-        <h4 style="margin:0 0 12px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,${colorGradient}); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.5px;">${title}</h4>
-        <p id="lukyy-modal-text" style="font-size:15px; line-height:1.8; margin:0 0 30px 0; font-weight:500; color:#94a3b8; white-space:pre-line; text-align:left;">${message}</p>
-        <button id="modal-confirm-btn" class="genz-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:18px; border-radius:16px; font-weight:800; cursor:pointer; font-family:inherit; font-size:15px; box-shadow:0 10px 40px ${shadowColor}; transition:all 0.3s; text-transform:uppercase; letter-spacing:1.5px;">Gasskeun, Oke! ⚡</button>
+      <div id="lukyy-modal-card" style="padding:40px 32px; border:1px solid ${borderColor}; border-radius:32px; width:min(420px,90vw); text-align:center; transform:scale(0.9) translateY(30px); transition:all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); box-sizing:border-box; background: rgba(10, 12, 28, 0.92); backdrop-filter:blur(40px); box-shadow: 0 40px 120px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.05);">
+        <div style="font-size:72px; margin-bottom:12px; filter:drop-shadow(0 0 40px ${shadowColor});">${icon}</div>
+        <h4 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:800; background:linear-gradient(135deg,${colorGradient}); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.5px;">${title}</h4>
+        <p id="lukyy-modal-text" style="font-size:15px; line-height:1.9; margin:0 0 28px 0; font-weight:500; color:#a0b4d0; white-space:pre-line; text-align:left;">${message}</p>
+        <button id="modal-confirm-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:18px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 40px ${shadowColor}; transition:all 0.3s ease;">⚡ Gaskeun</button>
       </div>
     `;
     document.body.appendChild(modalOverlay);
@@ -391,258 +405,796 @@
 
   function fakeVisualizer(url) { window.location.href = url; }
 
+  // ============================================================
+  // NEW UI - MAIN FUNCTION
+  // ============================================================
   (async function () {
-    _0x51e42d("default");
+    createParticles("default");
 
     const _0x19bd78 = document.getElementById("lukyy-auth");
-    if (_0x19bd78) { _0x19bd78.remove(); }
+    if (_0x19bd78) _0x19bd78.remove();
 
-    const _0x143e8e = document.createElement("style");
-    _0x143e8e.textContent = `
+    // --- GLOBAL STYLES ---
+    const style = document.createElement("style");
+    style.textContent = `
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap');
       
-      @keyframes lukyy-emoji-float { 
-        0% { transform: translateY(0) translateX(0) rotate(0deg) scale(0.5); opacity: 0; } 
-        10% { opacity: 0.9; transform: translateY(10px) scale(1); } 
-        50% { transform: translateY(-50vh) translateX(40px) rotate(180deg) scale(1.2); } 
-        90% { opacity: 0.8; } 
-        100% { transform: translateY(-120vh) translateX(-40px) rotate(360deg) scale(0.8); opacity: 0; } 
+      * {
+        box-sizing: border-box;
       }
-      @keyframes lukyy-shake { 
-        0%, 100% { transform: translateX(0); } 
-        20%, 60% { transform: translateX(-10px); } 
-        40%, 80% { transform: translateX(10px); } 
+      
+      #lukyy-auth {
+        font-family: 'Inter', sans-serif;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2147483647;
+        width: min(440px, 94vw);
+        max-height: 95vh;
+        overflow-y: auto;
+        background: radial-gradient(ellipse at 30% 20%, rgba(40, 20, 80, 0.7), rgba(8, 6, 18, 0.95));
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        border: 1px solid rgba(120, 80, 255, 0.2);
+        border-radius: 40px;
+        padding: 40px 32px 32px;
+        box-shadow: 0 60px 160px rgba(0,0,0,0.95), 0 0 80px rgba(120,80,255,0.05), inset 0 1px 1px rgba(255,255,255,0.04);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        color: #fff;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(120,80,255,0.3) transparent;
       }
+      #lukyy-auth::-webkit-scrollbar { width: 4px; }
+      #lukyy-auth::-webkit-scrollbar-track { background: transparent; }
+      #lukyy-auth::-webkit-scrollbar-thumb { background: rgba(120,80,255,0.3); border-radius: 20px; }
+
+      #lukyy-auth.panel-minimized {
+        padding: 16px 24px;
+        width: auto;
+        max-height: none;
+        border-radius: 60px;
+        cursor: pointer;
+        transform: translate(-50%, -50%) scale(0.95);
+      }
+      #lukyy-auth.panel-minimized .panel-content { display: none; }
+      #lukyy-auth.panel-minimized .panel-mini-label { display: block; }
+
+      .panel-mini-label {
+        display: none;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 2px;
+        color: #a0b4d0;
+        text-align: center;
+        padding: 4px 0;
+      }
+      .panel-mini-label span { color: #7850ff; }
+
+      .panel-content {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* --- BADGE --- */
+      .neo-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(0,0,0,0.5);
+        padding: 8px 20px;
+        border-radius: 40px;
+        border: 1px solid rgba(120,80,255,0.15);
+        backdrop-filter: blur(8px);
+        box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+        transition: all 0.3s ease;
+        margin-bottom: 18px;
+      }
+      .neo-badge-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #7850ff;
+        box-shadow: 0 0 20px #7850ff, 0 0 40px #7850ff;
+        animation: neonPulse 2s infinite;
+      }
+      .neo-badge-text {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        color: #cbd5e1;
+        text-transform: uppercase;
+        font-family: 'Space Grotesk', sans-serif;
+      }
+
+      /* --- TITLE --- */
+      .neo-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 40px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #ffffff 0%, #7850ff 50%, #4a2c8a 100%);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -2px;
+        margin: 0 0 6px 0;
+        filter: drop-shadow(0 0 30px rgba(120,80,255,0.2));
+        animation: gradientShift 6s ease infinite;
+      }
+
+      .neo-quote {
+        font-size: 15px;
+        font-weight: 500;
+        color: #94a3b8;
+        margin: 8px 0 4px 0;
+        line-height: 1.6;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+      }
+
+      /* --- INPUT --- */
+      .neo-input-wrapper {
+        position: relative;
+        width: 100%;
+        margin-bottom: 22px;
+      }
+      .neo-input {
+        width: 100%;
+        padding: 18px 90px 18px 24px;
+        background: rgba(0,0,0,0.6);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+        color: #fff;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        outline: none;
+        backdrop-filter: blur(12px);
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+        box-sizing: border-box;
+      }
+      .neo-input:focus {
+        border-color: #7850ff;
+        box-shadow: 0 0 50px rgba(120,80,255,0.25), inset 0 2px 15px rgba(0,0,0,0.6);
+        transform: scale(1.01);
+        background: rgba(8,6,18,0.9);
+      }
+      .neo-input::placeholder {
+        color: rgba(255,255,255,0.2);
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+      .neo-input:disabled {
+        background: rgba(255,215,0,0.04) !important;
+        color: #ffd700 !important;
+        border-color: rgba(255,215,0,0.2) !important;
+        cursor: not-allowed;
+        font-weight: 700;
+        text-align: center;
+        -webkit-text-fill-color: #ffd700 !important;
+        text-shadow: 0 0 20px rgba(255,215,0,0.1);
+      }
+
+      .neo-input-actions {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 5;
+      }
+      .neo-icon-btn {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.04);
+        border-radius: 12px;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        cursor: pointer;
+        color: #94a3b8;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(8px);
+        padding: 0;
+      }
+      .neo-icon-btn:hover {
+        background: rgba(120,80,255,0.12);
+        border-color: #7850ff;
+        color: #fff;
+        transform: scale(1.1) rotate(-3deg);
+        box-shadow: 0 0 25px rgba(120,80,255,0.2);
+      }
+
+      /* --- BUTTONS --- */
+      .neo-btn-primary {
+        width: 100%;
+        padding: 20px;
+        border: none;
+        border-radius: 20px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 800;
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #7850ff, #4a2c8a);
+        color: #fff;
+        box-shadow: 0 15px 45px rgba(120,80,255,0.35);
+      }
+      .neo-btn-primary::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+        opacity: 0;
+        transform: scale(0.5);
+        transition: opacity 0.4s, transform 0.4s;
+      }
+      .neo-btn-primary:hover {
+        transform: translateY(-4px) scale(1.02);
+        filter: brightness(1.15);
+        box-shadow: 0 20px 60px rgba(120,80,255,0.5);
+      }
+      .neo-btn-primary:hover::after { opacity: 1; transform: scale(1); }
+      .neo-btn-primary:active { transform: translateY(2px) scale(0.98); filter: brightness(0.9); }
+      .neo-btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+        filter: none !important;
+        box-shadow: 0 5px 20px rgba(120,80,255,0.15);
+      }
+
+      .neo-btn-secondary {
+        width: 100%;
+        padding: 16px;
+        border-radius: 18px;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.04);
+        color: #cbd5e1;
+        transition: all 0.3s ease;
+      }
+      .neo-btn-secondary:hover {
+        background: rgba(120,80,255,0.08);
+        border-color: rgba(120,80,255,0.25);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(120,80,255,0.08);
+      }
+
+      /* --- STATUS --- */
+      .neo-status {
+        margin-top: 28px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #7850ff;
+        font-family: 'Space Grotesk', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 2.5px;
+        opacity: 0.7;
+        padding: 10px 16px;
+        border-radius: 16px;
+        border: 1px dashed rgba(120,80,255,0.08);
+        background: rgba(120,80,255,0.02);
+        backdrop-filter: blur(5px);
+        text-align: center;
+      }
+
+      /* --- PROFILE AVATAR --- */
+      .neo-avatar {
+        position: absolute;
+        top: -26px;
+        left: -26px;
+        width: 64px;
+        height: 64px;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 2px solid rgba(120,80,255,0.4);
+        box-shadow: 0 15px 40px rgba(120,80,255,0.25);
+        backdrop-filter: blur(15px);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: rotate(-6deg) scale(0.95);
+        cursor: pointer;
+      }
+      .neo-avatar:hover {
+        transform: scale(1.15) rotate(0deg) translateY(-6px);
+        box-shadow: 0 25px 60px rgba(120,80,255,0.45);
+        border-color: #7850ff;
+      }
+      .neo-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 24px;
+      }
+
+      /* --- MUSIC BUTTON --- */
+      .neo-music-btn {
+        position: absolute;
+        top: -28px;
+        right: -28px;
+        background: rgba(8,6,18,0.85);
+        border: 1.5px solid rgba(120,80,255,0.25);
+        color: #7850ff;
+        border-radius: 18px;
+        width: 54px;
+        height: 54px;
+        cursor: pointer;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(15px);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 15px 35px rgba(120,80,255,0.15);
+        transform: rotate(6deg) scale(0.95);
+      }
+      .neo-music-btn:hover {
+        transform: scale(1.15) rotate(0deg);
+        box-shadow: 0 20px 60px rgba(120,80,255,0.3);
+        border-color: #7850ff;
+        color: #fff;
+      }
+
+      /* --- BIODATA OVERLAY --- */
+      .neo-biodata {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.92) translateY(15px);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        padding: 40px 32px;
+        box-sizing: border-box;
+        background: rgba(8, 6, 18, 0.94);
+        backdrop-filter: blur(50px);
+        -webkit-backdrop-filter: blur(50px);
+      }
+      .neo-biodata.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: scale(1) translateY(0);
+      }
+      .neo-biodata-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 26px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #7850ff, #ff00ea);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 0 22px 0;
+        text-align: center;
+        letter-spacing: 2px;
+        filter: drop-shadow(0 0 30px rgba(255,0,234,0.2));
+      }
+      .neo-biodata-card {
+        text-align: left;
+        width: 100%;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.04);
+        padding: 22px 26px;
+        border-radius: 20px;
+        font-size: 15px;
+        line-height: 2.2;
+        color: #cbd5e1;
+        box-sizing: border-box;
+        box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);
+      }
+      .neo-biodata-card strong { color: #7850ff; font-weight: 700; }
+
+      .neo-btn-close-bio {
+        width: 100%;
+        background: rgba(255, 0, 85, 0.08);
+        color: #ff0055;
+        border: 1px solid rgba(255, 0, 85, 0.15);
+        padding: 18px;
+        border-radius: 18px;
+        font-weight: 800;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 24px;
+        transition: all 0.3s ease;
+      }
+      .neo-btn-close-bio:hover {
+        background: rgba(255,0,85,0.15);
+        border-color: rgba(255,0,85,0.3);
+        transform: scale(1.02);
+        box-shadow: 0 10px 30px rgba(255,0,85,0.1);
+      }
+
+      /* --- TIMER INFO --- */
+      .neo-timer {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffd700;
+        margin-top: 10px;
+        display: none;
+        background: rgba(255,215,0,0.04);
+        padding: 8px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,215,0,0.08);
+        backdrop-filter: blur(5px);
+        text-align: center;
+      }
+
+      /* --- MENU COMMAND CENTER --- */
+      .neo-menu-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 6px;
+      }
+      .neo-menu-btn {
+        padding: 18px;
+        border-radius: 18px;
+        border: none;
+        font-weight: 800;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        color: #fff;
+        text-align: center;
+      }
+      .neo-menu-btn::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        opacity: 0;
+        transform: scale(0.5);
+        transition: opacity 0.4s, transform 0.4s;
+      }
+      .neo-menu-btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.1); }
+      .neo-menu-btn:hover::after { opacity: 1; transform: scale(1); }
+      .neo-menu-btn:active { transform: translateY(2px) scale(0.98); }
+
+      .neo-menu-btn.aincrad { background: linear-gradient(135deg, #7850ff, #4a2c8a); color: #fff; }
+      .neo-menu-btn.proxy { background: linear-gradient(135deg, #0055ff, #0033aa); color: #fff; }
+      .neo-menu-btn.vipteam { background: linear-gradient(135deg, #ff00ea, #8a2be2); color: #fff; }
+      .neo-menu-btn.universal { background: linear-gradient(135deg, #00cc88, #008855); color: #fff; }
+
+      .neo-menu-btn.premium-gold { background: linear-gradient(135deg, #ffd700, #f7971e); color: #000; }
+
+      /* --- SPEED SELECTION --- */
+      .neo-speed-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-top: 6px;
+      }
+      .neo-speed-btn {
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,0.06);
+        font-weight: 700;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.02);
+        color: #cbd5e1;
+        text-align: center;
+      }
+      .neo-speed-btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        background: rgba(255,255,255,0.06);
+      }
+      .neo-speed-btn.fast { border-color: rgba(0,255,136,0.2); color: #00ff88; }
+      .neo-speed-btn.fast:hover { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.4); }
+      .neo-speed-btn.secure { border-color: rgba(255,215,0,0.2); color: #ffd700; }
+      .neo-speed-btn.secure:hover { background: rgba(255,215,0,0.06); border-color: rgba(255,215,0,0.4); }
+      .neo-speed-btn.slow { border-color: rgba(255,0,85,0.2); color: #ff0055; }
+      .neo-speed-btn.slow:hover { background: rgba(255,0,85,0.06); border-color: rgba(255,0,85,0.4); }
+
+      /* --- BACK BUTTON --- */
+      .neo-back-btn {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.04);
+        color: #94a3b8;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .neo-back-btn:hover {
+        background: rgba(120,80,255,0.1);
+        border-color: #7850ff;
+        color: #fff;
+        transform: scale(1.05);
+      }
+
+      /* --- UNIVERSAL INPUT --- */
+      .neo-uni-input {
+        width: 100%;
+        padding: 18px 24px;
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(0,0,0,0.5);
+        color: #fff;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        margin-bottom: 22px;
+        box-sizing: border-box;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+      .neo-uni-input:focus {
+        border-color: #00cc88;
+        box-shadow: 0 0 40px rgba(0,204,136,0.15);
+      }
+
+      /* --- COUNTDOWN OVERLAY --- */
+      .neo-countdown-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(ellipse at center, rgba(8,6,18,0.95), rgba(0,0,0,0.98));
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', sans-serif;
+        backdrop-filter: blur(20px);
+      }
+      .neo-countdown-card {
+        text-align: center;
+        background: rgba(10,12,28,0.85);
+        backdrop-filter: blur(30px);
+        padding: 60px 50px;
+        border-radius: 40px;
+        border: 1px solid rgba(120,80,255,0.15);
+        width: min(400px, 90vw);
+        box-shadow: 0 60px 180px rgba(0,0,0,0.95), inset 0 1px 2px rgba(255,255,255,0.03);
+        position: relative;
+        overflow: hidden;
+      }
+      .neo-countdown-circle {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        border: 3px solid #7850ff;
+        background: rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 52px;
+        font-weight: 900;
+        color: #7850ff;
+        margin: 0 auto 28px auto;
+        font-family: 'Space Grotesk', sans-serif;
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+        transition: all 0.15s ease;
+      }
+      .neo-countdown-text {
+        color: #fff;
+        font-size: 18px;
+        font-weight: 800;
+        margin: 0;
+        font-family: 'Space Grotesk', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+      }
+      .neo-countdown-sub {
+        color: #94a3b8;
+        font-size: 13px;
+        margin-top: 10px;
+        font-weight: 500;
+      }
+
+      /* --- ANIMATIONS --- */
       @keyframes neonPulse {
-        0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.3)); }
-        50% { filter: drop-shadow(0 0 40px rgba(0, 243, 255, 0.8)); }
+        0%, 100% { box-shadow: 0 0 20px #7850ff, 0 0 40px #7850ff; }
+        50% { box-shadow: 0 0 40px #7850ff, 0 0 80px #7850ff; }
       }
       @keyframes gradientShift {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
       }
-      
-      .shake-error { animation: lukyy-shake 0.5s ease-in-out !important; border-color: #ff0055 !important; box-shadow: 0 0 40px rgba(255, 0, 85, 0.7) !important; }
-      
-      #key-input:focus { 
-        border-color: #00f3ff !important; 
-        box-shadow: 0 0 50px rgba(0, 243, 255, 0.4), inset 0 2px 15px rgba(0,0,0,0.6) !important; 
-        background: rgba(5,10,25,0.9) !important; 
-        transform: scale(1.02);
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-10px); }
+        40%, 80% { transform: translateX(10px); }
       }
-      
-      .genz-btn { 
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-        position: relative; 
-        overflow: hidden; 
-        letter-spacing: 1px;
-      }
-      .genz-btn::after {
-        content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
-        opacity: 0; transform: scale(0.5); transition: opacity 0.4s, transform 0.4s;
-      }
-      .genz-btn:hover { transform: translateY(-4px) scale(1.02); filter: brightness(1.2); }
-      .genz-btn:hover::after { opacity: 1; transform: scale(1); }
-      .genz-btn:active { transform: translateY(2px) scale(0.98); filter: brightness(0.9); }
-      
-      .paste-input-container { position: relative; width: 100%; display: flex; align-items: center; }
-      .input-actions-container { position: absolute; right: 14px; display: flex; align-items: center; gap: 8px; height: 100%; z-index: 5; }
-      
-      .action-icon-btn { 
-        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); 
-        border-radius: 10px; font-size: 16px; cursor: pointer; color: #94a3b8; 
-        transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; 
-        padding: 8px; backdrop-filter: blur(8px);
-      }
-      .action-icon-btn:hover { background: rgba(0, 243, 255, 0.12); border-color: #00f3ff; color: #fff; transform: scale(1.15) rotate(-5deg); box-shadow: 0 0 20px rgba(0, 243, 255, 0.25); }
-      
-      .profile-container { 
-        position: absolute; top: -22px; left: -22px; width: 60px; height: 60px; 
-        border-radius: 20px; overflow: hidden; border: 2px solid rgba(0, 243, 255, 0.4); 
-        box-shadow: 0 15px 35px rgba(0, 243, 255, 0.3); backdrop-filter: blur(15px); 
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); transform: rotate(-8deg) scale(0.95);
-      }
-      .profile-container:hover { transform: scale(1.2) rotate(0deg) translateY(-8px); box-shadow: 0 25px 50px rgba(0, 243, 255, 0.5); border-color: #00f3ff; }
-      .profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
-      
-      .biodata-overlay { 
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 32px; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        z-index: 999; opacity: 0; pointer-events: none; transform: scale(0.92) translateY(15px); 
-        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); padding: 35px; box-sizing: border-box; 
-        background: rgba(8, 12, 28, 0.92); backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px); 
-      }
-      .biodata-overlay.active { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); }
-      
-      .biodata-card { text-align: left; width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.06); padding: 22px; border-radius: 18px; font-size: 15px; line-height: 2; color:#cbd5e1; box-sizing: border-box; box-shadow: inset 0 4px 20px rgba(0,0,0,0.6); }
-      .biodata-title { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #00f3ff, #ff00ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 22px 0; text-align: center; letter-spacing: 2px; filter: drop-shadow(0 0 20px rgba(255,0,234,0.3)); }
-      
-      #lukyy-auth { 
-        background: radial-gradient(ellipse at top left, rgba(20, 30, 60, 0.8), rgba(5, 7, 18, 0.95)); 
-        color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.15); 
-        box-shadow: 0 60px 120px rgba(0,0,0,0.95), inset 0 1px 1px rgba(255,255,255,0.05); 
-        backdrop-filter: blur(40px);
-      }
-      #lukyy-auth p { color: #94a3b8; } 
-      
-      #key-input { 
-        background: rgba(0,0,0,0.7) !important; color: #fff !important; 
-        border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 16px !important; 
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-      }
-      #key-input::placeholder { color: rgba(255,255,255,0.25); font-weight: 500; }
-      
-      #support-btn { 
-        background: rgba(255,255,255,0.02); color: #cbd5e1; 
-        border: 1px solid rgba(255,255,255,0.04); 
-        transition: all 0.3s ease;
-      }
-      #support-btn:hover { background: rgba(0, 243, 255, 0.08); border-color: rgba(0, 243, 255, 0.3); color: #fff; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 243, 255, 0.1); }
-      
-      #key-input:disabled { 
-        background: rgba(255, 215, 0, 0.04) !important; color: #ffd700 !important; 
-        border-color: rgba(255, 215, 0, 0.3) !important; cursor: not-allowed !important; 
-        font-weight: 700 !important; text-align: center !important; padding-right: 50px !important; 
-        text-shadow: 0 0 20px rgba(255, 215, 0, 0.2); -webkit-text-fill-color: #ffd700 !important; 
-      }
-      
-      #system-badge {
-        background: rgba(0,0,0,0.6) !important;
-        border: 1px solid rgba(0, 243, 255, 0.2) !important;
-        backdrop-filter: blur(10px);
-        padding: 8px 18px !important;
-        border-radius: 12px !important;
-      }
-      
-      #badge-dot {
-        width: 10px !important;
-        height: 10px !important;
-        box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff !important;
-        animation: neonPulse 2s infinite;
-      }
-      
-      #badge-text {
-        font-size: 11px !important;
-        font-weight: 700 !important;
-        letter-spacing: 2.5px !important;
+      .shake-error { animation: shake 0.5s ease-in-out !important; border-color: #ff0055 !important; box-shadow: 0 0 40px rgba(255,0,85,0.5) !important; }
+
+      /* responsive */
+      @media (max-width: 500px) {
+        #lukyy-auth { padding: 30px 20px 24px; border-radius: 32px; }
+        .neo-title { font-size: 32px; }
+        .neo-avatar { width: 54px; height: 54px; top: -20px; left: -20px; }
+        .neo-music-btn { width: 44px; height: 44px; font-size: 18px; top: -22px; right: -22px; }
+        .neo-countdown-card { padding: 40px 24px; }
+        .neo-countdown-circle { width: 110px; height: 110px; font-size: 40px; }
       }
     `;
-    document.head.appendChild(_0x143e8e);
+    document.head.appendChild(style);
 
+    // --- BUILD MAIN PANEL ---
     const randomQuote = _0x439d89.quotesList[Math.floor(Math.random() * _0x439d89.quotesList.length)];
 
-    const _0x4e5c68 = document.createElement("div");
-    _0x4e5c68.id = "lukyy-auth";
-    _0x4e5c68.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);padding:45px 35px;border-radius:32px;z-index:2147483647;font-family:'Inter',sans-serif;text-align:center;width:min(420px,92vw);box-sizing:border-box;backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);";
-    
-    _0x4e5c68.innerHTML = `
-      <div id="panel-content" style="position:relative;z-index:1;">
-        <div class="profile-container" id="profile-trigger" style="cursor:pointer;" title="Liat Profil Sepuh">
-          <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" class="profile-img" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
+    const panel = document.createElement("div");
+    panel.id = "lukyy-auth";
+    panel.innerHTML = `
+      <div class="panel-content">
+        <div class="neo-avatar" id="profile-trigger" title="Profil Owner">
+          <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
         </div>
 
-        <button id="music-btn" style="position:absolute;top:-24px;right:-24px;background:rgba(8,12,28,0.85);border:1.5px solid rgba(0,243,255,0.3);color:#00f3ff;border-radius:16px;width:50px;height:50px;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(15px);transition:all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);box-shadow: 0 15px 35px rgba(0,243,255,0.2); transform: rotate(8deg) scale(0.95);" title="Play/Pause/Skip Music">🎵</button>
+        <button id="music-btn" class="neo-music-btn" title="Play / Pause / Skip">🎵</button>
 
-        <div style="margin-bottom:30px;">
-          <div id="system-badge" style="display:inline-flex; align-items:center; gap:10px; background:rgba(0,0,0,0.5); padding:8px 18px; border-radius:12px; border:1px solid rgba(0, 243, 255, 0.2); margin-bottom:20px; transition: transform 0.1s ease; box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);">
-            <span id="badge-dot" style="width:10px; height:10px; background:#00f3ff; border-radius:50%; display:inline-block; box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff; animation: neonPulse 2s infinite;"></span>
-            <span id="badge-text" style="font-size:11px; font-weight:700; color:#e2e8f0; letter-spacing:2.5px; text-transform:uppercase; font-family:'Space Grotesk';">SYSTEM STANDBY</span>
+        <div style="text-align:center; margin-bottom:24px;">
+          <div class="neo-badge" id="system-badge">
+            <span class="neo-badge-dot" id="badge-dot"></span>
+            <span class="neo-badge-text" id="badge-text">SYSTEM STANDBY</span>
           </div>
-          <h3 style="margin:0; font-size:42px; font-weight:900; font-family:'Space Grotesk',sans-serif; background:linear-gradient(135deg, #ffffff, #00f3ff, #0055ff); background-size:200% 200%; -webkit-background-clip:text;-webkit-text-fill-color:transparent; letter-spacing:-2px; filter: drop-shadow(0 0 25px rgba(0,243,255,0.15)); animation: gradientShift 5s ease infinite;">LUKYYPLR</h3>
-          <p style="margin:12px 0 0 0; font-size:15px; font-weight:500; min-height:48px; display:flex; align-items:center; justify-content:center; line-height:1.6; color:#a0b4d0;">${randomQuote}</p>
-          <div id="premium-timer-info" style="font-size: 13px; font-weight: 700; color: #ffd700; margin-top: 10px; display: none; background: rgba(255,215,0,0.06); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.15); backdrop-filter: blur(5px);"></div>
+          <h1 class="neo-title">LUKYYPLR</h1>
+          <div class="neo-quote" id="quote-display">${randomQuote}</div>
+          <div id="premium-timer-info" class="neo-timer"></div>
         </div>
 
         <div id="auth-form-area">
-          <div class="paste-input-container" style="margin-bottom:22px;">
-            <input type="password" id="key-input" placeholder="✦ Inject Access Key ✦" style="
-              width:100%; padding:20px 90px 20px 24px; 
-              text-align:left; font-family:inherit; font-size:15px; font-weight:600;
-              outline:none; backdrop-filter:blur(12px); 
-              transition: all 0.3s ease;
-              box-sizing:border-box;
-              border-radius:16px;">
-            
-            <div id="input-actions-wrapper" class="input-actions-container">
-              <button id="toggle-visibility-btn" class="action-icon-btn" title="View/Hide Key">👁️</button>
-              <button id="auto-paste-btn" class="action-icon-btn" title="Auto Paste">📋</button>
+          <div class="neo-input-wrapper">
+            <input type="password" id="key-input" class="neo-input" placeholder="✦ Inject Access Key ✦" autocomplete="off">
+            <div class="neo-input-actions">
+              <button id="toggle-visibility-btn" class="neo-icon-btn" title="View/Hide Key">👁️</button>
+              <button id="auto-paste-btn" class="neo-icon-btn" title="Auto Paste">📋</button>
             </div>
           </div>
 
           <div id="interactive-area" style="margin-bottom:18px;">
-            <button id="login-btn" class="genz-btn" style="width:100%; background:linear-gradient(135deg, #00f3ff, #0055ff); color:#000; border:none; padding:20px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 15px 45px rgba(0, 243, 255, 0.35);">Unlock Dashboard ⚡</button>
+            <button id="login-btn" class="neo-btn-primary">⚡ Unlock Dashboard</button>
           </div>
         </div>
 
-        <button id="support-btn" class="genz-btn" style="width:100%; padding:16px; border-radius:14px; font-weight:600; cursor:pointer; font-family:inherit; font-size:14px; letter-spacing:0.5px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); color:#cbd5e1;">Join Telegram Circle 💬</button>
+        <button id="support-btn" class="neo-btn-secondary">💬 Join Telegram Circle</button>
 
-        <div id="status-msg" style="margin-top:28px; font-size:12px; font-weight:700; color:#00f3ff; font-family:'Space Grotesk'; text-transform:uppercase; letter-spacing:2.5px; opacity:0.8; background: rgba(0, 243, 255, 0.03); padding: 10px 16px; border-radius: 12px; border: 1px dashed rgba(0, 243, 255, 0.08); backdrop-filter: blur(5px);">
-          ⚙️ WONG_PUSAT_STANDBY
-        </div>
+        <div id="status-msg" class="neo-status">⚙️ WONG_PUSAT_STANDBY</div>
       </div>
 
-      <div id="biodata-panel" class="biodata-overlay">
-        <h4 class="biodata-title">✨ OWNER BIODATA ✨</h4>
-        <div class="biodata-card">
-          <div style="margin-bottom:8px;">📌 <span style="color:#00f3ff; font-weight:700;">Nama:</span> Luki / Lukyyplr</div>
-          <div style="margin-bottom:8px;">🌐 <span style="color:#00f3ff; font-weight:700;">Linktree:</span> https://linktr.ee/lukyycuyy</div>
-          <div style="margin-bottom:8px;">💻 <span style="color:#00f3ff; font-weight:700;">Project:</span> Bypass Key System</div>
-          <div>💬 <span style="color:#00f3ff; font-weight:700;">Status:</span> Wong Pusat Standby 🔥</div>
+      <div id="biodata-panel" class="neo-biodata">
+        <h4 class="neo-biodata-title">✨ OWNER BIODATA ✨</h4>
+        <div class="neo-biodata-card">
+          <div>📌 <strong>Nama:</strong> Luki / Lukyyplr</div>
+          <div>🌐 <strong>Linktree:</strong> https://linktr.ee/lukyycuyy</div>
+          <div>💻 <strong>Project:</strong> Bypass Key System</div>
+          <div>💬 <strong>Status:</strong> Wong Pusat Standby 🔥</div>
         </div>
-        <button id="close-biodata-btn" class="genz-btn" style="width:100%; background:rgba(255, 0, 85, 0.1); color:#ff0055; border:1px solid rgba(255, 0, 85, 0.2); padding:18px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1.5px; margin-top:28px; box-shadow: 0 15px 30px rgba(255,0,85,0.1);">Close Profile ✖️</button>
+        <button id="close-biodata-btn" class="neo-btn-close-bio">✖ Close Profile</button>
       </div>
+
+      <div class="panel-mini-label">⏺ <span>LUKYYPLR</span> · minimized</div>
     `;
-    document.body.appendChild(_0x4e5c68);
-    
-    document.getElementById("music-btn").addEventListener("mouseover", function(){ this.style.transform = "scale(1.2) rotate(0deg)"; this.style.boxShadow = "0 20px 50px rgba(0,243,255,0.4)"; });
-    document.getElementById("music-btn").addEventListener("mouseout", function(){ this.style.transform = "rotate(8deg) scale(0.95)"; this.style.boxShadow = "0 15px 35px rgba(0,243,255,0.2)"; });
+    document.body.appendChild(panel);
 
-    _0x58cd45();
-
-    const _0x218e14 = document.getElementById("music-btn");
-    const _0x224146 = document.getElementById("key-input");
-    const _0x51b440 = document.getElementById("login-btn");
-    const _0x2825ed = document.getElementById("support-btn");
-    const _0x22304b = document.getElementById("status-msg");
+    // --- ELEMENTS REFS ---
+    const musicBtn = document.getElementById("music-btn");
+    const keyInput = document.getElementById("key-input");
+    const loginBtn = document.getElementById("login-btn");
+    const supportBtn = document.getElementById("support-btn");
+    const statusMsg = document.getElementById("status-msg");
     const profileTrigger = document.getElementById("profile-trigger");
     const biodataPanel = document.getElementById("biodata-panel");
     const closeBiodataBtn = document.getElementById("close-biodata-btn");
     const autoPasteBtn = document.getElementById("auto-paste-btn");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
+    const panelContent = panel.querySelector(".panel-content");
 
-    profileTrigger.addEventListener("click", () => { biodataPanel.classList.add("active"); });
-    closeBiodataBtn.addEventListener("click", () => { biodataPanel.classList.remove("active"); });
-
-    _0x218e14.addEventListener("click", () => {
-      if (currentUserTier === "premium") { console.log("[🎵 VIP] Melewati lagu saat ini..."); _0x58cd45(); return; }
-      if (!_0x3e130f) { _0x58cd45(); _0x218e14.textContent = "🎵"; return; }
-      if (_0x3e130f.paused) { _0x3e130f.play().catch(() => {}); if(audioContext && audioContext.state === "suspended") audioContext.resume(); _0x218e14.textContent = "🎵"; } 
-      else { _0x3e130f.pause(); _0x218e14.textContent = "🔇"; }
+    // minimize toggle (double click panel)
+    let minimizeTimeout = null;
+    panel.addEventListener("dblclick", () => {
+      isPanelMinimized = !isPanelMinimized;
+      if (isPanelMinimized) {
+        panel.classList.add("panel-minimized");
+      } else {
+        panel.classList.remove("panel-minimized");
+      }
     });
 
-    _0x2825ed.addEventListener("click", () => { window.open(_0x439d89.telegramUrl, "_blank"); });
+    // --- EVENT BINDINGS ---
+    profileTrigger.addEventListener("click", () => biodataPanel.classList.add("active"));
+    closeBiodataBtn.addEventListener("click", () => biodataPanel.classList.remove("active"));
+
+    musicBtn.addEventListener("click", () => {
+      if (currentUserTier === "premium") { console.log("[🎵 VIP] Melewati lagu..."); _0x58cd45(); return; }
+      if (!_0x3e130f) { _0x58cd45(); musicBtn.textContent = "🎵"; return; }
+      if (_0x3e130f.paused) {
+        _0x3e130f.play().catch(() => {});
+        if(audioContext && audioContext.state === "suspended") audioContext.resume();
+        musicBtn.textContent = "🎵";
+      } else {
+        _0x3e130f.pause();
+        musicBtn.textContent = "🔇";
+      }
+    });
+
+    supportBtn.addEventListener("click", () => window.open(_0x439d89.telegramUrl, "_blank"));
 
     toggleVisibilityBtn.addEventListener("click", () => {
-      if (_0x224146.type === "password") {
-        _0x224146.type = "text"; toggleVisibilityBtn.textContent = "🙈"; toggleVisibilityBtn.title = "Sembunyikan Key";
-        if (currentUserTier === "premium") _0x224146.value = "👑 VIP: " + originalPremiumKeyRaw;
+      if (keyInput.type === "password") {
+        keyInput.type = "text";
+        toggleVisibilityBtn.textContent = "🙈";
+        toggleVisibilityBtn.title = "Sembunyikan Key";
+        if (currentUserTier === "premium") keyInput.value = "👑 VIP: " + originalPremiumKeyRaw;
       } else {
-        _0x224146.type = "password"; toggleVisibilityBtn.textContent = "👁️"; toggleVisibilityBtn.title = "Lihat Key";
-        if (currentUserTier === "premium") _0x224146.value = originalPremiumKeyRaw; 
+        keyInput.type = "password";
+        toggleVisibilityBtn.textContent = "👁️";
+        toggleVisibilityBtn.title = "Lihat Key";
+        if (currentUserTier === "premium") keyInput.value = originalPremiumKeyRaw;
       }
     });
 
     autoPasteBtn.addEventListener("click", async () => {
       try {
-        const textFromClipboard = await navigator.clipboard.readText();
-        if (textFromClipboard) { _0x224146.value = textFromClipboard.trim(); _0x22304b.innerHTML = "📋 Key di-paste, siap gas!"; _0x22304b.style.color = "#00f3ff"; } 
-        else { _0x22304b.innerHTML = "📭 Clipboard lu kosong, Cuy"; _0x22304b.style.color = "#ff8c00"; }
-      } catch (err) { _0x22304b.innerHTML = "🛑 Izin clipboard ditolak browser"; _0x22304b.style.color = "#ff0055"; }
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          keyInput.value = text.trim();
+          statusMsg.innerHTML = "📋 Key di-paste, siap gas!";
+          statusMsg.style.color = "#7850ff";
+        } else {
+          statusMsg.innerHTML = "📭 Clipboard kosong, Cuy";
+          statusMsg.style.color = "#ff8c00";
+        }
+      } catch (err) {
+        statusMsg.innerHTML = "🛑 Izin clipboard ditolak browser";
+        statusMsg.style.color = "#ff0055";
+      }
     });
 
+    // --- LOCK DASHBOARD MENU (after login) ---
     function lockDashboardMenu(formattedWIB) {
       const keyInput = document.getElementById("key-input");
       const autoPasteBtn = document.getElementById("auto-paste-btn");
@@ -651,298 +1203,317 @@
       const timerInfo = document.getElementById("premium-timer-info");
 
       if (keyInput) {
-        keyInput.type = "password"; keyInput.value = originalPremiumKeyRaw; keyInput.disabled = true; 
-        if (currentUserTier === "premium") keyInput.style.cssText += "background: rgba(255, 215, 0, 0.04) !important; color: #ffd700 !important; border-color: rgba(255, 215, 0, 0.3) !important;";
-        else keyInput.style.cssText += "background: rgba(0, 243, 255, 0.04) !important; color: #00f3ff !important; border-color: rgba(0, 243, 255, 0.3) !important;";
+        keyInput.type = "password";
+        keyInput.value = originalPremiumKeyRaw;
+        keyInput.disabled = true;
+        if (currentUserTier === "premium") {
+          keyInput.style.cssText += "background: rgba(255,215,0,0.04) !important; color: #ffd700 !important; border-color: rgba(255,215,0,0.2) !important;";
+        } else {
+          keyInput.style.cssText += "background: rgba(120,80,255,0.04) !important; color: #7850ff !important; border-color: rgba(120,80,255,0.2) !important;";
+        }
         if (toggleVisibilityBtn) { toggleVisibilityBtn.textContent = "👁️"; toggleVisibilityBtn.title = "Lihat Key"; }
       }
       if (autoPasteBtn) autoPasteBtn.remove();
-      if (timerInfo) { timerInfo.innerText = `⏳ EXPIRED: ${formattedWIB}`; timerInfo.style.display = "block"; if (currentUserTier !== "premium") { timerInfo.style.color = "#00f3ff"; timerInfo.style.background = "rgba(0,243,255,0.04)"; timerInfo.style.borderColor = "rgba(0,243,255,0.1)"; } }
-      
-      if (interactiveArea) {
-        let btnGradient = currentUserTier === "premium" ? "linear-gradient(135deg, #ffd700, #ff8c00)" : "linear-gradient(135deg, #00f3ff, #0055ff)";
-        let shadowColor = currentUserTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(0,243,255,0.4)";
+      if (timerInfo) {
+        timerInfo.innerText = `⏳ EXPIRED: ${formattedWIB}`;
+        timerInfo.style.display = "block";
+        if (currentUserTier !== "premium") {
+          timerInfo.style.color = "#7850ff";
+          timerInfo.style.background = "rgba(120,80,255,0.04)";
+          timerInfo.style.borderColor = "rgba(120,80,255,0.08)";
+        }
+      }
 
-        interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="genz-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:20px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 15px 45px ${shadowColor};">Access Menu Bypass 🏰</button>`;
+      if (interactiveArea) {
+        let btnClass = currentUserTier === "premium" ? "neo-menu-btn premium-gold" : "neo-menu-btn aincrad";
+        let label = currentUserTier === "premium" ? "🏰 Access Menu Bypass" : "🏰 Access Menu Bypass";
+        interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="${btnClass}">${label}</button>`;
         document.getElementById("open-aincrad-btn").addEventListener("click", () => {
           if (currentUserTier === "premium") showMainOptionsPanel();
-          else triggerAincradExecutionFlow(60, "2"); 
+          else triggerAincradExecutionFlow(60, "2");
         });
       }
     }
 
+    // --- SHOW MAIN OPTIONS PANEL (Command Center) ---
     function showMainOptionsPanel() {
-      isReactiveRunning = false; 
-      const container = document.getElementById("panel-content");
+      isReactiveRunning = false;
+      const container = document.querySelector(".panel-content");
       if (!container) return;
-      
-      let titleGradient = currentUserTier === "premium" ? "linear-gradient(135deg, #ffd700, #ff8c00)" : "linear-gradient(135deg, #00f3ff, #0055ff)";
-      
-      let btnAincradGrad = currentUserTier === "premium" ? "linear-gradient(135deg, #ffd700, #ff8c00)" : "linear-gradient(135deg, #00f3ff, #0055ff)";
-      let btnProxyGrad = currentUserTier === "premium" ? "linear-gradient(135deg, #ff8c00, #d9534f)" : "linear-gradient(135deg, #0055ff, #6600ff)";
-      let btnVipTeamGrad = currentUserTier === "premium" ? "linear-gradient(135deg, #ff00ea, #8a2be2)" : "linear-gradient(135deg, #ff00ff, #8a2be2)";
-      let btnUniGrad = currentUserTier === "premium" ? "linear-gradient(135deg, #00ff88, #009955)" : "linear-gradient(135deg, #00ffcc, #009966)";
 
-      let textCol = "#000"; 
-      let textColW = "#fff"; 
+      let titleGrad = currentUserTier === "premium"
+        ? "linear-gradient(135deg, #ffd700, #f7971e)"
+        : "linear-gradient(135deg, #7850ff, #4a2c8a)";
 
       container.innerHTML = `
-        <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:30px; font-weight:900; background:${titleGradient}; -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter: drop-shadow(0 0 15px rgba(255,255,255,0.05));">COMMAND CENTER</h3>
-        <p style="font-size:15px; margin-bottom:26px; font-weight:500; color:#94a3b8;">Pilih target eksekusi bypass lu</p>
-        <div style="display:flex; flex-direction:column; gap:14px;">
-          <button id="aincrad-menu-btn" class="genz-btn" style="width:100%; background:${btnAincradGrad}; color:${textCol}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(255,255,255,0.05);">🏰 Aincrad Protocol</button>
-          <button id="proxy-menu-btn" class="genz-btn" style="width:100%; background:${btnProxyGrad}; color:${textColW}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(255,255,255,0.05);">🌐 Aincrad Proxy</button>
-          <button id="vipteam-menu-btn" class="genz-btn" style="width:100%; background:${btnVipTeamGrad}; color:${textColW}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(255,0,234,0.15);">💎 VIP Team Byps</button>
-          <button id="uni-menu-btn" class="genz-btn" style="width:100%; background:${btnUniGrad}; color:${textCol}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(0,255,136,0.15);">🌍 Universal Vplink</button>
+        <div style="position:relative;">
+          <button id="mini-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
+          <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:900; background:${titleGrad}; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; filter: drop-shadow(0 0 20px rgba(0,0,0,0.3));">COMMAND CENTER</h3>
+          <p style="font-size:14px; margin-bottom:24px; text-align:center; font-weight:500; color:#94a3b8;">Pilih target eksekusi bypass</p>
+          <div class="neo-menu-grid">
+            <button class="neo-menu-btn aincrad" data-target="2">🏰 Aincrad Protocol</button>
+            <button class="neo-menu-btn proxy" data-target="1">🌐 Aincrad Proxy</button>
+            <button class="neo-menu-btn vipteam" data-target="vp">💎 VIP Team Byps</button>
+            <button class="neo-menu-btn universal" data-target="uni_vp">🌍 Universal Vplink</button>
+          </div>
         </div>
       `;
 
-      document.getElementById("aincrad-menu-btn").addEventListener("click", () => {
-        if (currentUserTier === "premium") showAincradSpeedPanel("2"); 
-        else triggerAincradExecutionFlow(60, "2"); 
+      document.getElementById("mini-back-btn").addEventListener("click", () => {
+        location.reload();
       });
 
-      document.getElementById("proxy-menu-btn").addEventListener("click", () => {
-        if (currentUserTier === "premium") showAincradSpeedPanel("1"); 
-        else triggerAincradExecutionFlow(60, "1");   
-      });
-
-      document.getElementById("vipteam-menu-btn").addEventListener("click", () => {
-        if (currentUserTier === "premium") showAincradSpeedPanel("vp"); 
-        else triggerAincradExecutionFlow(60, "vp");   
-      });
-
-      document.getElementById("uni-menu-btn").addEventListener("click", () => {
-        showUniversalVplinkPanel();
+      container.querySelectorAll(".neo-menu-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const target = btn.dataset.target;
+          if (target === "uni_vp") {
+            showUniversalVplinkPanel();
+          } else {
+            if (currentUserTier === "premium") showAincradSpeedPanel(target);
+            else triggerAincradExecutionFlow(60, target);
+          }
+        });
       });
     }
 
+    // --- UNIVERSAL VPLINK PANEL ---
     function showUniversalVplinkPanel() {
-      const container = document.getElementById("panel-content");
+      const container = document.querySelector(".panel-content");
       if (!container) return;
-      
-      let titleGradient = currentUserTier === "premium" ? "linear-gradient(135deg, #00ff88, #00cc66)" : "linear-gradient(135deg, #00ffcc, #009966)";
-      let btnUniGrad = currentUserTier === "premium" ? "linear-gradient(135deg, #00ff88, #009955)" : "linear-gradient(135deg, #00ffcc, #009966)";
 
       container.innerHTML = `
-        <div style="position:relative; width:100%">
-          <button id="uni-back-btn" class="action-icon-btn" style="position:absolute; top:0; left:0; width:40px; height:40px; font-size:18px; border-radius:12px;">❮</button>
-          <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:${titleGradient}; -webkit-background-clip:text;-webkit-text-fill-color:transparent; text-align:center;">UNIVERSAL VPLINK</h3>
-          <p style="font-size:14px; margin-bottom:26px; text-align:center; font-weight:500; color:#94a3b8;">Paste link vplink.in lu di bawah</p>
-
-          <input type="text" id="uni-vplink-input" placeholder="https://vplink.in/xxxxx" style="width:100%; padding:20px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:rgba(0,0,0,0.6); color:#fff; font-family:inherit; font-size:15px; margin-bottom:22px; box-sizing:border-box; outline:none; transition: all 0.3s ease;">
-
-          <button id="uni-submit-btn" class="genz-btn" style="width:100%; background:${btnUniGrad}; color:#000; border:none; padding:20px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 15px 45px rgba(0, 255, 136, 0.25);">EXECUTE 🔥</button>
+        <div style="position:relative;">
+          <button id="uni-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
+          <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,#00cc88,#008855); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center;">UNIVERSAL VPLINK</h3>
+          <p style="font-size:14px; margin-bottom:22px; text-align:center; font-weight:500; color:#94a3b8;">Paste link vplink.in di bawah</p>
+          <input type="text" id="uni-vplink-input" class="neo-uni-input" placeholder="https://vplink.in/xxxxx">
+          <button id="uni-submit-btn" class="neo-menu-btn universal" style="width:100%;">🔥 Execute</button>
           <p id="uni-error-msg" style="color:#ff0055; font-size:13px; margin-top:16px; display:none; font-weight:700; text-align:center;"></p>
-        </div>`;
+        </div>
+      `;
 
-      document.getElementById('uni-back-btn').addEventListener('click', showMainOptionsPanel);
+      document.getElementById("uni-back-btn").addEventListener("click", showMainOptionsPanel);
 
-      const inputField = document.getElementById('uni-vplink-input');
-      inputField.addEventListener('focus', () => {
-        inputField.style.border = "1px solid #00ff88";
-        inputField.style.boxShadow = "0 0 30px rgba(0, 255, 136, 0.15)";
-        document.getElementById('uni-error-msg').style.display = "none";
+      const inputField = document.getElementById("uni-vplink-input");
+      inputField.addEventListener("focus", () => {
+        inputField.style.border = "1px solid #00cc88";
+        inputField.style.boxShadow = "0 0 30px rgba(0,204,136,0.15)";
       });
-      inputField.addEventListener('blur', () => {
-        inputField.style.border = "1px solid rgba(255,255,255,0.08)";
+      inputField.addEventListener("blur", () => {
+        inputField.style.border = "1px solid rgba(255,255,255,0.06)";
         inputField.style.boxShadow = "none";
       });
 
-      document.getElementById('uni-submit-btn').addEventListener('click', () => {
-        const inputVal = inputField.value.trim();
-        const err = document.getElementById('uni-error-msg');
-        
-        if(!inputVal.includes('vplink.in')) {
+      document.getElementById("uni-submit-btn").addEventListener("click", () => {
+        const val = inputField.value.trim();
+        const err = document.getElementById("uni-error-msg");
+        if (!val.includes("vplink.in")) {
           err.innerText = "Target invalid! Kudu vplink.in cuy.";
           err.style.display = "block";
           inputField.style.border = "1px solid #ff0055";
           return;
         }
-        
-        const vpKey = extractVpKey(inputVal);
-        if(!vpKey) {
-          err.innerText = "Failed ekstrak key, cek format link.";
+        const vpKey = extractVpKey(val);
+        if (!vpKey) {
+          err.innerText = "Gagal ekstrak key, cek format link.";
           err.style.display = "block";
           inputField.style.border = "1px solid #ff0055";
           return;
         }
-
         if (currentUserTier === "premium") showAincradSpeedPanel("uni_vp", vpKey);
         else triggerAincradExecutionFlow(60, "uni_vp", vpKey);
       });
     }
 
+    // --- SPEED SELECTION PANEL (VIP) ---
     function showAincradSpeedPanel(targetType, customVpKey = null) {
-      const container = document.getElementById("panel-content");
+      const container = document.querySelector(".panel-content");
       if (!container) return;
 
-      let titleGradient = "linear-gradient(135deg, #ffd700, #ff8c00)";
-
       container.innerHTML = `
-        <div style="position:relative; width:100%">
-          <button id="speed-back-btn" class="action-icon-btn" style="position:absolute; top:0; left:0; width:40px; height:40px; font-size:18px; border-radius:12px;">❮</button>
-          <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:${titleGradient}; -webkit-background-clip:text;-webkit-text-fill-color:transparent; text-align:center;">VELOCITY SPEED</h3>
-          <p style="font-size:14px; margin-bottom:30px; text-align:center; font-weight:500; color:#94a3b8;">Atur setelan injeksi biar stabil</p>
-          
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <button id="fast-mode-btn" class="genz-btn" style="width:100%; background:rgba(0, 255, 136, 0.06); color:#00ff88; border:1px solid rgba(0, 255, 136, 0.25); padding:18px; border-radius:14px; font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow: inset 0 0 20px rgba(0,255,136,0.05);">💨 FAST (Senggol Dong)</button>
-            <button id="medium-mode-btn" class="genz-btn" style="width:100%; background:rgba(255, 215, 0, 0.06); color:#ffd700; border:1px solid rgba(255, 215, 0, 0.25); padding:18px; border-radius:14px; font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow: inset 0 0 20px rgba(255,215,0,0.05);">🛡️ SECURE (Main Aman)</button>
-            <button id="slow-mode-btn" class="genz-btn" style="width:100%; background:rgba(255, 0, 85, 0.06); color:#ff0055; border:1px solid rgba(255, 0, 85, 0.25); padding:18px; border-radius:14px; font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow: inset 0 0 20px rgba(255,0,85,0.05);">🐌 SLOW (Alon-Alon)</button>
+        <div style="position:relative;">
+          <button id="speed-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
+          <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,#ffd700,#f7971e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center;">VELOCITY SPEED</h3>
+          <p style="font-size:14px; margin-bottom:24px; text-align:center; font-weight:500; color:#94a3b8;">Atur kecepatan injeksi</p>
+          <div class="neo-speed-grid">
+            <button class="neo-speed-btn fast" data-sec="20">💨 FAST (Senggol Dong)</button>
+            <button class="neo-speed-btn secure" data-sec="30">🛡️ SECURE (Main Aman)</button>
+            <button class="neo-speed-btn slow" data-sec="45">🐌 SLOW (Alon-Alon)</button>
           </div>
-        </div>`;
-      document.getElementById('speed-back-btn').addEventListener('click', showMainOptionsPanel);
-      
-      document.getElementById("fast-mode-btn").addEventListener("click", () => triggerAincradExecutionFlow(20, targetType, customVpKey)); 
-      document.getElementById("medium-mode-btn").addEventListener("click", () => triggerAincradExecutionFlow(30, targetType, customVpKey));
-      document.getElementById("slow-mode-btn").addEventListener("click", () => triggerAincradExecutionFlow(45, targetType, customVpKey));
+        </div>
+      `;
+
+      document.getElementById("speed-back-btn").addEventListener("click", showMainOptionsPanel);
+
+      container.querySelectorAll(".neo-speed-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const sec = parseInt(btn.dataset.sec, 10);
+          triggerAincradExecutionFlow(sec, targetType, customVpKey);
+        });
+      });
     }
 
+    // --- COUNTDOWN / EXECUTION FLOW ---
     async function triggerAincradExecutionFlow(selectedSeconds, targetType, customVpKey = null) {
-      const mainPanelContainer = document.getElementById("lukyy-auth");
-      if (mainPanelContainer) { mainPanelContainer.remove(); }
-      
-      const checkOverlay = document.createElement('div');
-      checkOverlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:#05070c; z-index:2147483647; display:flex; align-items:center; justify-content:center; font-family:'Inter', sans-serif;";
-      
-      let panelBorder = currentUserTier === "premium" ? "rgba(255,215,0,0.3)" : "rgba(0,243,255,0.3)";
-      let numColor = currentUserTier === "premium" ? "#ffd700" : "#00f3ff";
+      const mainPanel = document.getElementById("lukyy-auth");
+      if (mainPanel) mainPanel.remove();
 
-      checkOverlay.innerHTML = `
-        <div style="text-align:center; background:rgba(10,14,30,0.85); backdrop-filter:blur(30px); padding:60px 50px; border-radius:36px; border:1px solid ${panelBorder}; width:min(380px, 90vw); box-shadow: 0 60px 150px rgba(0,0,0,0.95), inset 0 1px 2px rgba(255,255,255,0.05); position:relative; overflow:hidden;">
-          <canvas id="lukyy-lava-canvas" width="380" height="420" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; opacity:0.4; pointer-events:none;"></canvas>
-          <div style="position:relative; z-index:2;">
-            <div id="countdown-container" style="width: 130px; height: 130px; border-radius: 50%; border: 3px solid ${numColor}; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; font-size:50px; font-weight:900; color:${numColor}; margin:0 auto 32px auto; transition: all 0.15s ease; font-family:'Space Grotesk', sans-serif; box-shadow: inset 0 0 30px rgba(0,0,0,0.9);">
-              <span id="countdown-text" style="filter: drop-shadow(0 0 15px ${numColor});">${selectedSeconds}</span>
+      const overlay = document.createElement("div");
+      overlay.className = "neo-countdown-overlay";
+      overlay.id = "lukyy-countdown";
+      
+      let borderColor = currentUserTier === "premium" ? "#ffd700" : "#7850ff";
+      let numColor = currentUserTier === "premium" ? "#ffd700" : "#7850ff";
+
+      overlay.innerHTML = `
+        <div class="neo-countdown-card">
+          <canvas id="lukyy-lava-canvas" width="400" height="440" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.3;pointer-events:none;"></canvas>
+          <div style="position:relative;z-index:2;">
+            <div class="neo-countdown-circle" id="countdown-container">
+              <span id="countdown-text">${selectedSeconds}</span>
             </div>
-            <p id="lukyy-check-text" style="color:#fff; font-size:18px; font-weight:800; margin:0; font-family:'Space Grotesk'; text-transform:uppercase; letter-spacing:1.5px;">Injecting Payload...</p>
-            <p style="color:#94a3b8; font-size:13px; margin-top:12px; font-weight:500;">Biarin kita memasak di dapur 🍳🔥</p>
+            <p class="neo-countdown-text" id="lukyy-check-text">Injecting Payload...</p>
+            <p class="neo-countdown-sub">Biarin kita memasak di dapur 🍳🔥</p>
           </div>
-        </div>`;
-      document.body.appendChild(checkOverlay);
+        </div>
+      `;
+      document.body.appendChild(overlay);
 
-      if (audioContext && audioContext.state === "suspended") { audioContext.resume(); }
+      if (audioContext && audioContext.state === "suspended") audioContext.resume();
 
-      const countdownTextNode = document.getElementById('countdown-text');
-      const checkTextNode = document.getElementById('lukyy-check-text');
-      const countdownContainer = document.getElementById('countdown-container');
-      const canvas = document.getElementById('lukyy-lava-canvas');
-      const ctx = canvas.getContext('2d');
-      
+      const countdownText = document.getElementById("countdown-text");
+      const checkText = document.getElementById("lukyy-check-text");
+      const countdownContainer = document.getElementById("countdown-container");
+      const canvas = document.getElementById("lukyy-lava-canvas");
+      const ctx = canvas.getContext("2d");
+
       let isTimerRunning = true;
-
       let vpKey = customVpKey;
       let apiTargetType = targetType;
 
       if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") {
-        apiTargetType = "vp"; 
+        apiTargetType = "vp";
       }
 
-      // EKSTRAKSI KHUSUS VPLINK (VIP, POWERCHEATS, UNIVERSAL)
+      // Extraction for vplink targets
       if (targetType === "vp") {
-        checkTextNode.innerText = "Scanning vplink.in... 🔍";
+        checkText.innerText = "Scanning vplink.in... 🔍";
         const vpUrl = extractVpLinkUrl();
         if (vpUrl) vpKey = extractVpKey(vpUrl);
       } else if (targetType === "pc") {
-        checkTextNode.innerText = "Scanning PowerCheats... 🔍";
+        checkText.innerText = "Scanning PowerCheats... 🔍";
         const vpUrl = extractPowerCheatsUrl();
         if (vpUrl) vpKey = extractVpKey(vpUrl);
       } else if (targetType === "uni_vp") {
-        checkTextNode.innerText = "Parsing Uni-Vplink... 🔍";
+        checkText.innerText = "Parsing Uni-Vplink... 🔍";
       }
 
       if ((targetType === "vp" || targetType === "pc" || targetType === "uni_vp") && !vpKey) {
-        checkTextNode.innerText = "❌ TARGET NOT FOUND!";
-        checkTextNode.style.color = "#ff0055";
-        if (countdownTextNode) {
-            countdownTextNode.innerText = "!";
-            countdownTextNode.style.color = "#ff0055";
-            countdownContainer.style.borderColor = "#ff0055";
-        }
+        checkText.innerText = "❌ TARGET NOT FOUND!";
+        checkText.style.color = "#ff0055";
+        countdownText.innerText = "!";
+        countdownText.style.color = "#ff0055";
+        countdownContainer.style.borderColor = "#ff0055";
         isTimerRunning = false;
-        setTimeout(() => { 
-          checkOverlay.remove(); 
-          document.body.appendChild(_0x4e5c68);
-          showMainOptionsPanel(); 
+        setTimeout(() => {
+          overlay.remove();
+          document.body.appendChild(panel);
+          showMainOptionsPanel();
         }, 3500);
         return;
       }
       if (vpKey) {
-        checkTextNode.innerText = `Key Acquired: ${vpKey.substring(0, 8)}... 🔥`;
+        checkText.innerText = `Key Acquired: ${vpKey.substring(0,8)}... 🔥`;
       }
 
-      // MULAI KICK OFF API FETCH DI BACKGROUND
+      // Start fetching in background
       let finalRedirectUrl = _0x439d89.fallbackRedirectUrl;
       fetchDestinationUrl(apiTargetType, 1, vpKey).then(fetchedUrl => {
-          finalRedirectUrl = fetchedUrl;
-      }).catch(err => {
-          console.error("API Error: ", err);
-      });
+        finalRedirectUrl = fetchedUrl;
+      }).catch(err => console.error("API Error:", err));
 
       let timeLeft = selectedSeconds;
       let globs = [];
-      
-      let lavaHue = currentUserTier === "premium" ? 45 : 180; 
-      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") lavaHue = 300; 
+      let lavaHue = currentUserTier === "premium" ? 45 : 240;
+      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") lavaHue = 300;
 
-      for (let i = 0; i < 12; i++) {
-        globs.push({ x: Math.random() * canvas.width, y: canvas.height + (Math.random() * 100), baseY: canvas.height + (Math.random() * 100), r: Math.random() * 30 + 15, speed: Math.random() * 0.6 + 0.2, color: `hsla(${Math.random() * 30 + lavaHue}, 100%, 50%, 0.7)`, phase: Math.random() * Math.PI * 2 });
+      for (let i = 0; i < 14; i++) {
+        globs.push({
+          x: Math.random() * canvas.width,
+          y: canvas.height + (Math.random() * 120),
+          baseY: canvas.height + (Math.random() * 120),
+          r: Math.random() * 32 + 14,
+          speed: Math.random() * 0.7 + 0.2,
+          color: `hsla(${Math.random() * 30 + lavaHue}, 100%, 55%, 0.6)`,
+          phase: Math.random() * Math.PI * 2
+        });
       }
 
-      function renderLavaLamp() {
+      function renderLava() {
         if (!isTimerRunning) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let audioIntensity = 0; let bassIntensity = 0;
-
+        let audioIntensity = 0;
+        let bassIntensity = 0;
         if (audioAnalyser && audioDataArray) {
           audioAnalyser.getByteFrequencyData(audioDataArray);
-          let sum = 0; for (let i = 0; i < audioDataArray.length; i++) { sum += audioDataArray[i]; }
+          let sum = 0;
+          for (let i = 0; i < audioDataArray.length; i++) sum += audioDataArray[i];
           audioIntensity = sum / audioDataArray.length;
-          let bassSum = 0; for (let i = 0; i < 8; i++) { bassSum += audioDataArray[i]; }
-          bassIntensity = bassSum / 8;
+          let bSum = 0;
+          for (let i = 0; i < 8; i++) bSum += audioDataArray[i];
+          bassIntensity = bSum / 8;
 
-          let scaleValue = 1.0 + (bassIntensity / 255) * 0.15;
-          let glowValue = 20 + (bassIntensity / 255) * 40;
-          if (countdownContainer) {
-            let glowC = currentUserTier === "premium" ? "255,215,0" : "0,243,255";
-            if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") glowC = "255,0,234";
-            
-            countdownContainer.style.transform = `scale(${scaleValue})`;
-            countdownContainer.style.boxShadow = `0 0 ${glowValue}px rgba(${glowC},${0.3 + (bassIntensity/255)*0.5}), inset 0 0 30px rgba(0,0,0,0.9)`;
-            countdownContainer.style.borderColor = `rgba(${glowC},${0.5 + (bassIntensity/255)*0.5})`;
-          }
+          let scaleVal = 1.0 + (bassIntensity / 255) * 0.15;
+          let glowVal = 20 + (bassIntensity / 255) * 40;
+          let glowC = currentUserTier === "premium" ? "255,215,0" : "120,80,255";
+          if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") glowC = "255,0,234";
+          countdownContainer.style.transform = `scale(${scaleVal})`;
+          countdownContainer.style.boxShadow = `0 0 ${glowVal}px rgba(${glowC},${0.3 + (bassIntensity/255)*0.5}), inset 0 0 40px rgba(0,0,0,0.8)`;
+          countdownContainer.style.borderColor = `rgba(${glowC},${0.5 + (bassIntensity/255)*0.5})`;
         }
 
-        ctx.filter = 'blur(20px)';
-        for (let i = 0; i < globs.length; i++) {
-          let g = globs[i]; g.phase += 0.01; g.x += Math.sin(g.phase) * 0.5;
-          let currentSpeed = g.speed + (audioIntensity / 255) * 2; g.y -= currentSpeed;
-          let currentR = g.r + (audioIntensity / 255) * 12;
-          if (g.y < -currentR * 2) { g.y = g.baseY; g.x = Math.random() * canvas.width; }
-          ctx.beginPath(); ctx.arc(g.x, g.y, currentR, 0, Math.PI * 2); ctx.fillStyle = g.color; ctx.fill();
+        ctx.filter = "blur(22px)";
+        for (let g of globs) {
+          g.phase += 0.01;
+          g.x += Math.sin(g.phase) * 0.6;
+          let speed = g.speed + (audioIntensity / 255) * 2.2;
+          g.y -= speed;
+          let r = g.r + (audioIntensity / 255) * 14;
+          if (g.y < -r * 2) { g.y = g.baseY; g.x = Math.random() * canvas.width; }
+          ctx.beginPath();
+          ctx.arc(g.x, g.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = g.color;
+          ctx.fill();
         }
-        ctx.filter = 'none';
-        requestAnimationFrame(renderLavaLamp);
+        ctx.filter = "none";
+        requestAnimationFrame(renderLava);
       }
-      requestAnimationFrame(renderLavaLamp);
+      requestAnimationFrame(renderLava);
 
       const timerInterval = setInterval(() => {
         timeLeft--;
-        if (countdownTextNode) countdownTextNode.innerText = timeLeft;
-        if (timeLeft <= 0) { clearInterval(timerInterval); isTimerRunning = false; executeFinalRedirectFlow(); }
+        if (countdownText) countdownText.innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          isTimerRunning = false;
+          executeFinalRedirect();
+        }
       }, 1000);
 
-      function executeFinalRedirectFlow() {
-        if (countdownTextNode) { countdownTextNode.innerText = "✓"; countdownTextNode.style.color = "#00ff88"; countdownContainer.style.borderColor = "#00ff88"; }
-        if (checkTextNode) { checkTextNode.innerText = "BYPASS SUCCESS 🔥"; checkTextNode.style.color = "#00ff88"; }
+      function executeFinalRedirect() {
+        countdownText.innerText = "✓";
+        countdownText.style.color = "#00ff88";
+        countdownContainer.style.borderColor = "#00ff88";
+        checkText.innerText = "BYPASS SUCCESS 🔥";
+        checkText.style.color = "#00ff88";
         setTimeout(() => {
-            checkOverlay.remove();
-            fakeVisualizer(finalRedirectUrl);
+          overlay.remove();
+          fakeVisualizer(finalRedirectUrl);
         }, 1500);
       }
     }
 
-    // VALIDASI KEY KE API VERCEL
+    // --- KEY VERIFICATION ---
     async function processKeyVerification(rawKey, isAutoLogin = false) {
       const inputKeyClean = rawKey.trim();
       originalPremiumKeyRaw = inputKeyClean;
@@ -951,11 +1522,10 @@
         const response = await fetch(`${_0x439d89.keyUrl}?key=${encodeURIComponent(inputKeyClean)}`);
         const result = await response.json();
 
-        // JIKA MENANG / SUKSES VALIDASI
         if (response.ok && result.status === "success") {
           currentUserTier = result.type ? result.type.toLowerCase().trim() : "biasa";
           localStorage.setItem("lukyy_saved_key", inputKeyClean);
-          if (_0x224146) _0x224146.value = inputKeyClean;
+          if (keyInput) keyInput.value = inputKeyClean;
 
           let formattedWIB = "LIFETIME / PERMANENT";
           if (result.expiry && result.expiry !== "permanent" && !isNaN(result.expiry)) {
@@ -968,79 +1538,78 @@
             document.getElementById("badge-text").innerText = "👑 VIP SYSTEM ACTIVE";
             document.getElementById("badge-dot").style.background = "#ffd700";
             document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
-            document.getElementById("status-msg").innerText = "👑 WONG PUSAT PRIVILEGE";
-            document.getElementById("status-msg").style.color = "#ffd700";
-            document.getElementById("status-msg").style.borderColor = "rgba(255,215,0,0.2)";
-            document.getElementById("status-msg").style.background = "rgba(255,215,0,0.04)";
-            _0x218e14.textContent = "⏭️"; 
-
-            _0x22304b.innerHTML = isAutoLogin ? "⚡ AUTO LOGIN VIP!" : "👑 ACCESS GRANTED!";
-            _0x22304b.style.color = "#ffd700";
-            _0x51b440.disabled = _0x2825ed.disabled = false;
+            statusMsg.innerText = "👑 WONG PUSAT PRIVILEGE";
+            statusMsg.style.color = "#ffd700";
+            statusMsg.style.borderColor = "rgba(255,215,0,0.15)";
+            statusMsg.style.background = "rgba(255,215,0,0.03)";
+            musicBtn.textContent = "⏭️";
 
             showCustomModal(
-              "👑 SEPUH DETECTED", 
-              `Welcome back Wong Pusat!\n\nExpired: ${formattedWIB}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`, 
-              "👑", 
-              () => { lockDashboardMenu(formattedWIB); } 
+              "👑 SEPUH DETECTED",
+              `Welcome back Wong Pusat!\n\nExpired: ${formattedWIB}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
+              "👑",
+              () => lockDashboardMenu(formattedWIB)
             );
           } else {
-            _0x22304b.innerHTML = "✅ STANDARD KEY OK!";
-            _0x22304b.style.color = "#00f3ff";
-            _0x51e42d("success"); 
-            _0x51b440.disabled = _0x2825ed.disabled = false;
-
+            statusMsg.innerText = "✅ STANDARD KEY OK!";
+            statusMsg.style.color = "#7850ff";
+            createParticles("success");
             showCustomModal(
-              "⚡ ACCESS GRANTED", 
-              `Key Biasa Valid.\n\nExpired: ${formattedWIB}\n\n🚀 EXECUTION INFO:\n• Default Auto Redirect\n• Waiting Time: 60s`, 
-              "⚡", 
-              () => { lockDashboardMenu(formattedWIB); } 
+              "⚡ ACCESS GRANTED",
+              `Key Biasa Valid.\n\nExpired: ${formattedWIB}\n\n🚀 Default Auto Redirect (60s)`,
+              "⚡",
+              () => lockDashboardMenu(formattedWIB)
             );
           }
-
         } else {
-          // JIKA SERVER VERCEL MENOLAK 
           localStorage.removeItem("lukyy_saved_key");
-          _0x22304b.innerHTML = `❌ ${result.message || 'Key Invalid / Expired!'}`;
-          _0x22304b.style.color = "#ff0055";
-          _0x22304b.style.borderColor = "rgba(255,0,85,0.15)";
-          _0x22304b.style.background = "rgba(255,0,85,0.04)";
-          _0x51e42d("error"); 
-          _0x51b440.disabled = _0x2825ed.disabled = false;
-          if (_0x224146) { _0x224146.classList.add("shake-error"); setTimeout(() => { _0x224146.classList.remove("shake-error"); }, 500); }
+          statusMsg.innerText = `❌ ${result.message || 'Key Invalid / Expired!'}`;
+          statusMsg.style.color = "#ff0055";
+          statusMsg.style.borderColor = "rgba(255,0,85,0.12)";
+          statusMsg.style.background = "rgba(255,0,85,0.03)";
+          createParticles("error");
+          if (keyInput) {
+            keyInput.classList.add("shake-error");
+            setTimeout(() => keyInput.classList.remove("shake-error"), 500);
+          }
         }
-
       } catch (err) {
-        console.error("[✗] Terjadi error saat memanggil API Vercel: ", err);
-        _0x22304b.innerHTML = "❌ SERVER CONNECTION FAILED!";
-        _0x22304b.style.color = "#ff0055";
-        _0x51e42d("error");
-        _0x51b440.disabled = _0x2825ed.disabled = true;
+        console.error("[✗] API Vercel error:", err);
+        statusMsg.innerText = "❌ SERVER CONNECTION FAILED!";
+        statusMsg.style.color = "#ff0055";
+        createParticles("error");
+        loginBtn.disabled = supportBtn.disabled = true;
       }
     }
 
-    _0x51b440.addEventListener("click", async () => {
-      const _0x428440 = _0x224146.value.trim();
-      if (!_0x428440) {
-        _0x22304b.innerHTML = "🛑 KEY KOSONG CUY!";
-        _0x22304b.style.color = "#ff0055";
-        _0x51e42d("error"); 
-        if (_0x224146) { _0x224146.classList.add("shake-error"); setTimeout(() => { _0x224146.classList.remove("shake-error"); }, 500); }
+    // --- LOGIN CLICK ---
+    loginBtn.addEventListener("click", async () => {
+      const inputVal = keyInput.value.trim();
+      if (!inputVal) {
+        statusMsg.innerText = "🛑 KEY KOSONG CUY!";
+        statusMsg.style.color = "#ff0055";
+        createParticles("error");
+        keyInput.classList.add("shake-error");
+        setTimeout(() => keyInput.classList.remove("shake-error"), 500);
         return;
       }
-      _0x22304b.innerHTML = "⏳ Validating secure signature...";
-      _0x22304b.style.color = "#00f3ff";
-      _0x51b440.disabled = _0x2825ed.disabled = true;
+      statusMsg.innerText = "⏳ Validating secure signature...";
+      statusMsg.style.color = "#7850ff";
+      loginBtn.disabled = supportBtn.disabled = true;
 
-      setTimeout(() => { processKeyVerification(_0x428440, false); }, 1200);
+      setTimeout(() => processKeyVerification(inputVal, false), 1200);
     });
 
+    // --- AUTO LOAD SAVED KEY ---
     const savedKey = localStorage.getItem("lukyy_saved_key");
     if (savedKey) {
-      _0x224146.value = savedKey;
-      _0x22304b.innerHTML = "💾 SAVED KEY LOADED. CLICK UNLOCK!";
-      _0x22304b.style.color = "#ff8c00";
+      keyInput.value = savedKey;
+      statusMsg.innerText = "💾 SAVED KEY LOADED. CLICK UNLOCK!";
+      statusMsg.style.color = "#ff8c00";
     }
+
+    // start music
+    _0x58cd45();
 
   })();
 })();
