@@ -6,7 +6,9 @@
     return;
   }
 
-  // --- CONFIGURATION ---
+  // ============================================================
+  // CONFIG
+  // ============================================================
   const CONFIG = {
     keyUrl: "https://database-nine-flax.vercel.app/getkeys",
     apiBaseUrl: "https://lol.a2mbd3.workers.dev",
@@ -47,7 +49,9 @@
   let rawPremiumKey = "";
   let currentMusicIndex = 0;
 
-  // --- UTILITY FUNCTIONS (SAME) ---
+  // ============================================================
+  // UTILITY FUNCTIONS
+  // ============================================================
   function extractVpLinkUrl() {
     try {
       const anchors = document.querySelectorAll("a");
@@ -119,7 +123,11 @@
     }
   }
 
-  // --- TOTP & API (SAME) ---
+  function redirectTo(url) { window.location.href = url; }
+
+  // ============================================================
+  // TOTP & API
+  // ============================================================
   class TOTP {
     constructor(secret) {
       this.secret = secret;
@@ -250,7 +258,9 @@
     return CONFIG.fallbackRedirectUrl;
   }
 
-  // --- MUSIC ---
+  // ============================================================
+  // MUSIC & AUDIO VISUALIZER
+  // ============================================================
   function playRandomMusic() {
     const idx = Math.floor(Math.random() * CONFIG.musicList.length);
     const src = CONFIG.musicList[idx];
@@ -298,12 +308,12 @@
       const panel = document.getElementById("lukyy-auth");
 
       if (input && document.activeElement !== input && !input.classList.contains("shake-error")) {
-        let color = userTier === "premium" ? "255,215,0" : "120,80,255";
+        let color = userTier === "premium" ? "255,215,0" : "0,240,255";
         input.style.borderColor = `rgba(${color}, ${opacity})`;
         input.style.boxShadow = `0 0 ${glow}px rgba(${color}, ${(intensity/255)*0.4}), inset 0 2px 10px rgba(0,0,0,0.5)`;
       }
       if (panel) {
-        let shadowColor = userTier === "premium" ? "255,215,0,0.2" : "120,80,255,0.2";
+        let shadowColor = userTier === "premium" ? "255,215,0,0.2" : "0,240,255,0.2";
         panel.style.boxShadow = `0 40px 100px rgba(0,0,0,0.8), 0 0 ${(intensity/255)*40}px rgba(${shadowColor}), inset 0 1px 1px rgba(255,255,255,0.05)`;
       }
       if (badge) badge.style.transform = `scale(${scale})`;
@@ -311,393 +321,559 @@
     requestAnimationFrame(updateReactive);
   }
 
-  // --- PARTICLES (NEW) ---
-  function spawnParticles(theme = "default") {
-    const old = document.getElementById("lukyy-particles");
+  // ============================================================
+  // CYBER PARTICLES (JARINGAN TITIK)
+  // ============================================================
+  function initCyberParticles() {
+    const old = document.getElementById("cyber-particles");
     if (old) old.remove();
 
-    const container = document.createElement("div");
-    container.id = "lukyy-particles";
-    container.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483646;overflow:hidden;";
+    const canvas = document.createElement("canvas");
+    canvas.id = "cyber-particles";
+    canvas.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483645;";
+    document.body.appendChild(canvas);
 
-    let chars = ["✦", "◈", "◇", "❖", "✧", "✦", "◈"];
-    if (userTier === "premium") chars = ["✦", "◆", "◈", "◉", "✦", "✧", "◆"];
-    if (theme === "success") chars = ["✦", "✦", "✦", "✦", "✦"];
-    if (theme === "error") chars = ["✖", "✖", "✖", "✖", "✖"];
+    const ctx = canvas.getContext("2d");
+    let w, h;
+    const dots = [];
+    const COUNT = 60;
+    const DIST = 120;
 
-    const count = window.innerWidth < 600 ? 20 : 35;
-    const color = userTier === "premium" ? "rgba(255,215,0,0.5)" : "rgba(120,80,255,0.4)";
-
-    for (let i = 0; i < count; i++) {
-      const el = document.createElement("div");
-      el.textContent = chars[Math.floor(Math.random() * chars.length)];
-      const size = Math.random() * 14 + 8;
-      const dur = Math.random() * 12 + 8;
-      const delay = Math.random() * 6;
-      const x = Math.random() * 100;
-      const drift = (Math.random() - 0.5) * 80;
-      el.style.cssText = `position:absolute; font-size:${size}px; left:${x}%; bottom:-10%; user-select:none; pointer-events:none; color:${color}; filter: drop-shadow(0 0 8px ${color}); animation:float-${i} ${dur}s linear infinite; animation-delay:${delay}s; opacity:${Math.random()*0.4+0.3};`;
-      const style = document.createElement("style");
-      style.textContent = `
-        @keyframes float-${i} {
-          0% { transform: translateY(0) translateX(0) rotate(0deg) scale(0.6); opacity: 0; }
-          15% { opacity: 0.9; transform: translateY(10px) scale(1); }
-          50% { transform: translateY(-45vh) translateX(${drift}px) rotate(180deg) scale(1.2); }
-          85% { opacity: 0.7; }
-          100% { transform: translateY(-110vh) translateX(${-drift*0.5}px) rotate(360deg) scale(0.8); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(style);
-      container.appendChild(el);
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
     }
-    document.body.appendChild(container);
+    window.addEventListener("resize", resize);
+    resize();
+
+    for (let i = 0; i < COUNT; i++) {
+      dots.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (let d of dots) {
+        d.x += d.vx;
+        d.y += d.vy;
+        if (d.x < 0 || d.x > w) d.vx *= -1;
+        if (d.y < 0 || d.y > h) d.vy *= -1;
+      }
+      // garis
+      for (let i = 0; i < dots.length; i++) {
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = dots[i].x - dots[j].x;
+          const dy = dots[i].y - dots[j].y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < DIST) {
+            const alpha = 1 - (dist / DIST);
+            ctx.beginPath();
+            ctx.moveTo(dots[i].x, dots[i].y);
+            ctx.lineTo(dots[j].x, dots[j].y);
+            ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.25})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+      // titik
+      for (let d of dots) {
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#00f0ff";
+        ctx.shadowColor = "#00f0ff";
+        ctx.shadowBlur = 8;
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      requestAnimationFrame(draw);
+    }
+    draw();
   }
 
-  // --- MODAL (NEW) ---
-  function showModal(title, msg, icon, onConfirm) {
+  // ============================================================
+  // HOLOGRAPHIC MODAL
+  // ============================================================
+  function showHoloModal(title, msg, icon, onConfirm) {
     const overlay = document.createElement("div");
-    overlay.id = "lukyy-modal";
-    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.5s;background:rgba(0,0,0,0.8);backdrop-filter:blur(20px);";
-    const grad = userTier === "premium" ? "#ffd700,#f7971e" : "#7850ff,#4a2c8a";
-    const btnGrad = userTier === "premium" ? "linear-gradient(135deg,#ffd700,#f7971e)" : "linear-gradient(135deg,#7850ff,#4a2c8a)";
-    const shadow = userTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(120,80,255,0.4)";
-    const border = userTier === "premium" ? "rgba(255,215,0,0.2)" : "rgba(120,80,255,0.2)";
-
+    overlay.id = "holo-modal";
+    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.6s;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);";
     overlay.innerHTML = `
-      <div style="padding:40px 32px;border:1px solid ${border};border-radius:40px;width:min(420px,90vw);text-align:center;transform:scale(0.9) translateY(30px);transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);box-sizing:border-box;background:rgba(10,12,28,0.92);backdrop-filter:blur(40px);box-shadow:0 40px 120px rgba(0,0,0,0.9),inset 0 1px 1px rgba(255,255,255,0.05);">
-        <div style="font-size:72px;margin-bottom:12px;filter:drop-shadow(0 0 40px ${shadow});">${icon}</div>
-        <h4 style="margin:0 0 10px 0;font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:800;background:linear-gradient(135deg,${grad});-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.5px;">${title}</h4>
-        <p style="font-size:15px;line-height:1.9;margin:0 0 28px 0;font-weight:500;color:#a0b4d0;white-space:pre-line;text-align:left;">${msg}</p>
-        <button id="modal-ok" style="width:100%;background:${btnGrad};color:#000;border:none;padding:18px;border-radius:20px;font-weight:800;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:15px;text-transform:uppercase;letter-spacing:1.5px;box-shadow:0 10px 40px ${shadow};transition:all 0.3s;">⚡ Gaskeun</button>
+      <div style="background:rgba(0,10,20,0.85);border:2px solid rgba(0,240,255,0.4);border-radius:24px;padding:36px 32px;width:min(420px,90vw);text-align:center;box-shadow:0 0 60px rgba(0,240,255,0.15),inset 0 0 60px rgba(0,240,255,0.05);transform:scale(0.9) rotateX(5deg);transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);">
+        <div style="font-size:68px;margin-bottom:10px;filter:drop-shadow(0 0 30px rgba(0,240,255,0.6));">${icon}</div>
+        <h2 style="font-size:28px;font-weight:700;color:#fff;text-shadow:0 0 20px rgba(0,240,255,0.3);margin:0 0 8px;letter-spacing:2px;">${title}</h2>
+        <p style="font-size:15px;line-height:1.8;color:#b0d0e0;margin:0 0 28px;text-align:left;">${msg}</p>
+        <button id="holo-modal-btn" style="background:linear-gradient(135deg,#00f0ff,#ff00ff);border:none;padding:16px 32px;border-radius:40px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:14px;color:#000;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 0 40px rgba(0,240,255,0.4);transition:all 0.3s;">⚡ Execute</button>
       </div>
     `;
     document.body.appendChild(overlay);
     setTimeout(() => {
       overlay.style.opacity = "1";
       const card = overlay.querySelector("div");
-      card.style.transform = "scale(1) translateY(0)";
+      card.style.transform = "scale(1) rotateX(0)";
     }, 50);
-    document.getElementById("modal-ok").addEventListener("click", () => {
+    document.getElementById("holo-modal-btn").addEventListener("click", () => {
       overlay.style.opacity = "0";
-      overlay.querySelector("div").style.transform = "scale(0.95) translateY(-20px)";
-      setTimeout(() => { overlay.remove(); if (onConfirm) onConfirm(); }, 400);
+      overlay.querySelector("div").style.transform = "scale(0.9) rotateX(-5deg)";
+      setTimeout(() => { overlay.remove(); if (onConfirm) onConfirm(); }, 500);
     });
   }
 
-  function redirectTo(url) { window.location.href = url; }
-
   // ============================================================
-  // MAIN UI - BRAND NEW
+  // BUILD MAIN PANEL (HOLOGRAPHIC)
   // ============================================================
-  (function init() {
-    spawnParticles("default");
+  function buildMainPanel() {
+    const old = document.getElementById("lukyy-auth");
+    if (old) old.remove();
 
-    const oldPanel = document.getElementById("lukyy-auth");
-    if (oldPanel) oldPanel.remove();
-
-    // --- STYLES ---
     const style = document.createElement("style");
     style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
       * { box-sizing: border-box; }
       #lukyy-auth {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Rajdhani', sans-serif;
         position: fixed;
         top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) perspective(800px) rotateX(2deg);
         z-index: 2147483647;
-        width: min(440px, 94vw);
-        max-height: 95vh;
+        width: min(460px, 94vw);
+        max-height: 92vh;
         overflow-y: auto;
-        background: radial-gradient(ellipse at 30% 20%, rgba(40,20,80,0.7), rgba(8,6,18,0.95));
-        backdrop-filter: blur(40px);
-        -webkit-backdrop-filter: blur(40px);
-        border: 1px solid rgba(120,80,255,0.2);
-        border-radius: 40px;
-        padding: 40px 32px 32px;
-        box-shadow: 0 60px 160px rgba(0,0,0,0.95), 0 0 80px rgba(120,80,255,0.05), inset 0 1px 1px rgba(255,255,255,0.04);
-        transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-        color: #fff;
+        background: rgba(0, 10, 25, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(0, 240, 255, 0.25);
+        border-radius: 32px;
+        padding: 32px 28px 28px;
+        box-shadow: 0 0 80px rgba(0, 240, 255, 0.08), inset 0 0 80px rgba(0, 240, 255, 0.02);
+        color: #e0f0ff;
         scrollbar-width: thin;
-        scrollbar-color: rgba(120,80,255,0.3) transparent;
+        scrollbar-color: rgba(0,240,255,0.3) transparent;
+        transition: all 0.4s ease;
       }
       #lukyy-auth::-webkit-scrollbar { width: 4px; }
-      #lukyy-auth::-webkit-scrollbar-track { background: transparent; }
-      #lukyy-auth::-webkit-scrollbar-thumb { background: rgba(120,80,255,0.3); border-radius: 20px; }
+      #lukyy-auth::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.3); border-radius: 10px; }
 
-      .panel-content { position: relative; z-index: 1; }
+      .panel-content { position: relative; z-index: 2; }
 
-      .neo-badge {
+      .holo-avatar {
+        position: absolute;
+        top: -30px; left: 50%;
+        transform: translateX(-50%) scale(0.9);
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        border: 2px solid rgba(0,240,255,0.6);
+        box-shadow: 0 0 40px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.1);
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        animation: avatarPulse 3s infinite;
+      }
+      .holo-avatar:hover {
+        transform: translateX(-50%) scale(1.1) rotate(0deg);
+        box-shadow: 0 0 80px rgba(0,240,255,0.5);
+        border-color: #ff00ff;
+      }
+      .holo-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      @keyframes avatarPulse {
+        0%, 100% { box-shadow: 0 0 40px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.1); }
+        50% { box-shadow: 0 0 80px rgba(255,0,255,0.3), inset 0 0 40px rgba(255,0,255,0.1); }
+      }
+
+      .holo-music {
+        position: absolute;
+        top: -20px; right: -10px;
+        background: rgba(0,10,25,0.8);
+        border: 1px solid rgba(255,0,255,0.3);
+        color: #ff00ff;
+        border-radius: 50%;
+        width: 48px; height: 48px;
+        cursor: pointer;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 30px rgba(255,0,255,0.15);
+        transition: all 0.4s;
+      }
+      .holo-music:hover { transform: scale(1.15) rotate(10deg); border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 60px rgba(0,240,255,0.3); }
+
+      .holo-badge {
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        background: rgba(0,0,0,0.5);
-        padding: 8px 20px;
+        background: rgba(0,0,0,0.4);
+        padding: 6px 18px;
         border-radius: 40px;
-        border: 1px solid rgba(120,80,255,0.15);
-        backdrop-filter: blur(8px);
-        box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
-        margin-bottom: 18px;
-        transition: all 0.3s ease;
-      }
-      .neo-badge-dot {
-        width: 10px; height: 10px;
-        border-radius: 50%;
-        background: #7850ff;
-        box-shadow: 0 0 20px #7850ff, 0 0 40px #7850ff;
-        animation: neonPulse 2s infinite;
-      }
-      .neo-badge-text {
+        border: 1px solid rgba(0,240,255,0.15);
+        backdrop-filter: blur(6px);
+        margin-bottom: 16px;
+        letter-spacing: 2px;
         font-size: 11px;
         font-weight: 700;
-        letter-spacing: 2.5px;
-        color: #cbd5e1;
         text-transform: uppercase;
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: 'Orbitron', sans-serif;
+      }
+      .holo-badge-dot {
+        width: 8px; height: 8px;
+        background: #00f0ff;
+        border-radius: 50%;
+        box-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
+        animation: dotPulse 1.5s infinite;
+      }
+      @keyframes dotPulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
       }
 
-      .neo-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 40px;
+      .holo-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 34px;
         font-weight: 900;
-        background: linear-gradient(135deg, #ffffff 0%, #7850ff 50%, #4a2c8a 100%);
-        background-size: 200% 200%;
+        text-align: center;
+        background: linear-gradient(135deg, #00f0ff, #ff00ff, #00f0ff);
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        letter-spacing: -2px;
-        margin: 0 0 6px 0;
-        filter: drop-shadow(0 0 30px rgba(120,80,255,0.2));
-        animation: gradientShift 6s ease infinite;
-        text-align: center;
+        animation: gradShift 4s ease infinite;
+        letter-spacing: 4px;
+        margin: 0 0 4px;
+        text-shadow: 0 0 40px rgba(0,240,255,0.2);
       }
-      .neo-quote {
+      @keyframes gradShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+
+      .holo-quote {
         font-size: 15px;
         font-weight: 500;
-        color: #94a3b8;
-        margin: 8px 0 4px 0;
-        line-height: 1.6;
+        color: #90b8d0;
+        text-align: center;
         min-height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 8px;
-        text-align: center;
+        padding: 0 10px;
+        margin: 6px 0 10px;
+        border-top: 1px solid rgba(0,240,255,0.06);
+        border-bottom: 1px solid rgba(0,240,255,0.06);
+        padding: 10px 0;
+        font-style: italic;
       }
-      .neo-input-wrapper {
+
+      .holo-input-wrap {
         position: relative;
         width: 100%;
-        margin-bottom: 22px;
+        margin: 16px 0 20px;
       }
-      .neo-input {
+      .holo-input {
         width: 100%;
-        padding: 18px 90px 18px 24px;
-        background: rgba(0,0,0,0.6);
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 20px;
-        color: #fff;
-        font-family: 'Inter', sans-serif;
-        font-size: 15px;
+        padding: 16px 90px 16px 24px;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(0,240,255,0.15);
+        border-radius: 40px;
+        color: #e0f0ff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 16px;
         font-weight: 600;
         outline: none;
-        backdrop-filter: blur(12px);
-        transition: all 0.3s ease;
-        letter-spacing: 0.5px;
-        box-sizing: border-box;
-        text-align: left;
+        backdrop-filter: blur(6px);
+        transition: all 0.3s;
+        letter-spacing: 1px;
       }
-      .neo-input:focus {
-        border-color: #7850ff;
-        box-shadow: 0 0 50px rgba(120,80,255,0.25), inset 0 2px 15px rgba(0,0,0,0.6);
-        transform: scale(1.01);
-        background: rgba(8,6,18,0.9);
+      .holo-input:focus {
+        border-color: #ff00ff;
+        box-shadow: 0 0 60px rgba(255,0,255,0.15), inset 0 0 20px rgba(255,0,255,0.05);
+        background: rgba(0,0,0,0.7);
       }
-      .neo-input::placeholder {
-        color: rgba(255,255,255,0.2);
-        font-weight: 500;
-        letter-spacing: 0.5px;
-      }
-      .neo-input:disabled {
-        background: rgba(255,215,0,0.04) !important;
-        color: #ffd700 !important;
-        border-color: rgba(255,215,0,0.2) !important;
-        cursor: not-allowed;
-        font-weight: 700;
+      .holo-input::placeholder { color: rgba(255,255,255,0.2); letter-spacing: 1px; }
+      .holo-input:disabled {
+        background: rgba(255,215,0,0.04);
+        color: #ffd700;
+        border-color: #ffd700;
         text-align: center;
-        -webkit-text-fill-color: #ffd700 !important;
-        text-shadow: 0 0 20px rgba(255,215,0,0.1);
+        -webkit-text-fill-color: #ffd700;
       }
-      .neo-input-actions {
+
+      .holo-actions {
         position: absolute;
-        right: 14px;
+        right: 16px;
         top: 50%;
         transform: translateY(-50%);
         display: flex;
-        align-items: center;
-        gap: 6px;
+        gap: 4px;
         z-index: 5;
       }
-      .neo-icon-btn {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.04);
-        border-radius: 12px;
-        width: 38px;
-        height: 38px;
+      .holo-icon-btn {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(0,240,255,0.08);
+        border-radius: 50%;
+        width: 34px; height: 34px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
+        font-size: 14px;
         cursor: pointer;
-        color: #94a3b8;
-        transition: all 0.25s ease;
-        backdrop-filter: blur(8px);
-        padding: 0;
+        color: #70b0d0;
+        transition: all 0.25s;
       }
-      .neo-icon-btn:hover {
-        background: rgba(120,80,255,0.12);
-        border-color: #7850ff;
+      .holo-icon-btn:hover {
+        background: rgba(0,240,255,0.1);
+        border-color: #00f0ff;
         color: #fff;
-        transform: scale(1.1) rotate(-3deg);
-        box-shadow: 0 0 25px rgba(120,80,255,0.2);
+        transform: scale(1.1);
+        box-shadow: 0 0 30px rgba(0,240,255,0.15);
       }
 
-      .neo-btn-primary {
+      .holo-btn-primary {
         width: 100%;
-        padding: 20px;
+        padding: 18px;
         border: none;
-        border-radius: 20px;
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 800;
-        font-size: 16px;
+        border-radius: 40px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #00f0ff, #ff00ff);
+        color: #000;
+        box-shadow: 0 0 50px rgba(0,240,255,0.2);
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+      .holo-btn-primary:hover {
+        transform: scale(1.02) translateY(-3px);
+        box-shadow: 0 0 80px rgba(0,240,255,0.4);
+        filter: brightness(1.1);
+      }
+      .holo-btn-primary:active { transform: scale(0.98); }
+
+      .holo-btn-secondary {
+        width: 100%;
+        padding: 14px;
+        border-radius: 40px;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 1px;
+        cursor: pointer;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(0,240,255,0.1);
+        color: #90b8d0;
+        transition: all 0.3s;
+        text-align: center;
+      }
+      .holo-btn-secondary:hover {
+        background: rgba(0,240,255,0.06);
+        border-color: #00f0ff;
+        color: #fff;
+        box-shadow: 0 0 30px rgba(0,240,255,0.05);
+      }
+
+      .holo-status {
+        margin-top: 22px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #00f0ff;
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        padding: 8px 16px;
+        border-radius: 40px;
+        border: 1px solid rgba(0,240,255,0.06);
+        background: rgba(0,0,0,0.2);
+        text-align: center;
+        opacity: 0.8;
+      }
+
+      .holo-timer {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffdd00;
+        margin-top: 8px;
+        display: none;
+        background: rgba(255,215,0,0.04);
+        padding: 6px 14px;
+        border-radius: 40px;
+        border: 1px solid rgba(255,215,0,0.08);
+        text-align: center;
+      }
+
+      .holo-menu-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 8px;
+        width: 100%;
+      }
+      .holo-menu-btn {
+        padding: 16px;
+        border-radius: 40px;
+        border: none;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
+        transition: all 0.3s;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(0,240,255,0.08);
+        color: #b0d0e0;
+        text-align: center;
+        width: 100%;
         position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, #7850ff, #4a2c8a);
-        color: #fff;
-        box-shadow: 0 15px 45px rgba(120,80,255,0.35);
-        text-align: center;
       }
-      .neo-btn-primary::after {
+      .holo-menu-btn::before {
         content: '';
         position: absolute;
         top: -50%; left: -50%;
         width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+        background: radial-gradient(circle, rgba(0,240,255,0.05) 0%, transparent 60%);
         opacity: 0;
-        transform: scale(0.5);
-        transition: opacity 0.4s, transform 0.4s;
+        transition: opacity 0.5s;
       }
-      .neo-btn-primary:hover {
-        transform: translateY(-4px) scale(1.02);
-        filter: brightness(1.15);
-        box-shadow: 0 20px 60px rgba(120,80,255,0.5);
-      }
-      .neo-btn-primary:hover::after { opacity: 1; transform: scale(1); }
-      .neo-btn-primary:active { transform: translateY(2px) scale(0.98); filter: brightness(0.9); }
-      .neo-btn-primary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none !important;
-        filter: none !important;
-        box-shadow: 0 5px 20px rgba(120,80,255,0.15);
-      }
+      .holo-menu-btn:hover { transform: scale(1.02); border-color: #00f0ff; color: #fff; box-shadow: 0 0 40px rgba(0,240,255,0.05); }
+      .holo-menu-btn:hover::before { opacity: 1; }
+      .holo-menu-btn.aincrad { border-color: rgba(120,80,255,0.3); }
+      .holo-menu-btn.aincrad:hover { border-color: #7850ff; box-shadow: 0 0 60px rgba(120,80,255,0.2); }
+      .holo-menu-btn.proxy { border-color: rgba(0,85,255,0.3); }
+      .holo-menu-btn.proxy:hover { border-color: #0055ff; box-shadow: 0 0 60px rgba(0,85,255,0.2); }
+      .holo-menu-btn.vipteam { border-color: rgba(255,0,234,0.3); }
+      .holo-menu-btn.vipteam:hover { border-color: #ff00ea; box-shadow: 0 0 60px rgba(255,0,234,0.2); }
+      .holo-menu-btn.universal { border-color: rgba(0,204,136,0.3); }
+      .holo-menu-btn.universal:hover { border-color: #00cc88; box-shadow: 0 0 60px rgba(0,204,136,0.2); }
+      .holo-menu-btn.premium-gold { border-color: #ffd700; color: #ffd700; }
+      .holo-menu-btn.premium-gold:hover { border-color: #ffd700; box-shadow: 0 0 80px rgba(255,215,0,0.2); }
 
-      .neo-btn-secondary {
+      .holo-speed-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 8px;
         width: 100%;
+      }
+      .holo-speed-btn {
         padding: 16px;
-        border-radius: 18px;
-        font-weight: 600;
-        font-size: 14px;
-        letter-spacing: 0.5px;
-        cursor: pointer;
-        font-family: 'Inter', sans-serif;
-        background: rgba(255,255,255,0.02);
+        border-radius: 40px;
         border: 1px solid rgba(255,255,255,0.04);
-        color: #cbd5e1;
-        transition: all 0.3s ease;
-        text-align: center;
-      }
-      .neo-btn-secondary:hover {
-        background: rgba(120,80,255,0.08);
-        border-color: rgba(120,80,255,0.25);
-        color: #fff;
-        transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(120,80,255,0.08);
-      }
-
-      .neo-status {
-        margin-top: 28px;
-        font-size: 12px;
+        font-family: 'Orbitron', sans-serif;
         font-weight: 700;
-        color: #7850ff;
-        font-family: 'Space Grotesk', sans-serif;
+        font-size: 14px;
         text-transform: uppercase;
-        letter-spacing: 2.5px;
-        opacity: 0.7;
-        padding: 10px 16px;
-        border-radius: 16px;
-        border: 1px dashed rgba(120,80,255,0.08);
-        background: rgba(120,80,255,0.02);
-        backdrop-filter: blur(5px);
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: rgba(0,0,0,0.2);
+        color: #b0d0e0;
         text-align: center;
+        width: 100%;
       }
+      .holo-speed-btn:hover { transform: scale(1.02); background: rgba(0,0,0,0.4); }
+      .holo-speed-btn.fast { border-color: rgba(0,255,136,0.2); color: #00ff88; }
+      .holo-speed-btn.fast:hover { border-color: #00ff88; box-shadow: 0 0 60px rgba(0,255,136,0.1); }
+      .holo-speed-btn.secure { border-color: rgba(255,215,0,0.2); color: #ffd700; }
+      .holo-speed-btn.secure:hover { border-color: #ffd700; box-shadow: 0 0 60px rgba(255,215,0,0.1); }
+      .holo-speed-btn.slow { border-color: rgba(255,0,85,0.2); color: #ff0055; }
+      .holo-speed-btn.slow:hover { border-color: #ff0055; box-shadow: 0 0 60px rgba(255,0,85,0.1); }
 
-      .neo-avatar {
+      .holo-back {
         position: absolute;
-        top: -26px;
-        left: -26px;
-        width: 64px;
-        height: 64px;
-        border-radius: 24px;
-        overflow: hidden;
-        border: 2px solid rgba(120,80,255,0.4);
-        box-shadow: 0 15px 40px rgba(120,80,255,0.25);
-        backdrop-filter: blur(15px);
-        transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-        transform: rotate(-6deg) scale(0.95);
+        top: 8px; left: 8px;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(0,240,255,0.08);
+        border-radius: 50%;
+        width: 36px; height: 36px;
+        color: #70b0d0;
+        font-size: 16px;
         cursor: pointer;
-      }
-      .neo-avatar:hover {
-        transform: scale(1.15) rotate(0deg) translateY(-6px);
-        box-shadow: 0 25px 60px rgba(120,80,255,0.45);
-        border-color: #7850ff;
-      }
-      .neo-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 24px; }
-
-      .neo-music-btn {
-        position: absolute;
-        top: -28px;
-        right: -28px;
-        background: rgba(8,6,18,0.85);
-        border: 1.5px solid rgba(120,80,255,0.25);
-        color: #7850ff;
-        border-radius: 18px;
-        width: 54px;
-        height: 54px;
-        cursor: pointer;
-        font-size: 22px;
         display: flex;
         align-items: center;
         justify-content: center;
-        backdrop-filter: blur(15px);
-        transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-        box-shadow: 0 15px 35px rgba(120,80,255,0.15);
-        transform: rotate(6deg) scale(0.95);
+        transition: all 0.25s;
       }
-      .neo-music-btn:hover {
-        transform: scale(1.15) rotate(0deg);
-        box-shadow: 0 20px 60px rgba(120,80,255,0.3);
-        border-color: #7850ff;
-        color: #fff;
+      .holo-back:hover { background: rgba(0,240,255,0.1); border-color: #00f0ff; color: #fff; }
+
+      .holo-uni-input {
+        width: 100%;
+        padding: 16px 24px;
+        border-radius: 40px;
+        border: 1px solid rgba(0,240,255,0.1);
+        background: rgba(0,0,0,0.4);
+        color: #e0f0ff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 15px;
+        margin-bottom: 20px;
+        outline: none;
+        transition: all 0.3s;
+      }
+      .holo-uni-input:focus { border-color: #00cc88; box-shadow: 0 0 40px rgba(0,204,136,0.1); }
+
+      .holo-countdown {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        backdrop-filter: blur(20px);
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Orbitron', sans-serif;
+      }
+      .holo-countdown-card {
+        background: rgba(0,10,25,0.8);
+        border: 2px solid rgba(0,240,255,0.2);
+        border-radius: 40px;
+        padding: 50px 40px;
+        width: min(400px, 90vw);
+        text-align: center;
+        box-shadow: 0 0 120px rgba(0,240,255,0.05), inset 0 0 60px rgba(0,240,255,0.02);
+        position: relative;
+        overflow: hidden;
+      }
+      .holo-countdown-circle {
+        width: 140px; height: 140px;
+        border-radius: 50%;
+        border: 3px solid #00f0ff;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 52px;
+        font-weight: 900;
+        color: #00f0ff;
+        margin: 0 auto 24px;
+        box-shadow: 0 0 60px rgba(0,240,255,0.1), inset 0 0 40px rgba(0,0,0,0.8);
+        transition: all 0.15s;
+      }
+      .holo-countdown-text {
+        color: #e0f0ff;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      .holo-countdown-sub {
+        color: #70b0d0;
+        font-size: 13px;
+        margin-top: 8px;
       }
 
-      .neo-biodata {
+      .holo-biodata {
         position: absolute;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        border-radius: 40px;
+        border-radius: 32px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -705,335 +881,115 @@
         z-index: 999;
         opacity: 0;
         pointer-events: none;
-        transform: scale(0.92) translateY(15px);
+        transform: scale(0.95) translateY(20px);
         transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-        padding: 40px 32px;
-        box-sizing: border-box;
-        background: rgba(8,6,18,0.94);
-        backdrop-filter: blur(50px);
-        -webkit-backdrop-filter: blur(50px);
+        padding: 40px 28px;
+        background: rgba(0,8,20,0.92);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border-radius: 32px;
       }
-      .neo-biodata.active {
+      .holo-biodata.active {
         opacity: 1;
         pointer-events: auto;
         transform: scale(1) translateY(0);
       }
-      .neo-biodata-title {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 26px;
-        font-weight: 800;
-        background: linear-gradient(135deg, #7850ff, #ff00ea);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin: 0 0 22px 0;
-        text-align: center;
+      .holo-biodata-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #00f0ff;
+        text-shadow: 0 0 30px rgba(0,240,255,0.3);
+        margin: 0 0 20px;
         letter-spacing: 2px;
-        filter: drop-shadow(0 0 30px rgba(255,0,234,0.2));
       }
-      .neo-biodata-card {
-        text-align: left;
+      .holo-biodata-card {
         width: 100%;
-        background: rgba(0,0,0,0.5);
-        border: 1px solid rgba(255,255,255,0.04);
-        padding: 22px 26px;
+        background: rgba(0,0,0,0.4);
+        border: 1px solid rgba(0,240,255,0.06);
+        padding: 20px 24px;
         border-radius: 20px;
         font-size: 15px;
         line-height: 2.2;
-        color: #cbd5e1;
-        box-sizing: border-box;
-        box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);
+        color: #b0d0e0;
       }
-      .neo-biodata-card strong { color: #7850ff; font-weight: 700; }
-      .neo-btn-close-bio {
+      .holo-biodata-card strong { color: #ff00ff; }
+      .holo-bio-close {
         width: 100%;
-        background: rgba(255,0,85,0.08);
+        background: rgba(255,0,85,0.06);
         color: #ff0055;
-        border: 1px solid rgba(255,0,85,0.15);
-        padding: 18px;
-        border-radius: 18px;
-        font-weight: 800;
-        cursor: pointer;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-top: 24px;
-        transition: all 0.3s ease;
-        text-align: center;
-      }
-      .neo-btn-close-bio:hover {
-        background: rgba(255,0,85,0.15);
-        border-color: rgba(255,0,85,0.3);
-        transform: scale(1.02);
-        box-shadow: 0 10px 30px rgba(255,0,85,0.1);
-      }
-
-      .neo-timer {
-        font-size: 13px;
-        font-weight: 700;
-        color: #ffd700;
-        margin-top: 10px;
-        display: none;
-        background: rgba(255,215,0,0.04);
-        padding: 8px 16px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,215,0,0.08);
-        backdrop-filter: blur(5px);
-        text-align: center;
-      }
-
-      .neo-menu-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        margin-top: 6px;
-        width: 100%;
-      }
-      .neo-menu-btn {
-        padding: 18px;
-        border-radius: 18px;
-        border: none;
-        font-weight: 800;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 15px;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-        color: #fff;
-        text-align: center;
-        width: 100%;
-      }
-      .neo-menu-btn::after {
-        content: '';
-        position: absolute;
-        top: -50%; left: -50%;
-        width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-        opacity: 0;
-        transform: scale(0.5);
-        transition: opacity 0.4s, transform 0.4s;
-      }
-      .neo-menu-btn:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.1); }
-      .neo-menu-btn:hover::after { opacity: 1; transform: scale(1); }
-      .neo-menu-btn:active { transform: translateY(2px) scale(0.98); }
-
-      .neo-menu-btn.aincrad { background: linear-gradient(135deg, #7850ff, #4a2c8a); color: #fff; }
-      .neo-menu-btn.proxy { background: linear-gradient(135deg, #0055ff, #0033aa); color: #fff; }
-      .neo-menu-btn.vipteam { background: linear-gradient(135deg, #ff00ea, #8a2be2); color: #fff; }
-      .neo-menu-btn.universal { background: linear-gradient(135deg, #00cc88, #008855); color: #fff; }
-      .neo-menu-btn.premium-gold { background: linear-gradient(135deg, #ffd700, #f7971e); color: #000; }
-
-      .neo-speed-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        margin-top: 6px;
-        width: 100%;
-      }
-      .neo-speed-btn {
-        padding: 18px;
-        border-radius: 18px;
-        border: 1px solid rgba(255,255,255,0.06);
-        font-weight: 700;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 15px;
-        text-transform: uppercase;
-        letter-spacing: 1.2px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: rgba(255,255,255,0.02);
-        color: #cbd5e1;
-        text-align: center;
-        width: 100%;
-      }
-      .neo-speed-btn:hover {
-        transform: translateY(-3px) scale(1.02);
-        background: rgba(255,255,255,0.06);
-      }
-      .neo-speed-btn.fast { border-color: rgba(0,255,136,0.2); color: #00ff88; }
-      .neo-speed-btn.fast:hover { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.4); }
-      .neo-speed-btn.secure { border-color: rgba(255,215,0,0.2); color: #ffd700; }
-      .neo-speed-btn.secure:hover { background: rgba(255,215,0,0.06); border-color: rgba(255,215,0,0.4); }
-      .neo-speed-btn.slow { border-color: rgba(255,0,85,0.2); color: #ff0055; }
-      .neo-speed-btn.slow:hover { background: rgba(255,0,85,0.06); border-color: rgba(255,0,85,0.4); }
-
-      .neo-back-btn {
-        position: absolute;
-        top: 0; left: 0;
-        width: 40px; height: 40px;
-        border-radius: 14px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.04);
-        color: #94a3b8;
-        font-size: 18px;
-        cursor: pointer;
-        transition: all 0.25s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .neo-back-btn:hover {
-        background: rgba(120,80,255,0.1);
-        border-color: #7850ff;
-        color: #fff;
-        transform: scale(1.05);
-      }
-
-      .neo-uni-input {
-        width: 100%;
-        padding: 18px 24px;
-        border-radius: 18px;
-        border: 1px solid rgba(255,255,255,0.06);
-        background: rgba(0,0,0,0.5);
-        color: #fff;
-        font-family: 'Inter', sans-serif;
-        font-size: 15px;
-        margin-bottom: 22px;
-        box-sizing: border-box;
-        outline: none;
-        transition: all 0.3s ease;
-        text-align: left;
-      }
-      .neo-uni-input:focus {
-        border-color: #00cc88;
-        box-shadow: 0 0 40px rgba(0,204,136,0.15);
-      }
-
-      .neo-countdown-overlay {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: radial-gradient(ellipse at center, rgba(8,6,18,0.95), rgba(0,0,0,0.98));
-        z-index: 2147483647;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Inter', sans-serif;
-        backdrop-filter: blur(20px);
-      }
-      .neo-countdown-card {
-        text-align: center;
-        background: rgba(10,12,28,0.85);
-        backdrop-filter: blur(30px);
-        padding: 60px 50px;
+        border: 1px solid rgba(255,0,85,0.1);
+        padding: 16px;
         border-radius: 40px;
-        border: 1px solid rgba(120,80,255,0.15);
-        width: min(400px, 90vw);
-        box-shadow: 0 60px 180px rgba(0,0,0,0.95), inset 0 1px 2px rgba(255,255,255,0.03);
-        position: relative;
-        overflow: hidden;
-      }
-      .neo-countdown-circle {
-        width: 140px; height: 140px;
-        border-radius: 50%;
-        border: 3px solid #7850ff;
-        background: rgba(0,0,0,0.6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 52px;
-        font-weight: 900;
-        color: #7850ff;
-        margin: 0 auto 28px auto;
-        font-family: 'Space Grotesk', sans-serif;
-        box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
-        transition: all 0.15s ease;
-      }
-      .neo-countdown-text {
-        color: #fff;
-        font-size: 18px;
-        font-weight: 800;
-        margin: 0;
-        font-family: 'Space Grotesk', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-      }
-      .neo-countdown-sub {
-        color: #94a3b8;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
         font-size: 13px;
-        margin-top: 10px;
-        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        margin-top: 24px;
+        transition: all 0.3s;
       }
-
-      @keyframes neonPulse {
-        0%, 100% { box-shadow: 0 0 20px #7850ff, 0 0 40px #7850ff; }
-        50% { box-shadow: 0 0 40px #7850ff, 0 0 80px #7850ff; }
-      }
-      @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-      @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        20%, 60% { transform: translateX(-10px); }
-        40%, 80% { transform: translateX(10px); }
-      }
-      .shake-error { animation: shake 0.5s ease-in-out !important; border-color: #ff0055 !important; box-shadow: 0 0 40px rgba(255,0,85,0.5) !important; }
+      .holo-bio-close:hover { background: rgba(255,0,85,0.12); border-color: rgba(255,0,85,0.3); }
 
       @media (max-width: 500px) {
-        #lukyy-auth { padding: 30px 20px 24px; border-radius: 32px; }
-        .neo-title { font-size: 32px; }
-        .neo-avatar { width: 54px; height: 54px; top: -20px; left: -20px; }
-        .neo-music-btn { width: 44px; height: 44px; font-size: 18px; top: -22px; right: -22px; }
-        .neo-countdown-card { padding: 40px 24px; }
-        .neo-countdown-circle { width: 110px; height: 110px; font-size: 40px; }
+        #lukyy-auth { padding: 24px 16px; }
+        .holo-title { font-size: 28px; }
+        .holo-avatar { width: 60px; height: 60px; top: -25px; }
+        .holo-music { width: 40px; height: 40px; font-size: 16px; top: -16px; right: -6px; }
+        .holo-countdown-card { padding: 30px 20px; }
+        .holo-countdown-circle { width: 110px; height: 110px; font-size: 38px; }
       }
     `;
     document.head.appendChild(style);
 
-    // --- BUILD PANEL ---
+    // --- HTML ---
     const quote = CONFIG.quotesList[Math.floor(Math.random() * CONFIG.quotesList.length)];
-
     const panel = document.createElement("div");
     panel.id = "lukyy-auth";
     panel.innerHTML = `
       <div class="panel-content">
-        <div class="neo-avatar" id="profile-trigger" title="Profil Owner">
+        <div class="holo-avatar" id="profile-trigger">
           <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
         </div>
-        <button id="music-btn" class="neo-music-btn" title="Play / Pause / Skip">🎵</button>
+        <button class="holo-music" id="music-btn" title="Play/Pause/Skip">🎵</button>
 
-        <div style="text-align:center; margin-bottom:24px;">
-          <div class="neo-badge" id="system-badge">
-            <span class="neo-badge-dot" id="badge-dot"></span>
-            <span class="neo-badge-text" id="badge-text">SYSTEM STANDBY</span>
+        <div style="text-align:center; margin-top:20px;">
+          <div class="holo-badge" id="system-badge">
+            <span class="holo-badge-dot" id="badge-dot"></span>
+            <span class="holo-badge-text" id="badge-text">SYSTEM STANDBY</span>
           </div>
-          <h1 class="neo-title">LUKYYPLR</h1>
-          <div class="neo-quote" id="quote-display">${quote}</div>
-          <div id="premium-timer-info" class="neo-timer"></div>
+          <h1 class="holo-title">LUKYYPLR</h1>
+          <div class="holo-quote">${quote}</div>
+          <div id="premium-timer-info" class="holo-timer"></div>
         </div>
 
         <div id="auth-form-area">
-          <div class="neo-input-wrapper">
-            <input type="password" id="key-input" class="neo-input" placeholder="✦ Inject Access Key ✦" autocomplete="off">
-            <div class="neo-input-actions">
-              <button id="toggle-visibility-btn" class="neo-icon-btn" title="View/Hide Key">👁️</button>
-              <button id="auto-paste-btn" class="neo-icon-btn" title="Auto Paste">📋</button>
+          <div class="holo-input-wrap">
+            <input type="password" id="key-input" class="holo-input" placeholder="✦ INSERT ACCESS KEY ✦" autocomplete="off">
+            <div class="holo-actions">
+              <button id="toggle-visibility-btn" class="holo-icon-btn" title="View/Hide">👁</button>
+              <button id="auto-paste-btn" class="holo-icon-btn" title="Paste">📋</button>
             </div>
           </div>
-          <div id="interactive-area" style="margin-bottom:18px;">
-            <button id="login-btn" class="neo-btn-primary">⚡ Unlock Dashboard</button>
+          <div id="interactive-area" style="margin-bottom:16px;">
+            <button id="login-btn" class="holo-btn-primary">⚡ UNLOCK</button>
           </div>
         </div>
 
-        <button id="support-btn" class="neo-btn-secondary">💬 Join Telegram Circle</button>
-        <div id="status-msg" class="neo-status">⚙️ WONG_PUSAT_STANDBY</div>
+        <button id="support-btn" class="holo-btn-secondary">💬 JOIN TELEGRAM</button>
+        <div id="status-msg" class="holo-status">⚙️ WONG_PUSAT_STANDBY</div>
       </div>
 
-      <div id="biodata-panel" class="neo-biodata">
-        <h4 class="neo-biodata-title">✨ OWNER BIODATA ✨</h4>
-        <div class="neo-biodata-card">
+      <div id="biodata-panel" class="holo-biodata">
+        <h4 class="holo-biodata-title">◈ OWNER BIODATA ◈</h4>
+        <div class="holo-biodata-card">
           <div>📌 <strong>Nama:</strong> Luki / Lukyyplr</div>
           <div>🌐 <strong>Linktree:</strong> https://linktr.ee/lukyycuyy</div>
           <div>💻 <strong>Project:</strong> Bypass Key System</div>
           <div>💬 <strong>Status:</strong> Wong Pusat Standby 🔥</div>
         </div>
-        <button id="close-biodata-btn" class="neo-btn-close-bio">✖ Close Profile</button>
+        <button id="close-biodata-btn" class="holo-bio-close">✖ CLOSE</button>
       </div>
     `;
     document.body.appendChild(panel);
@@ -1089,7 +1045,7 @@
         if (text) {
           keyInput.value = text.trim();
           statusMsg.innerHTML = "📋 Key di-paste, siap gas!";
-          statusMsg.style.color = "#7850ff";
+          statusMsg.style.color = "#00f0ff";
         } else {
           statusMsg.innerHTML = "📭 Clipboard kosong, Cuy";
           statusMsg.style.color = "#ff8c00";
@@ -1100,7 +1056,8 @@
       }
     });
 
-    // --- LOCK DASHBOARD ---
+    // --- UI FUNCTIONS ---
+
     function lockDashboard(formattedWIB) {
       const keyInput = document.getElementById("key-input");
       const autoPasteBtn = document.getElementById("auto-paste-btn");
@@ -1113,9 +1070,9 @@
         keyInput.value = rawPremiumKey;
         keyInput.disabled = true;
         if (userTier === "premium") {
-          keyInput.style.cssText += "background: rgba(255,215,0,0.04) !important; color: #ffd700 !important; border-color: rgba(255,215,0,0.2) !important;";
+          keyInput.style.cssText += "background: rgba(255,215,0,0.04) !important; color: #ffd700 !important; border-color: #ffd700 !important;";
         } else {
-          keyInput.style.cssText += "background: rgba(120,80,255,0.04) !important; color: #7850ff !important; border-color: rgba(120,80,255,0.2) !important;";
+          keyInput.style.cssText += "background: rgba(0,240,255,0.04) !important; color: #00f0ff !important; border-color: #00f0ff !important;";
         }
         if (toggleVisibilityBtn) { toggleVisibilityBtn.textContent = "👁️"; toggleVisibilityBtn.title = "Lihat Key"; }
       }
@@ -1124,14 +1081,14 @@
         timerInfo.innerText = `⏳ EXPIRED: ${formattedWIB}`;
         timerInfo.style.display = "block";
         if (userTier !== "premium") {
-          timerInfo.style.color = "#7850ff";
-          timerInfo.style.background = "rgba(120,80,255,0.04)";
-          timerInfo.style.borderColor = "rgba(120,80,255,0.08)";
+          timerInfo.style.color = "#00f0ff";
+          timerInfo.style.background = "rgba(0,240,255,0.04)";
+          timerInfo.style.borderColor = "rgba(0,240,255,0.08)";
         }
       }
 
       if (interactiveArea) {
-        const btnClass = userTier === "premium" ? "neo-menu-btn premium-gold" : "neo-menu-btn aincrad";
+        const btnClass = userTier === "premium" ? "holo-menu-btn premium-gold" : "holo-menu-btn aincrad";
         interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="${btnClass}" style="width:100%;">🏰 Access Menu Bypass</button>`;
         document.getElementById("open-aincrad-btn").addEventListener("click", () => {
           if (userTier === "premium") showMainMenu();
@@ -1140,33 +1097,28 @@
       }
     }
 
-    // --- MAIN MENU (Command Center) ---
     function showMainMenu() {
       isReactive = false;
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
-      const titleGrad = userTier === "premium"
-        ? "linear-gradient(135deg, #ffd700, #f7971e)"
-        : "linear-gradient(135deg, #7850ff, #4a2c8a)";
-
       container.innerHTML = `
         <div style="position:relative; width:100%;">
-          <button id="mini-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
-          <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:900; background:${titleGrad}; -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center; filter: drop-shadow(0 0 20px rgba(0,0,0,0.3));">COMMAND CENTER</h3>
-          <p style="font-size:14px; margin-bottom:24px; text-align:center; font-weight:500; color:#94a3b8;">Pilih target eksekusi bypass</p>
-          <div class="neo-menu-grid">
-            <button class="neo-menu-btn aincrad" data-target="2">🏰 Aincrad</button>
-            <button class="neo-menu-btn proxy" data-target="1">🌐 Aincrad Proxy</button>
-            <button class="neo-menu-btn vipteam" data-target="vp">💎 VIP Team Byps</button>
-            <button class="neo-menu-btn universal" data-target="uni_vp">🌍 Universal Vplink</button>
+          <button id="mini-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;">❮</button>
+          <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:24px; font-weight:700; color:#00f0ff; text-align:center; text-shadow:0 0 30px rgba(0,240,255,0.3); letter-spacing:2px;">COMMAND CENTER</h3>
+          <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Pilih target eksekusi</p>
+          <div class="holo-menu-grid">
+            <button class="holo-menu-btn aincrad" data-target="2">🏰 Aincrad Protocol</button>
+            <button class="holo-menu-btn proxy" data-target="1">🌐 Aincrad Proxy</button>
+            <button class="holo-menu-btn vipteam" data-target="vp">💎 VIP Team Byps</button>
+            <button class="holo-menu-btn universal" data-target="uni_vp">🌍 Universal Vplink</button>
           </div>
         </div>
       `;
 
       document.getElementById("mini-back-btn").addEventListener("click", () => location.reload());
 
-      container.querySelectorAll(".neo-menu-btn").forEach(btn => {
+      container.querySelectorAll(".holo-menu-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {
           const target = btn.dataset.target;
           if (target === "uni_vp") showUniversalPanel();
@@ -1178,18 +1130,17 @@
       });
     }
 
-    // --- UNIVERSAL VPLINK PANEL ---
     function showUniversalPanel() {
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
       container.innerHTML = `
         <div style="position:relative; width:100%;">
-          <button id="uni-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
-          <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,#00cc88,#008855); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center;">UNIVERSAL VPLINK</h3>
-          <p style="font-size:14px; margin-bottom:22px; text-align:center; font-weight:500; color:#94a3b8;">Paste link vplink.in di bawah</p>
-          <input type="text" id="uni-vplink-input" class="neo-uni-input" placeholder="https://vplink.in/xxxxx">
-          <button id="uni-submit-btn" class="neo-menu-btn universal" style="width:100%;">🔥 Execute</button>
+          <button id="uni-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;">❮</button>
+          <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:22px; font-weight:700; color:#00cc88; text-align:center; text-shadow:0 0 30px rgba(0,204,136,0.3); letter-spacing:2px;">UNIVERSAL VPLINK</h3>
+          <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Paste link vplink.in</p>
+          <input type="text" id="uni-vplink-input" class="holo-uni-input" placeholder="https://vplink.in/xxxxx">
+          <button id="uni-submit-btn" class="holo-menu-btn universal" style="width:100%;">🔥 Execute</button>
           <p id="uni-error-msg" style="color:#ff0055; font-size:13px; margin-top:16px; display:none; font-weight:700; text-align:center;"></p>
         </div>
       `;
@@ -1198,11 +1149,11 @@
 
       const input = document.getElementById("uni-vplink-input");
       input.addEventListener("focus", () => {
-        input.style.border = "1px solid #00cc88";
-        input.style.boxShadow = "0 0 30px rgba(0,204,136,0.15)";
+        input.style.borderColor = "#00cc88";
+        input.style.boxShadow = "0 0 40px rgba(0,204,136,0.15)";
       });
       input.addEventListener("blur", () => {
-        input.style.border = "1px solid rgba(255,255,255,0.06)";
+        input.style.borderColor = "rgba(0,240,255,0.1)";
         input.style.boxShadow = "none";
       });
 
@@ -1212,14 +1163,14 @@
         if (!val.includes("vplink.in")) {
           err.innerText = "Target invalid! Kudu vplink.in cuy.";
           err.style.display = "block";
-          input.style.border = "1px solid #ff0055";
+          input.style.borderColor = "#ff0055";
           return;
         }
         const vpKey = extractVpKey(val);
         if (!vpKey) {
           err.innerText = "Gagal ekstrak key, cek format link.";
           err.style.display = "block";
-          input.style.border = "1px solid #ff0055";
+          input.style.borderColor = "#ff0055";
           return;
         }
         if (userTier === "premium") showSpeedPanel("uni_vp", vpKey);
@@ -1227,27 +1178,26 @@
       });
     }
 
-    // --- SPEED PANEL (VIP) ---
     function showSpeedPanel(targetType, customVpKey = null) {
       const container = document.querySelector(".panel-content");
       if (!container) return;
 
       container.innerHTML = `
         <div style="position:relative; width:100%;">
-          <button id="speed-back-btn" class="neo-back-btn" style="position:absolute; top:0; left:0;">❮</button>
-          <h3 style="margin:0 0 6px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,#ffd700,#f7971e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-align:center;">VELOCITY SPEED</h3>
-          <p style="font-size:14px; margin-bottom:24px; text-align:center; font-weight:500; color:#94a3b8;">Atur kecepatan injeksi</p>
-          <div class="neo-speed-grid">
-            <button class="neo-speed-btn fast" data-sec="20">💨 FAST (Senggol Dong)</button>
-            <button class="neo-speed-btn secure" data-sec="30">🛡️ SECURE (Main Aman)</button>
-            <button class="neo-speed-btn slow" data-sec="45">🐌 SLOW (Alon-Alon)</button>
+          <button id="speed-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;">❮</button>
+          <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:22px; font-weight:700; color:#ffd700; text-align:center; text-shadow:0 0 30px rgba(255,215,0,0.3); letter-spacing:2px;">VELOCITY SPEED</h3>
+          <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Atur kecepatan injeksi</p>
+          <div class="holo-speed-grid">
+            <button class="holo-speed-btn fast" data-sec="20">💨 FAST</button>
+            <button class="holo-speed-btn secure" data-sec="30">🛡️ SECURE</button>
+            <button class="holo-speed-btn slow" data-sec="45">🐌 SLOW</button>
           </div>
         </div>
       `;
 
       document.getElementById("speed-back-btn").addEventListener("click", showMainMenu);
 
-      container.querySelectorAll(".neo-speed-btn").forEach(btn => {
+      container.querySelectorAll(".holo-speed-btn").forEach(btn => {
         btn.addEventListener("click", () => {
           const sec = parseInt(btn.dataset.sec, 10);
           triggerExecution(sec, targetType, customVpKey);
@@ -1255,27 +1205,23 @@
       });
     }
 
-    // --- EXECUTION (COUNTDOWN) ---
     async function triggerExecution(seconds, targetType, customVpKey = null) {
       const panel = document.getElementById("lukyy-auth");
       if (panel) panel.remove();
 
       const overlay = document.createElement("div");
-      overlay.className = "neo-countdown-overlay";
+      overlay.className = "holo-countdown";
       overlay.id = "lukyy-countdown";
 
-      let borderColor = userTier === "premium" ? "#ffd700" : "#7850ff";
-      let numColor = userTier === "premium" ? "#ffd700" : "#7850ff";
-
       overlay.innerHTML = `
-        <div class="neo-countdown-card">
-          <canvas id="lukyy-lava-canvas" width="400" height="440" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.3;pointer-events:none;"></canvas>
+        <div class="holo-countdown-card">
+          <canvas id="lukyy-lava-canvas" width="400" height="440" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.25;pointer-events:none;"></canvas>
           <div style="position:relative;z-index:2;">
-            <div class="neo-countdown-circle" id="countdown-container">
+            <div class="holo-countdown-circle" id="countdown-container">
               <span id="countdown-text">${seconds}</span>
             </div>
-            <p class="neo-countdown-text" id="lukyy-check-text">Injecting Payload...</p>
-            <p class="neo-countdown-sub">Biarin kita memasak di dapur 🍳🔥</p>
+            <p class="holo-countdown-text" id="lukyy-check-text">Injecting Payload...</p>
+            <p class="holo-countdown-sub">Biarin kita memasak di dapur 🍳🔥</p>
           </div>
         </div>
       `;
@@ -1328,7 +1274,7 @@
 
       let timeLeft = seconds;
       let globs = [];
-      let hue = userTier === "premium" ? 45 : 240;
+      let hue = userTier === "premium" ? 45 : 190;
       if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") hue = 300;
 
       for (let i = 0; i < 14; i++) {
@@ -1358,7 +1304,7 @@
 
           let scaleVal = 1.0 + (bassIntensity / 255) * 0.15;
           let glowVal = 20 + (bassIntensity / 255) * 40;
-          let glowC = userTier === "premium" ? "255,215,0" : "120,80,255";
+          let glowC = userTier === "premium" ? "255,215,0" : "0,240,255";
           if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") glowC = "255,0,234";
           countdownContainer.style.transform = `scale(${scaleVal})`;
           countdownContainer.style.boxShadow = `0 0 ${glowVal}px rgba(${glowC},${0.3 + (bassIntensity/255)*0.5}), inset 0 0 40px rgba(0,0,0,0.8)`;
@@ -1402,7 +1348,6 @@
       }, 1000);
     }
 
-    // --- KEY VERIFICATION ---
     async function verifyKey(rawKey, isAuto = false) {
       const clean = rawKey.trim();
       rawPremiumKey = clean;
@@ -1424,7 +1369,7 @@
           }
 
           if (userTier === "premium") {
-            document.getElementById("badge-text").innerText = "👑 VIP SYSTEM ACTIVE";
+            document.getElementById("badge-text").innerText = "VIP ACTIVE";
             document.getElementById("badge-dot").style.background = "#ffd700";
             document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
             statusMsg.innerText = "👑 WONG PUSAT PRIVILEGE";
@@ -1433,7 +1378,7 @@
             statusMsg.style.background = "rgba(255,215,0,0.03)";
             musicBtn.textContent = "⏭️";
 
-            showModal(
+            showHoloModal(
               "👑 SEPUH DETECTED",
               `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
               "👑",
@@ -1441,9 +1386,8 @@
             );
           } else {
             statusMsg.innerText = "✅ STANDARD KEY OK!";
-            statusMsg.style.color = "#7850ff";
-            spawnParticles("success");
-            showModal(
+            statusMsg.style.color = "#00f0ff";
+            showHoloModal(
               "⚡ ACCESS GRANTED",
               `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🚀 Default Auto Redirect (60s)`,
               "⚡",
@@ -1456,7 +1400,6 @@
           statusMsg.style.color = "#ff0055";
           statusMsg.style.borderColor = "rgba(255,0,85,0.12)";
           statusMsg.style.background = "rgba(255,0,85,0.03)";
-          spawnParticles("error");
           if (keyInput) {
             keyInput.classList.add("shake-error");
             setTimeout(() => keyInput.classList.remove("shake-error"), 500);
@@ -1466,7 +1409,6 @@
         console.error("[✗] API error:", err);
         statusMsg.innerText = "❌ SERVER CONNECTION FAILED!";
         statusMsg.style.color = "#ff0055";
-        spawnParticles("error");
         loginBtn.disabled = supportBtn.disabled = true;
       }
     }
@@ -1477,13 +1419,12 @@
       if (!val) {
         statusMsg.innerText = "🛑 KEY KOSONG CUY!";
         statusMsg.style.color = "#ff0055";
-        spawnParticles("error");
         keyInput.classList.add("shake-error");
         setTimeout(() => keyInput.classList.remove("shake-error"), 500);
         return;
       }
       statusMsg.innerText = "⏳ Validating secure signature...";
-      statusMsg.style.color = "#7850ff";
+      statusMsg.style.color = "#00f0ff";
       loginBtn.disabled = supportBtn.disabled = true;
 
       setTimeout(() => verifyKey(val, false), 1200);
@@ -1497,8 +1438,14 @@
       statusMsg.style.color = "#ff8c00";
     }
 
-    // --- START MUSIC ---
+    // --- START MUSIC & PARTICLES ---
     playRandomMusic();
+    initCyberParticles();
+  }
 
-  })();
+  // ============================================================
+  // RUN
+  // ============================================================
+  buildMainPanel();
+
 })();
