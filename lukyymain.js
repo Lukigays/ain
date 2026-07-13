@@ -128,90 +128,92 @@
     }
   }
 
-  // --- TOTP & API SYSTEM INTEGRATION ---
-  class TOTPGenerator {
-    constructor(secret) {
-      this.secret = secret;
-      this.timeStep = 30;
-      this.digits = 6;
-      this._checkCrypto();
-    }
-      
-    _sha1(data) {
-      function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
-      let h0 = 1732584193, h1 = 4023233417, h2 = 2562383102, h3 = 271733878, h4 = 3285377520;
-      const ml = data.length * 8;
-      data.push(128);
-      while (data.length % 64 !== 56) data.push(0);
-      data.push(0, 0, 0, 0);
-      for (let i = 3; i >= 0; i--) data.push((ml >>> (i * 8)) & 255);
-      for (let i = 0; i < data.length; i += 64) {
-        const w = [];
-        for (let j = 0; j < 16; j++) {
-          w[j] = (data[i + j * 4] << 24) | (data[i + j * 4 + 1] << 16) | (data[i + j * 4 + 2] << 8) | data[i + j * 4 + 3];
-        }
-        for (let j = 16; j < 80; j++) {
-          w[j] = rotl(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
-        }
-        let a = h0, b = h1, c = h2, d = h3, e = h4;
-        for (let j = 0; j < 80; j++) {
-          let f, k;
-          if (j < 20) { f = (b & c) | (~b & d); k = 1518500249; }
-          else if (j < 40) { f = b ^ c ^ d; k = 1859775393; }
-          else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 2400959708; }
-          else { f = b ^ c ^ d; k = 3395469782; }
-          const temp = (rotl(a, 5) + f + e + k + w[j]) >>> 0;
-          e = d; d = c; c = rotl(b, 30); b = a; a = temp;
-        }
-        h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
-      }
-      const out = [];
-      [h0, h1, h2, h3, h4].forEach(val => {
-        for (let i = 3; i >= 0; i--) out.push((val >>> (i * 8)) & 255);
-      });
-      return out;
-    }
-    async hmacSha1(key, message) {
-      const k = Array.from(key);
-      const m = Array.from(new Uint8Array(message));
-      const bs = 64;
-      let kPad = k.length > bs ? this._sha1([...k]) : [...k];
-      while (kPad.length < bs) kPad.push(0);
-      const iKeyPad = kPad.map(val => val ^ 0x36);
-      const oKeyPad = kPad.map(val => val ^ 0x5c);
-      const innerHash = this._sha1([...iKeyPad, ...m]);
-      const outerHash = this._sha1([...oKeyPad, ...innerHash]);
-      return new Uint8Array(outerHash);
-    }
-    base32ToHex(base32) {
-      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-      let bits = "", hex = "";
-      base32 = base32.toUpperCase().replace(/=+$/, "");
-      for (let i = 0; i < base32.length; i++) {
-        const val = alphabet.indexOf(base32.charAt(i));
-        if (val === -1) throw new Error("Invalid base32 character");
-        bits += val.toString(2).padStart(5, "0");
-      }
-      for (let i = 0; i + 4 <= bits.length; i += 4) {
-        hex += parseInt(bits.substr(i, 4), 2).toString(16);
-      }
-      return hex;
-    }
-    async generate(offset = 0) {
-      const hexSecret = this.base32ToHex(this.secret);
-      const epoch = Math.floor(Date.now() / 1000);
-      const timeWindow = Math.floor(epoch / this.timeStep) + offset;
-      const buffer = new ArrayBuffer(8);
-      const view = new DataView(buffer);
-      view.setUint32(4, timeWindow, false);
-      const keyArray = new Uint8Array(hexSecret.match(/.{2}/g).map(h => parseInt(h, 16)));
-      const hmac = await this.hmacSha1(keyArray, buffer);
-      const offsetVal = hmac[hmac.length - 1] & 0xf;
-      const binary = ((hmac[offsetVal] & 0x7f) << 24) | ((hmac[offsetVal + 1] & 0xff) << 16) | ((hmac[offsetVal + 2] & 0xff) << 8) | (hmac[offsetVal + 3] & 0xff);
-      const pin = binary % Math.pow(10, this.digits);
-      return pin.toString().padStart(this.digits, "0");
-    }
+// === PERBAIKAN CLASS TOTPGenerator ===
+class TOTPGenerator {
+  constructor(secret) {   // <-- TAMBAHKAN KURUNG TUTUP )
+    this.secret = secret;
+    this.timeStep = 30;
+    this.digits = 6;
   }
+
+  _sha1(data) {
+    function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
+    let h0 = 1732584193, h1 = 4023233417, h2 = 2562383102, h3 = 271733878, h4 = 3285377520;
+    const ml = data.length * 8;
+    data.push(128);
+    while (data.length % 64 !== 56) data.push(0);
+    data.push(0, 0, 0, 0);
+    for (let i = 3; i >= 0; i--) data.push((ml >>> (i * 8)) & 255);
+    for (let i = 0; i < data.length; i += 64) {
+      const w = [];
+      for (let j = 0; j < 16; j++) {
+        w[j] = (data[i + j * 4] << 24) | (data[i + j * 4 + 1] << 16) | (data[i + j * 4 + 2] << 8) | data[i + j * 4 + 3];
+      }
+      for (let j = 16; j < 80; j++) {
+        w[j] = rotl(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
+      }
+      let a = h0, b = h1, c = h2, d = h3, e = h4;
+      for (let j = 0; j < 80; j++) {
+        let f, k;
+        if (j < 20) { f = (b & c) | (~b & d); k = 1518500249; }
+        else if (j < 40) { f = b ^ c ^ d; k = 1859775393; }
+        else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 2400959708; }
+        else { f = b ^ c ^ d; k = 3395469782; }
+        const temp = (rotl(a, 5) + f + e + k + w[j]) >>> 0;
+        e = d; d = c; c = rotl(b, 30); b = a; a = temp;
+      }
+      h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
+    }
+    const out = [];
+    [h0, h1, h2, h3, h4].forEach(val => {
+      for (let i = 3; i >= 0; i--) out.push((val >>> (i * 8)) & 255);
+    });
+    return out;
+  }
+
+  async hmacSha1(key, message) {
+    const k = Array.from(key);
+    const m = Array.from(new Uint8Array(message));
+    const bs = 64;
+    let kPad = k.length > bs ? this._sha1([...k]) : [...k];
+    while (kPad.length < bs) kPad.push(0);
+    const iKeyPad = kPad.map(val => val ^ 0x36);
+    const oKeyPad = kPad.map(val => val ^ 0x5c);
+    const innerHash = this._sha1([...iKeyPad, ...m]);
+    const outerHash = this._sha1([...oKeyPad, ...innerHash]);
+    return new Uint8Array(outerHash);
+  }
+
+  base32ToHex(base32) {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let bits = "", hex = "";
+    base32 = base32.toUpperCase().replace(/=+$/, "");
+    for (let i = 0; i < base32.length; i++) {
+      const val = alphabet.indexOf(base32.charAt(i));
+      if (val === -1) throw new Error("Invalid base32 character");
+      bits += val.toString(2).padStart(5, "0");
+    }
+    for (let i = 0; i + 4 <= bits.length; i += 4) {
+      hex += parseInt(bits.substr(i, 4), 2).toString(16);
+    }
+    return hex;
+  }
+
+  async generate(offset = 0) {
+    const hexSecret = this.base32ToHex(this.secret);
+    const epoch = Math.floor(Date.now() / 1000);
+    const timeWindow = Math.floor(epoch / this.timeStep) + offset;
+    const buffer = new ArrayBuffer(8);
+    const view = new DataView(buffer);
+    view.setUint32(4, timeWindow, false);
+    const keyArray = new Uint8Array(hexSecret.match(/.{2}/g).map(h => parseInt(h, 16)));
+    const hmac = await this.hmacSha1(keyArray, buffer);
+    const offsetVal = hmac[hmac.length - 1] & 0xf;
+    const binary = ((hmac[offsetVal] & 0x7f) << 24) | ((hmac[offsetVal + 1] & 0xff) << 16) | ((hmac[offsetVal + 2] & 0xff) << 8) | (hmac[offsetVal + 3] & 0xff);
+    const pin = binary % Math.pow(10, this.digits);
+    return pin.toString().padStart(this.digits, "0");
+  }
+}
 
   async function fetchDestinationUrl(type, attempt = 1, vpKey = null) {
     const totpGen = new TOTPGenerator(_0x439d89.totpSecret);
