@@ -47,10 +47,77 @@
   let isReactive = true;
   let userTier = "biasa";
   let rawPremiumKey = "";
-  let isMusicPlaying = false; // status musik
+  let isMusicPlaying = false;
+  let deviceHWID = "";
 
   // ============================================================
-  // SOUND EFFECT (Web Audio API)
+  // HWID GENERATOR - UNIK PER PERANGKAT
+  // ============================================================
+  function generateHWID() {
+    try {
+      // Kombinasi berbagai informasi perangkat
+      const components = [
+        navigator.userAgent || "",
+        navigator.language || "",
+        navigator.platform || "",
+        screen.width || "",
+        screen.height || "",
+        screen.colorDepth || "",
+        navigator.hardwareConcurrency || "",
+        navigator.deviceMemory || "",
+        navigator.maxTouchPoints || "",
+        Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+        // Canvas fingerprint (sederhana)
+        (function() {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 50;
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('LUKYYPLR', 2, 15);
+            ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+            ctx.fillText('HWID', 4, 17);
+            return canvas.toDataURL();
+          } catch(e) { return ''; }
+        })()
+      ];
+
+      // Gabungkan semua komponen
+      const raw = components.join('|||');
+
+      // Hash sederhana SHA-256 (built-in)
+      async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      // Return promise yang di-resolve dengan HWID
+      return sha256(raw).then(hash => {
+        // Simpan ke localStorage agar konsisten
+        const saved = localStorage.getItem('lukyy_hwid');
+        if (saved && saved.length === 64) {
+          return saved;
+        }
+        localStorage.setItem('lukyy_hwid', hash);
+        return hash;
+      });
+    } catch (e) {
+      // Fallback: pakai random + timestamp
+      const fallback = 'HWID-FALLBACK-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10);
+      localStorage.setItem('lukyy_hwid', fallback);
+      return Promise.resolve(fallback);
+    }
+  }
+
+  // ============================================================
+  // SOUND EFFECT
   // ============================================================
   function playSound(type) {
     try {
@@ -106,9 +173,7 @@
         osc.start(now);
         osc.stop(now + 0.35);
       }
-    } catch (e) {
-      // Silent fail
-    }
+    } catch (e) {}
   }
 
   // ============================================================
@@ -766,6 +831,25 @@
         background: rgba(0,0,0,0.2);
         text-align: center;
         opacity: 0.8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .holo-status .hwid-badge {
+        font-size: 9px;
+        font-family: 'Rajdhani', sans-serif;
+        color: rgba(0,240,255,0.5);
+        background: rgba(0,0,0,0.3);
+        padding: 2px 10px;
+        border-radius: 20px;
+        border: 1px solid rgba(0,240,255,0.05);
+        letter-spacing: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
       }
 
       .holo-timer {
@@ -893,7 +977,6 @@
       }
       .holo-uni-input:focus { border-color: #00cc88; box-shadow: 0 0 40px rgba(0,204,136,0.1); }
 
-      /* LOADING OVERLAY */
       .holo-loader-overlay {
         position: fixed;
         top: 0; left: 0;
@@ -1054,8 +1137,7 @@
         .holo-avatar { width: 54px; height: 54px; top: -20px; left: -20px; }
         .holo-music { width: 40px; height: 40px; font-size: 16px; top: -20px; right: -10px; }
         .holo-loader-spinner { width: 90px; height: 90px; }
-        .holo-countdown-card { padding: 30px 20px; }
-        .holo-countdown-circle { width: 110px; height: 110px; font-size: 38px; }
+        .holo-status .hwid-badge { max-width: 120px; font-size: 8px; }
       }
     `;
     document.head.appendChild(style);
@@ -1095,7 +1177,10 @@
         </div>
 
         <button id="support-btn" class="holo-btn-secondary">💬 JOIN TELEGRAM</button>
-        <div id="status-msg" class="holo-status">⚙️ WONG_PUSAT_STANDBY</div>
+        <div id="status-msg" class="holo-status">
+          <span>⚙️ WONG_PUSAT_STANDBY</span>
+          <span class="hwid-badge" id="hwid-display">🔑 HWID: LOADING...</span>
+        </div>
       </div>
 
       <div id="biodata-panel" class="holo-biodata">
@@ -1122,20 +1207,27 @@
     const closeBiodataBtn = document.getElementById("close-biodata-btn");
     const autoPasteBtn = document.getElementById("auto-paste-btn");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
+    const hwidDisplay = document.getElementById("hwid-display");
+
+    // --- GENERATE HWID ---
+    generateHWID().then(hwid => {
+      deviceHWID = hwid;
+      hwidDisplay.textContent = `🔑 HWID: ${hwid.substring(0, 16)}...${hwid.substring(hwid.length - 8)}`;
+      hwidDisplay.title = `Full HWID: ${hwid}`;
+    }).catch(() => {
+      hwidDisplay.textContent = "⚠️ HWID: GAGAL";
+    });
 
     // --- EVENTS ---
     profileTrigger.addEventListener("click", () => biodataPanel.classList.add("active"));
     closeBiodataBtn.addEventListener("click", () => biodataPanel.classList.remove("active"));
 
-    // === MUSIC BUTTON - TIDAK PLAY OTOMATIS ===
     musicBtn.addEventListener("click", () => {
       if (!audioPlayer) {
-        // pertama kali ditekan, mulai musik
         playRandomMusic();
         musicBtn.textContent = "🎵";
         return;
       }
-      // jika sudah ada, toggle play/pause
       if (audioPlayer.paused) {
         audioPlayer.play().catch(() => {});
         if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
@@ -1169,19 +1261,28 @@
         const text = await navigator.clipboard.readText();
         if (text) {
           keyInput.value = text.trim();
-          statusMsg.innerHTML = "📋 Key di-paste, siap gas!";
+          statusMsg.innerHTML = `
+            <span>📋 Key di-paste, siap gas!</span>
+            <span class="hwid-badge">${hwidDisplay.textContent}</span>
+          `;
           statusMsg.style.color = "#00f0ff";
         } else {
-          statusMsg.innerHTML = "📭 Clipboard kosong, Cuy";
+          statusMsg.innerHTML = `
+            <span>📭 Clipboard kosong, Cuy</span>
+            <span class="hwid-badge">${hwidDisplay.textContent}</span>
+          `;
           statusMsg.style.color = "#ff8c00";
         }
       } catch (err) {
-        statusMsg.innerHTML = "🛑 Izin clipboard ditolak browser";
+        statusMsg.innerHTML = `
+          <span>🛑 Izin clipboard ditolak browser</span>
+          <span class="hwid-badge">${hwidDisplay.textContent}</span>
+        `;
         statusMsg.style.color = "#ff0055";
       }
     });
 
-    // --- UI FUNCTIONS (sama seperti sebelumnya) ---
+    // --- UI FUNCTIONS ---
     function lockDashboard(formattedWIB) {
       const keyInput = document.getElementById("key-input");
       const autoPasteBtn = document.getElementById("auto-paste-btn");
@@ -1330,7 +1431,7 @@
     }
 
     // ============================================================
-    // TRIGGER EXECUTION - dengan spinner + progress + SOUND
+    // TRIGGER EXECUTION
     // ============================================================
     async function triggerExecution(seconds, targetType, customVpKey = null) {
       const panel = document.getElementById("lukyy-auth");
@@ -1365,7 +1466,6 @@
 
       if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") apiType = "vp";
 
-      // Ekstraksi vplink
       if (targetType === "vp") {
         statusEl.innerText = "SCANNING";
         subEl.innerText = "Mencari vplink.in...";
@@ -1435,14 +1535,26 @@
     }
 
     // ============================================================
-    // VERIFY KEY - dengan SOUND
+    // VERIFY KEY - dengan HWID
     // ============================================================
     async function verifyKey(rawKey, isAuto = false) {
       const clean = rawKey.trim();
       rawPremiumKey = clean;
 
+      // Tunggu HWID siap
+      let hwid = deviceHWID;
+      if (!hwid) {
+        try {
+          hwid = await generateHWID();
+          deviceHWID = hwid;
+        } catch(e) {
+          hwid = 'unknown';
+        }
+      }
+
       try {
-        const resp = await fetch(`${CONFIG.keyUrl}?key=${encodeURIComponent(clean)}`);
+        const url = `${CONFIG.keyUrl}?key=${encodeURIComponent(clean)}&hwid=${encodeURIComponent(hwid)}`;
+        const resp = await fetch(url);
         const result = await resp.json();
 
         if (resp.ok && result.status === "success") {
@@ -1457,11 +1569,16 @@
             formatted = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} | ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} WIB`;
           }
 
+          const hwidShort = hwid.substring(0, 8) + '...' + hwid.substring(hwid.length - 6);
+
           if (userTier === "premium") {
             document.getElementById("badge-text").innerText = "VIP ACTIVE";
             document.getElementById("badge-dot").style.background = "#ffd700";
             document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
-            statusMsg.innerText = "👑 WONG PUSAT PRIVILEGE";
+            statusMsg.innerHTML = `
+              <span>👑 WONG PUSAT PRIVILEGE</span>
+              <span class="hwid-badge">🔑 ${hwidShort}</span>
+            `;
             statusMsg.style.color = "#ffd700";
             statusMsg.style.borderColor = "rgba(255,215,0,0.15)";
             statusMsg.style.background = "rgba(255,215,0,0.03)";
@@ -1470,24 +1587,31 @@
             playSound('success');
             showHoloModal(
               "👑 SEPUH DETECTED",
-              `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
+              `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🔑 HWID: ${hwid}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
               "👑",
               () => lockDashboard(formatted)
             );
           } else {
-            statusMsg.innerText = "✅ STANDARD KEY OK!";
+            statusMsg.innerHTML = `
+              <span>✅ STANDARD KEY OK!</span>
+              <span class="hwid-badge">🔑 ${hwidShort}</span>
+            `;
             statusMsg.style.color = "#00f0ff";
             playSound('success');
             showHoloModal(
               "⚡ ACCESS GRANTED",
-              `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🚀 Default Auto Redirect (60s)`,
+              `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🔑 HWID: ${hwid}\n\n🚀 Default Auto Redirect (60s)`,
               "⚡",
               () => lockDashboard(formatted)
             );
           }
         } else {
           localStorage.removeItem("lukyy_saved_key");
-          statusMsg.innerText = `❌ ${result.message || 'Key Invalid / Expired!'}`;
+          const hwidShort = hwid ? hwid.substring(0, 8) + '...' + hwid.substring(hwid.length - 6) : 'unknown';
+          statusMsg.innerHTML = `
+            <span>❌ ${result.message || 'Key Invalid / Expired!'}</span>
+            <span class="hwid-badge">🔑 ${hwidShort}</span>
+          `;
           statusMsg.style.color = "#ff0055";
           statusMsg.style.borderColor = "rgba(255,0,85,0.12)";
           statusMsg.style.background = "rgba(255,0,85,0.03)";
@@ -1499,7 +1623,10 @@
         }
       } catch (err) {
         console.error("[✗] API error:", err);
-        statusMsg.innerText = "❌ SERVER CONNECTION FAILED!";
+        statusMsg.innerHTML = `
+          <span>❌ SERVER CONNECTION FAILED!</span>
+          <span class="hwid-badge">🔑 ${hwid ? hwid.substring(0, 12)+'...' : '???'}</span>
+        `;
         statusMsg.style.color = "#ff0055";
         playSound('error');
         loginBtn.disabled = supportBtn.disabled = true;
@@ -1510,14 +1637,20 @@
     loginBtn.addEventListener("click", async () => {
       const val = keyInput.value.trim();
       if (!val) {
-        statusMsg.innerText = "🛑 KEY KOSONG CUY!";
+        statusMsg.innerHTML = `
+          <span>🛑 KEY KOSONG CUY!</span>
+          <span class="hwid-badge">${hwidDisplay.textContent}</span>
+        `;
         statusMsg.style.color = "#ff0055";
         playSound('error');
         keyInput.classList.add("shake-error");
         setTimeout(() => keyInput.classList.remove("shake-error"), 500);
         return;
       }
-      statusMsg.innerText = "⏳ Validating secure signature...";
+      statusMsg.innerHTML = `
+        <span>⏳ Validating secure signature...</span>
+        <span class="hwid-badge">${hwidDisplay.textContent}</span>
+      `;
       statusMsg.style.color = "#00f0ff";
       loginBtn.disabled = supportBtn.disabled = true;
 
@@ -1528,11 +1661,14 @@
     const saved = localStorage.getItem("lukyy_saved_key");
     if (saved) {
       keyInput.value = saved;
-      statusMsg.innerText = "💾 SAVED KEY LOADED. CLICK UNLOCK!";
+      statusMsg.innerHTML = `
+        <span>💾 SAVED KEY LOADED. CLICK UNLOCK!</span>
+        <span class="hwid-badge">${hwidDisplay.textContent}</span>
+      `;
       statusMsg.style.color = "#ff8c00";
     }
 
-    // --- START PARTICLES ONLY (MUSIK TIDAK PLAY OTOMATIS) ---
+    // --- START PARTICLES ONLY ---
     initCyberParticles();
   }
 
