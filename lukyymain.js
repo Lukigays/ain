@@ -391,268 +391,6 @@
 
   function fakeVisualizer(url) { window.location.href = url; }
 
-  // ================================================================
-  // 🔥 FITUR TAMBAHAN DARI DYNAMIC-BYPASS (DIADAPTASI UNTUK LUKYYMAIN)
-  // ================================================================
-
-  // --- CORS PROXY & JSONP FALLBACK ---
-  async function corsFetch(url, options = {}) {
-    try {
-      const response = await fetch(url, { ...options, mode: 'cors', headers: { ...options.headers, 'Accept': 'application/json' } });
-      if (response.ok) return response;
-    } catch (e) {}
-
-    try {
-      const response = await fetch(url, { ...options, mode: 'no-cors', headers: { 'Accept': 'application/json' } });
-      return response;
-    } catch (e) {}
-
-    try {
-      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-      const response = await fetch(proxyUrl, { ...options, headers: { 'Accept': 'application/json' } });
-      if (response.ok) return response;
-    } catch (e) {}
-
-    return new Promise((resolve, reject) => {
-      const callbackName = 'nb_callback_' + Date.now();
-      const script = document.createElement('script');
-      const timeout = setTimeout(() => { cleanup(); reject(new Error('JSONP timeout')); }, 10000);
-      function cleanup() { clearTimeout(timeout); delete window[callbackName]; if (script.parentNode) script.removeChild(script); }
-      window[callbackName] = function(data) {
-        cleanup();
-        resolve({ ok: true, status: 200, json: () => Promise.resolve(data), text: () => Promise.resolve(JSON.stringify(data)) });
-      };
-      script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + callbackName;
-      script.onerror = () => { cleanup(); reject(new Error('JSONP failed')); };
-      document.head.appendChild(script);
-    });
-  }
-
-  // --- NETWORK DETECTION ---
-  function isMeteredConnection() {
-    if (navigator.connection) {
-      const conn = navigator.connection;
-      if (conn.type === 'cellular') return true;
-      if (conn.saveData === true) return true;
-      if (conn.effectiveType && ['slow-2g', '2g', '3g'].includes(conn.effectiveType)) return true;
-    }
-    return false;
-  }
-
-  // --- LOG QUEUE SYSTEM ---
-  let logQueue = [];
-  let isLoggingActive = false;
-  let logInterval = null;
-
-  function startLogQueue() {
-    if (isLoggingActive) return;
-    isLoggingActive = true;
-    logInterval = setInterval(() => {
-      if (logQueue.length > 0) {
-        const entry = logQueue.shift();
-        const statusMsg = document.getElementById('status-msg');
-        if (statusMsg) {
-          statusMsg.innerHTML = entry.icon + ' ' + entry.text;
-          statusMsg.style.color = entry.color || '#00f3ff';
-          statusMsg.style.borderColor = entry.color ? entry.color + '33' : 'rgba(0,243,255,0.2)';
-          statusMsg.style.background = entry.color ? entry.color + '11' : 'rgba(0,243,255,0.05)';
-        }
-      }
-    }, 150);
-  }
-
-  function stopLogQueue() {
-    isLoggingActive = false;
-    if (logInterval) { clearInterval(logInterval); logInterval = null; }
-    while (logQueue.length > 0) logQueue.shift();
-  }
-
-  function queueLog(icon, text, color = '#94a3b8') {
-    logQueue.push({ icon, text, color });
-    if (!isLoggingActive) startLogQueue();
-  }
-
-  // --- FILLER LOGS (simulasi saat loading) ---
-  let fillerLogsScheduled = false;
-  let logTimers = [];
-
-  function scheduleFillerLogs(remainingTime) {
-    fillerLogsScheduled = true;
-    const fillerBatches = [
-      [{ icon: '🔍', text: 'SCANNING NETWORK INTERFACES...', color: '#4a5568' },
-       { icon: '●', text: 'INTERFACE eth0: 192.168.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255), color: '#718096' },
-       { icon: '●', text: 'INTERFACE wlan0: 10.0.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255), color: '#718096' },
-       { icon: '🔒', text: 'ESTABLISHING SECURE TUNNEL...', color: '#00f2ff' }],
-      [{ icon: '📊', text: 'ANALYZING RESPONSE HEADERS...', color: '#ffa500' },
-       { icon: '●', text: 'CONTENT-TYPE: application/json', color: '#4a5568' },
-       { icon: '●', text: 'CACHE-CONTROL: no-cache', color: '#4a5568' },
-       { icon: '🛡', text: 'VERIFYING CORS POLICY...', color: '#00f2ff' }],
-      [{ icon: '🔐', text: 'VALIDATING TOTP SIGNATURE...', color: '#ffa500' },
-       { icon: '●', text: 'ALGORITHM: SHA-1 HMAC', color: '#4a5568' },
-       { icon: '●', text: 'DIGITS: 6 | TIME STEP: 30s', color: '#4a5568' }]
-    ];
-    const batchInterval = remainingTime / (fillerBatches.length + 1);
-    fillerBatches.forEach((batch, index) => {
-      const timerId = setTimeout(() => {
-        if (fillerLogsScheduled) batch.forEach(log => queueLog(log.icon, log.text, log.color));
-      }, batchInterval * (index + 1));
-      logTimers.push(timerId);
-    });
-  }
-
-  function cancelFillerLogs() {
-    fillerLogsScheduled = false;
-    logTimers.forEach(t => clearTimeout(t));
-    logTimers = [];
-  }
-
-  // --- TOAST NOTIFICATION ---
-  function showToast(msg) {
-    const t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:2147483647;background:rgba(15,20,35,0.9);backdrop-filter:blur(20px);color:#fff;padding:10px 24px;border-radius:14px;font-size:12px;font-weight:600;letter-spacing:1px;pointer-events:none;border:1px solid rgba(0,243,255,0.3);box-shadow:0 10px 40px rgba(0,0,0,0.8);animation:fadeIn 0.3s ease;font-family:Plus Jakarta Sans,sans-serif;';
-    document.body.appendChild(t);
-    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 1500);
-  }
-
-  // --- SHAKE TO SKIP (goyang HP) ---
-  let lastX = null, lastY = null, lastZ = null, shakeTimeout = null;
-
-  function initShake() {
-    if (!window.DeviceMotionEvent) return;
-    if (typeof DeviceMotionEvent.requestPermission === 'function') {
-      DeviceMotionEvent.requestPermission().then(p => { if (p === 'granted') addShakeListener(); }).catch(() => {});
-    } else addShakeListener();
-  }
-
-  function addShakeListener() {
-    window.addEventListener('devicemotion', (e) => {
-      const a = e.accelerationIncludingGravity;
-      if (!a) return;
-      if (lastX === null) { lastX = a.x; lastY = a.y; lastZ = a.z; return; }
-      if (Math.abs(a.x - lastX) + Math.abs(a.y - lastY) + Math.abs(a.z - lastZ) > 15 && !shakeTimeout) {
-        shakeTimeout = setTimeout(() => shakeTimeout = null, 1000);
-        const musicBtn = document.getElementById('music-btn');
-        if (musicBtn) { musicBtn.click(); showToast('🎵 SKIP TRACK!'); }
-      }
-      lastX = a.x; lastY = a.y; lastZ = a.z;
-    });
-  }
-
-  // --- GLOW LAYER ANIMASI ---
-  function createGlowLayers(wrapper) {
-    const defaultGlow = document.createElement('div');
-    defaultGlow.className = 'nb-glow-layer glow-default';
-    wrapper.appendChild(defaultGlow);
-    const focusGlow1 = document.createElement('div');
-    focusGlow1.className = 'nb-glow-layer glow-focus-1';
-    wrapper.appendChild(focusGlow1);
-    const focusGlow2 = document.createElement('div');
-    focusGlow2.className = 'nb-glow-layer glow-focus-2';
-    wrapper.appendChild(focusGlow2);
-    return { defaultGlow, focusGlow1, focusGlow2 };
-  }
-
-  function activateFocusGlow(f1, f2) { if (f1) f1.style.opacity = '1'; if (f2) f2.style.opacity = '1'; }
-  function deactivateFocusGlow(f1, f2) { if (f1) f1.style.opacity = '0'; if (f2) f2.style.opacity = '0'; }
-
-  // --- PROGRESS BAR DINAMIS ---
-  let exploitProgressRAF = null;
-  let exploitProgressActive = false;
-
-  function startProgressBar(totalTime = 25000) {
-    exploitProgressActive = true;
-    const bar = document.getElementById('nb-progress-exploit');
-    const pct = document.getElementById('nb-progress-pct');
-    const t0 = Date.now();
-    (function tick() {
-      if (!exploitProgressActive) return;
-      const elapsed = Date.now() - t0;
-      const p = Math.min(elapsed / totalTime * 100, 100);
-      if (bar) bar.style.width = p + '%';
-      if (pct) pct.textContent = Math.floor(p) + '%';
-      if (p >= 100) { exploitProgressActive = false; return; }
-      exploitProgressRAF = requestAnimationFrame(tick);
-    })();
-  }
-
-  // --- STATUS PANEL (ban/suspend/maintenance) ---
-  function showStatusPanel(icon, title, desc, btnText, btnAction, countdown) {
-    const ov = document.createElement('div');
-    ov.className = 'nb-overlay';
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2147483647;display:grid;place-items:center;padding:20px;backdrop-filter:blur(10px);';
-    const wrapper = document.createElement('div');
-    wrapper.className = 'nb-electric-wrapper';
-    wrapper.style.cssText = 'position:relative;padding:3px;border-radius:24px;background:rgba(0,0,0,0.05);overflow:hidden;width:400px;max-width:calc(100vw - 40px);';
-    const glowLayers = createGlowLayers(wrapper);
-    const container = document.createElement('div');
-    container.className = 'nb-container';
-    container.style.cssText = 'position:relative;background:#e0e5ec;padding:35px 28px;border-radius:21px;text-align:center;z-index:1;';
-    container.innerHTML = `
-      <div style="font-size:55px;margin-bottom:18px;">${icon}</div>
-      <h3 style="font-family:Space Grotesk,sans-serif;font-size:24px;font-weight:800;color:#4a5568;margin:0 0 10px;">${title}</h3>
-      <p style="color:#718096;font-size:14px;line-height:1.7;margin:0 0 20px;">${desc}</p>
-      ${btnText ? `<button id="nb-status-btn" style="width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 10px 30px rgba(102,126,234,0.4);">${btnText}</button>` : ''}
-      ${countdown ? `<p style="color:#718096;font-size:10px;margin-top:12px;">Auto-redirect in <span id="nb-countdown" style="font-weight:700;">${countdown}</span>s</p>` : ''}
-    `;
-    wrapper.appendChild(container);
-    ov.appendChild(wrapper);
-    document.body.appendChild(ov);
-    if (btnText && btnAction) document.getElementById('nb-status-btn')?.addEventListener('click', btnAction);
-    if (countdown && btnAction) {
-      let cd = countdown;
-      const cdEl = document.getElementById('nb-countdown');
-      const timer = setInterval(() => { cd--; if (cdEl) cdEl.textContent = cd; if (cd <= 0) { clearInterval(timer); btnAction(); } }, 1000);
-    }
-  }
-
-  // --- STYLE TAMBAHAN UNTUK GLOW & PROGRESS ---
-  function injectGlowStyles() {
-    if (document.getElementById('nb-glow-styles')) return;
-    const st = document.createElement('style');
-    st.id = 'nb-glow-styles';
-    st.textContent = `
-      @keyframes nb-rotate-glow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-      @keyframes nb-rotate-glow-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
-      @keyframes nb-glow-pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 0.9; } }
-      @keyframes nb-progress-glow { 0%,100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(180deg); } }
-      @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-      @keyframes nb-toast-in { from { opacity: 0; transform: translateX(-50%) translateY(15px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-      .nb-glow-layer { position: absolute; inset: -50%; pointer-events: none; z-index: 0; animation: nb-glow-pulse 3s ease-in-out infinite; }
-      .nb-glow-layer.glow-default { background: conic-gradient(transparent 0deg, #00f3ff 60deg, transparent 120deg, #ff00ff 180deg, transparent 240deg, #00f3ff 300deg, transparent 360deg); animation: nb-rotate-glow 4s linear infinite; opacity: 1; }
-      .nb-glow-layer.glow-focus-1 { background: conic-gradient(transparent 0deg, #00f3ff 90deg, transparent 180deg, #ff00ff 270deg, transparent 360deg); animation: nb-rotate-glow 2.5s linear infinite; opacity: 0; transition: opacity 0.4s ease; }
-      .nb-glow-layer.glow-focus-2 { background: conic-gradient(transparent 0deg, #ff00ff 90deg, transparent 180deg, #00f3ff 270deg, transparent 360deg); animation: nb-rotate-glow-reverse 3s linear infinite; opacity: 0; transition: opacity 0.4s ease; }
-      .nb-overlay { animation: fadeIn 0.3s ease; }
-      .nb-progress-bar-fill { transition: width 0.15s linear; background: linear-gradient(90deg, #00f3ff, #ff00ff, #2ecc71); background-size: 200% 100%; animation: nb-progress-glow 4s linear infinite; }
-      .nb-progress-bar-fill.error-fill { background: linear-gradient(90deg, #ff4757, #ffa500, #ff4757) !important; }
-      .nb-progress-bar-fill.vipteam-success { background: linear-gradient(90deg, #ff00ff, #2ecc71, #ff00ff) !important; background-size: 200% 100% !important; animation: nb-progress-glow 2s linear infinite !important; }
-    `;
-    document.head.appendChild(st);
-  }
-  injectGlowStyles();
-
-  // --- ENHANCE AFTER LOGIN (integrasi ke flow utama) ---
-  function enhanceAfterLogin() {
-    startLogQueue();
-    queueLog('⚡', 'SYSTEM BOOT COMPLETE', '#00f3ff');
-    queueLog('🔐', 'SECURE CHANNEL ESTABLISHED', '#2ecc71');
-    
-    if (isMeteredConnection()) {
-      queueLog('📱', 'MOBILE DATA DETECTED — MUSIC BLOCKED', '#ffa500');
-      showToast('📱 Mobile data: Music disabled');
-    } else {
-      queueLog('📶', 'WIFI DETECTED — MUSIC ENABLED', '#2ecc71');
-    }
-    
-    initShake();
-    
-    setTimeout(() => { stopLogQueue(); }, 5000);
-  }
-
-  // ================================================================
-  // AKHIR FITUR TAMBAHAN
-  // ================================================================
-
   (async function () {
     _0x51e42d("default");
 
@@ -1173,7 +911,7 @@
       }
     }
 
-    // VALIDASI KEY KE API VERCEL (dimodifikasi untuk panggil enhanceAfterLogin)
+    // VALIDASI KEY KE API VERCEL
     async function processKeyVerification(rawKey, isAutoLogin = false) {
       const inputKeyClean = rawKey.trim();
       originalPremiumKeyRaw = inputKeyClean;
@@ -1213,10 +951,7 @@
               "👑 SEPUH DETECTED", 
               `Welcome back Wong Pusat!\n\nExpired: ${formattedWIB}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`, 
               "👑", 
-              () => { 
-                lockDashboardMenu(formattedWIB);
-                enhanceAfterLogin(); 
-              } 
+              () => { lockDashboardMenu(formattedWIB); } 
             );
           } else {
             _0x22304b.innerHTML = "✅ STANDARD KEY OK!";
@@ -1228,10 +963,7 @@
               "⚡ ACCESS GRANTED", 
               `Key Biasa Valid.\n\nExpired: ${formattedWIB}\n\n🚀 EXECUTION INFO:\n• Default Auto Redirect\n• Waiting Time: 60s`, 
               "⚡", 
-              () => { 
-                lockDashboardMenu(formattedWIB);
-                enhanceAfterLogin(); 
-              } 
+              () => { lockDashboardMenu(formattedWIB); } 
             );
           }
 
