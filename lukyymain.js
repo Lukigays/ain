@@ -134,7 +134,6 @@
       this.secret = secret;
       this.timeStep = 30;
       this.digits = 6;
-      this._checkCrypto();
     }
     _sha1(data) {
       function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
