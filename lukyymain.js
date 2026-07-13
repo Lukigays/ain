@@ -49,7 +49,7 @@
   let rawPremiumKey = "";
 
   // ============================================================
-  // UTILITY FUNCTIONS
+  // UTILITY FUNCTIONS (sama)
   // ============================================================
   function extractVpLinkUrl() {
     try {
@@ -362,7 +362,6 @@
         if (d.x < 0 || d.x > w) d.vx *= -1;
         if (d.y < 0 || d.y > h) d.vy *= -1;
       }
-      // garis
       for (let i = 0; i < dots.length; i++) {
         for (let j = i + 1; j < dots.length; j++) {
           const dx = dots[i].x - dots[j].x;
@@ -379,7 +378,6 @@
           }
         }
       }
-      // titik
       for (let d of dots) {
         ctx.beginPath();
         ctx.arc(d.x, d.y, 2, 0, Math.PI * 2);
@@ -423,7 +421,7 @@
   }
 
   // ============================================================
-  // BUILD MAIN PANEL (HOLOGRAPHIC) - Avatar kiri atas
+  // BUILD MAIN PANEL - perbaikan posisi
   // ============================================================
   function buildMainPanel() {
     const old = document.getElementById("lukyy-auth");
@@ -447,7 +445,7 @@
         -webkit-backdrop-filter: blur(16px);
         border: 1.5px solid rgba(0, 240, 255, 0.25);
         border-radius: 32px;
-        padding: 32px 28px 28px;
+        padding: 32px 28px 20px; /* kurangi padding bottom, biar lebih ke atas */
         box-shadow: 0 0 80px rgba(0, 240, 255, 0.08), inset 0 0 80px rgba(0, 240, 255, 0.02);
         color: #e0f0ff;
         scrollbar-width: thin;
@@ -459,11 +457,11 @@
 
       .panel-content { position: relative; z-index: 2; }
 
-      /* AVATAR - KIRI ATAS */
+      /* AVATAR - kiri atas, lebih ke atas */
       .holo-avatar {
         position: absolute;
-        top: -20px;
-        left: -20px;
+        top: -24px;
+        left: -24px;
         width: 64px;
         height: 64px;
         border-radius: 50%;
@@ -494,8 +492,8 @@
 
       .holo-music {
         position: absolute;
-        top: -20px;
-        right: -10px;
+        top: -24px;
+        right: -14px;
         background: rgba(0,10,25,0.8);
         border: 1px solid rgba(255,0,255,0.3);
         color: #ff00ff;
@@ -513,6 +511,7 @@
       }
       .holo-music:hover { transform: scale(1.15) rotate(10deg); border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 60px rgba(0,240,255,0.3); }
 
+      /* BADGE - di tengah, lebih ke atas */
       .holo-badge {
         display: inline-flex;
         align-items: center;
@@ -522,14 +521,12 @@
         border-radius: 40px;
         border: 1px solid rgba(0,240,255,0.15);
         backdrop-filter: blur(6px);
-        margin-bottom: 16px;
+        margin: 0 auto 12px; /* kurangi margin bottom */
         letter-spacing: 2px;
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         font-family: 'Orbitron', sans-serif;
-        margin-left: auto;
-        margin-right: auto;
       }
       .holo-badge-dot {
         width: 8px; height: 8px;
@@ -554,7 +551,7 @@
         -webkit-text-fill-color: transparent;
         animation: gradShift 4s ease infinite;
         letter-spacing: 4px;
-        margin: 0 0 4px;
+        margin: 0 0 2px;
         text-shadow: 0 0 40px rgba(0,240,255,0.2);
       }
       @keyframes gradShift {
@@ -568,22 +565,22 @@
         font-weight: 500;
         color: #90b8d0;
         text-align: center;
-        min-height: 48px;
+        min-height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 0 10px;
-        margin: 6px 0 10px;
+        margin: 4px 0 10px;
         border-top: 1px solid rgba(0,240,255,0.06);
         border-bottom: 1px solid rgba(0,240,255,0.06);
-        padding: 10px 0;
+        padding: 8px 0;
         font-style: italic;
       }
 
       .holo-input-wrap {
         position: relative;
         width: 100%;
-        margin: 16px 0 20px;
+        margin: 12px 0 16px;
       }
       .holo-input {
         width: 100%;
@@ -692,7 +689,7 @@
       }
 
       .holo-status {
-        margin-top: 22px;
+        margin-top: 18px;
         font-size: 11px;
         font-weight: 600;
         color: #00f0ff;
@@ -832,11 +829,14 @@
       }
       .holo-uni-input:focus { border-color: #00cc88; box-shadow: 0 0 40px rgba(0,204,136,0.1); }
 
-      .holo-countdown {
+      /* =========================================================
+         NEW LOADING OVERLAY - SPINNER HOLOGRAPHIC
+         ========================================================= */
+      .holo-loader-overlay {
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85);
+        background: rgba(0, 0, 0, 0.85);
         backdrop-filter: blur(20px);
         z-index: 2147483647;
         display: flex;
@@ -844,43 +844,83 @@
         justify-content: center;
         font-family: 'Orbitron', sans-serif;
       }
-      .holo-countdown-card {
+      .holo-loader-card {
         background: rgba(0,10,25,0.8);
         border: 2px solid rgba(0,240,255,0.2);
         border-radius: 40px;
         padding: 50px 40px;
-        width: min(400px, 90vw);
+        width: min(420px, 90vw);
         text-align: center;
         box-shadow: 0 0 120px rgba(0,240,255,0.05), inset 0 0 60px rgba(0,240,255,0.02);
         position: relative;
         overflow: hidden;
       }
-      .holo-countdown-circle {
-        width: 140px; height: 140px;
+      .holo-loader-spinner {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+        position: relative;
         border-radius: 50%;
-        border: 3px solid #00f0ff;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 52px;
-        font-weight: 900;
-        color: #00f0ff;
-        margin: 0 auto 24px;
-        box-shadow: 0 0 60px rgba(0,240,255,0.1), inset 0 0 40px rgba(0,0,0,0.8);
-        transition: all 0.15s;
+        border: 4px solid transparent;
+        border-top: 4px solid #00f0ff;
+        border-right: 4px solid #ff00ff;
+        border-bottom: 4px solid #00f0ff;
+        animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        box-shadow: 0 0 60px rgba(0,240,255,0.2);
       }
-      .holo-countdown-text {
+      .holo-loader-spinner::after {
+        content: '';
+        position: absolute;
+        top: 6px; left: 6px;
+        right: 6px; bottom: 6px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-left: 3px solid #ff00ff;
+        border-bottom: 3px solid #00f0ff;
+        animation: spin 0.8s linear infinite reverse;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .holo-loader-text {
         color: #e0f0ff;
         font-size: 18px;
         font-weight: 700;
-        letter-spacing: 2px;
+        letter-spacing: 3px;
         text-transform: uppercase;
+        margin: 0 0 10px;
+        text-shadow: 0 0 20px rgba(0,240,255,0.3);
       }
-      .holo-countdown-sub {
+      .holo-loader-progress {
+        width: 100%;
+        height: 6px;
+        background: rgba(0,240,255,0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0 16px;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+      }
+      .holo-loader-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #00f0ff, #ff00ff);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+        box-shadow: 0 0 30px rgba(0,240,255,0.3);
+      }
+      .holo-loader-percent {
+        font-size: 14px;
+        color: #90b8d0;
+        letter-spacing: 2px;
+        font-weight: 600;
+      }
+      .holo-loader-sub {
         color: #70b0d0;
         font-size: 13px;
-        margin-top: 8px;
+        margin-top: 6px;
+        opacity: 0.6;
       }
 
       .holo-biodata {
@@ -947,10 +987,11 @@
       .holo-bio-close:hover { background: rgba(255,0,85,0.12); border-color: rgba(255,0,85,0.3); }
 
       @media (max-width: 500px) {
-        #lukyy-auth { padding: 24px 16px; }
+        #lukyy-auth { padding: 24px 16px 16px; }
         .holo-title { font-size: 28px; }
-        .holo-avatar { width: 54px; height: 54px; top: -18px; left: -18px; }
-        .holo-music { width: 40px; height: 40px; font-size: 16px; top: -16px; right: -6px; }
+        .holo-avatar { width: 54px; height: 54px; top: -20px; left: -20px; }
+        .holo-music { width: 40px; height: 40px; font-size: 16px; top: -20px; right: -10px; }
+        .holo-loader-spinner { width: 90px; height: 90px; }
         .holo-countdown-card { padding: 30px 20px; }
         .holo-countdown-circle { width: 110px; height: 110px; font-size: 38px; }
       }
@@ -968,7 +1009,7 @@
         </div>
         <button class="holo-music" id="music-btn" title="Play/Pause/Skip">🎵</button>
 
-        <div style="text-align:center; margin-top:20px;">
+        <div style="text-align:center; margin-top:14px;">
           <div class="holo-badge" id="system-badge">
             <span class="holo-badge-dot" id="badge-dot"></span>
             <span class="holo-badge-text" id="badge-text">SYSTEM STANDBY</span>
@@ -986,7 +1027,7 @@
               <button id="auto-paste-btn" class="holo-icon-btn" title="Paste">📋</button>
             </div>
           </div>
-          <div id="interactive-area" style="margin-bottom:16px;">
+          <div id="interactive-area" style="margin-bottom:12px;">
             <button id="login-btn" class="holo-btn-primary">⚡ UNLOCK</button>
           </div>
         </div>
@@ -1020,7 +1061,7 @@
     const autoPasteBtn = document.getElementById("auto-paste-btn");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
 
-    // --- EVENTS ---
+    // --- EVENTS (sama) ---
     profileTrigger.addEventListener("click", () => biodataPanel.classList.add("active"));
     closeBiodataBtn.addEventListener("click", () => biodataPanel.classList.remove("active"));
 
@@ -1219,61 +1260,64 @@
       });
     }
 
+    // ============================================================
+    // NEW TRIGGER EXECUTION - dengan spinner + progress
+    // ============================================================
     async function triggerExecution(seconds, targetType, customVpKey = null) {
       const panel = document.getElementById("lukyy-auth");
       if (panel) panel.remove();
 
       const overlay = document.createElement("div");
-      overlay.className = "holo-countdown";
+      overlay.className = "holo-loader-overlay";
       overlay.id = "lukyy-countdown";
 
       overlay.innerHTML = `
-        <div class="holo-countdown-card">
-          <canvas id="lukyy-lava-canvas" width="400" height="440" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.25;pointer-events:none;"></canvas>
-          <div style="position:relative;z-index:2;">
-            <div class="holo-countdown-circle" id="countdown-container">
-              <span id="countdown-text">${seconds}</span>
-            </div>
-            <p class="holo-countdown-text" id="lukyy-check-text">Injecting Payload...</p>
-            <p class="holo-countdown-sub">Biarin kita memasak di dapur 🍳🔥</p>
+        <div class="holo-loader-card">
+          <div class="holo-loader-spinner"></div>
+          <div class="holo-loader-text" id="loader-status">EXECUTING</div>
+          <div class="holo-loader-progress">
+            <div class="holo-loader-progress-bar" id="loader-progress-bar"></div>
           </div>
+          <div class="holo-loader-percent" id="loader-percent">0%</div>
+          <div class="holo-loader-sub" id="loader-sub">Initializing...</div>
         </div>
       `;
       document.body.appendChild(overlay);
 
       if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
 
-      const countdownText = document.getElementById("countdown-text");
-      const checkText = document.getElementById("lukyy-check-text");
-      const countdownContainer = document.getElementById("countdown-container");
-      const canvas = document.getElementById("lukyy-lava-canvas");
-      const ctx = canvas.getContext("2d");
+      const statusEl = document.getElementById("loader-status");
+      const progressBar = document.getElementById("loader-progress-bar");
+      const percentEl = document.getElementById("loader-percent");
+      const subEl = document.getElementById("loader-sub");
 
-      let isRunning = true;
       let vpKey = customVpKey;
       let apiType = targetType;
 
       if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") apiType = "vp";
 
+      // Ekstraksi vplink
       if (targetType === "vp") {
-        checkText.innerText = "Scanning vplink.in... 🔍";
+        statusEl.innerText = "SCANNING";
+        subEl.innerText = "Mencari vplink.in...";
         const vpUrl = extractVpLinkUrl();
         if (vpUrl) vpKey = extractVpKey(vpUrl);
       } else if (targetType === "pc") {
-        checkText.innerText = "Scanning PowerCheats... 🔍";
+        statusEl.innerText = "SCANNING";
+        subEl.innerText = "Mencari PowerCheats...";
         const vpUrl = extractPowerCheatsUrl();
         if (vpUrl) vpKey = extractVpKey(vpUrl);
       } else if (targetType === "uni_vp") {
-        checkText.innerText = "Parsing Uni-Vplink... 🔍";
+        statusEl.innerText = "PARSING";
+        subEl.innerText = "Memproses link...";
       }
 
       if ((targetType === "vp" || targetType === "pc" || targetType === "uni_vp") && !vpKey) {
-        checkText.innerText = "❌ TARGET NOT FOUND!";
-        checkText.style.color = "#ff0055";
-        countdownText.innerText = "!";
-        countdownText.style.color = "#ff0055";
-        countdownContainer.style.borderColor = "#ff0055";
-        isRunning = false;
+        statusEl.innerText = "❌ TARGET NOT FOUND";
+        progressBar.style.width = "100%";
+        progressBar.style.background = "#ff0055";
+        percentEl.innerText = "FAILED";
+        subEl.innerText = "Tidak ditemukan vplink.in di halaman ini";
         setTimeout(() => {
           overlay.remove();
           document.body.appendChild(panel);
@@ -1281,87 +1325,49 @@
         }, 3500);
         return;
       }
-      if (vpKey) checkText.innerText = `Key Acquired: ${vpKey.substring(0,8)}... 🔥`;
+      if (vpKey) {
+        subEl.innerText = `Key: ${vpKey.substring(0,8)}...`;
+      }
 
       let finalUrl = CONFIG.fallbackRedirectUrl;
       fetchDestination(apiType, 1, vpKey).then(url => { finalUrl = url; }).catch(() => {});
 
-      let timeLeft = seconds;
-      let globs = [];
-      let hue = userTier === "premium" ? 45 : 190;
-      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") hue = 300;
-
-      for (let i = 0; i < 14; i++) {
-        globs.push({
-          x: Math.random() * canvas.width,
-          y: canvas.height + (Math.random() * 120),
-          baseY: canvas.height + (Math.random() * 120),
-          r: Math.random() * 32 + 14,
-          speed: Math.random() * 0.7 + 0.2,
-          color: `hsla(${Math.random() * 30 + hue}, 100%, 55%, 0.6)`,
-          phase: Math.random() * Math.PI * 2
-        });
-      }
-
-      function renderLava() {
-        if (!isRunning) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let audioIntensity = 0, bassIntensity = 0;
-        if (audioAnalyser && audioData) {
-          audioAnalyser.getByteFrequencyData(audioData);
-          let sum = 0;
-          for (let i = 0; i < audioData.length; i++) sum += audioData[i];
-          audioIntensity = sum / audioData.length;
-          let bSum = 0;
-          for (let i = 0; i < 8; i++) bSum += audioData[i];
-          bassIntensity = bSum / 8;
-
-          let scaleVal = 1.0 + (bassIntensity / 255) * 0.15;
-          let glowVal = 20 + (bassIntensity / 255) * 40;
-          let glowC = userTier === "premium" ? "255,215,0" : "0,240,255";
-          if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") glowC = "255,0,234";
-          countdownContainer.style.transform = `scale(${scaleVal})`;
-          countdownContainer.style.boxShadow = `0 0 ${glowVal}px rgba(${glowC},${0.3 + (bassIntensity/255)*0.5}), inset 0 0 40px rgba(0,0,0,0.8)`;
-          countdownContainer.style.borderColor = `rgba(${glowC},${0.5 + (bassIntensity/255)*0.5})`;
-        }
-
-        ctx.filter = "blur(22px)";
-        for (let g of globs) {
-          g.phase += 0.01;
-          g.x += Math.sin(g.phase) * 0.6;
-          let speed = g.speed + (audioIntensity / 255) * 2.2;
-          g.y -= speed;
-          let r = g.r + (audioIntensity / 255) * 14;
-          if (g.y < -r * 2) { g.y = g.baseY; g.x = Math.random() * canvas.width; }
-          ctx.beginPath();
-          ctx.arc(g.x, g.y, r, 0, Math.PI * 2);
-          ctx.fillStyle = g.color;
-          ctx.fill();
-        }
-        ctx.filter = "none";
-        requestAnimationFrame(renderLava);
-      }
-      requestAnimationFrame(renderLava);
+      const totalSteps = seconds;
+      let currentStep = 0;
+      const interval = 1000; // 1 detik per step
 
       const timer = setInterval(() => {
-        timeLeft--;
-        if (countdownText) countdownText.innerText = timeLeft;
-        if (timeLeft <= 0) {
+        currentStep++;
+        const progress = Math.min((currentStep / totalSteps) * 100, 100);
+        progressBar.style.width = progress + "%";
+        percentEl.innerText = Math.round(progress) + "%";
+
+        if (currentStep >= totalSteps) {
           clearInterval(timer);
-          isRunning = false;
-          countdownText.innerText = "✓";
-          countdownText.style.color = "#00ff88";
-          countdownContainer.style.borderColor = "#00ff88";
-          checkText.innerText = "BYPASS SUCCESS 🔥";
-          checkText.style.color = "#00ff88";
+          progressBar.style.width = "100%";
+          percentEl.innerText = "100%";
+          statusEl.innerText = "SUCCESS ✓";
+          statusEl.style.color = "#00ff88";
+          subEl.innerText = "Bypass berhasil, mengarahkan...";
           setTimeout(() => {
             overlay.remove();
             redirectTo(finalUrl);
-          }, 1500);
+          }, 1200);
+        } else {
+          // Update sub text dengan animasi titik
+          const dots = ".".repeat((currentStep % 3) + 1);
+          subEl.innerText = `Memproses${dots}`;
         }
-      }, 1000);
+      }, interval);
+
+      // Update status awal
+      statusEl.innerText = "EXECUTING";
+      subEl.innerText = "Memulai...";
     }
 
+    // ============================================================
+    // VERIFY KEY (sama)
+    // ============================================================
     async function verifyKey(rawKey, isAuto = false) {
       const clean = rawKey.trim();
       rawPremiumKey = clean;
