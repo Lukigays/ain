@@ -49,7 +49,72 @@
   let rawPremiumKey = "";
 
   // ============================================================
-  // UTILITY FUNCTIONS (sama)
+  // SOUND EFFECT (Web Audio API)
+  // ============================================================
+  function playSound(type) {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      if (type === 'success') {
+        // dua nada pendek positif: 880Hz, 1100Hz
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.value = 880;
+        gain1.gain.setValueAtTime(0.3, now);
+        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.15);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.value = 1100;
+        gain2.gain.setValueAtTime(0.3, now + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.15);
+        osc2.stop(now + 0.3);
+      } 
+      else if (type === 'error') {
+        // nada rendah panjang (buzzer)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 200;
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      } 
+      else if (type === 'bypass_done') {
+        // nada naik (ascending)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.linearRampToValueAtTime(880, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    } catch (e) {
+      // Silent fail if audio context not supported
+    }
+  }
+
+  // ============================================================
+  // UTILITY FUNCTIONS
   // ============================================================
   function extractVpLinkUrl() {
     try {
@@ -421,7 +486,7 @@
   }
 
   // ============================================================
-  // BUILD MAIN PANEL - perbaikan posisi
+  // BUILD MAIN PANEL
   // ============================================================
   function buildMainPanel() {
     const old = document.getElementById("lukyy-auth");
@@ -445,7 +510,7 @@
         -webkit-backdrop-filter: blur(16px);
         border: 1.5px solid rgba(0, 240, 255, 0.25);
         border-radius: 32px;
-        padding: 32px 28px 20px; /* kurangi padding bottom, biar lebih ke atas */
+        padding: 32px 28px 20px;
         box-shadow: 0 0 80px rgba(0, 240, 255, 0.08), inset 0 0 80px rgba(0, 240, 255, 0.02);
         color: #e0f0ff;
         scrollbar-width: thin;
@@ -457,7 +522,6 @@
 
       .panel-content { position: relative; z-index: 2; }
 
-      /* AVATAR - kiri atas, lebih ke atas */
       .holo-avatar {
         position: absolute;
         top: -24px;
@@ -511,7 +575,6 @@
       }
       .holo-music:hover { transform: scale(1.15) rotate(10deg); border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 60px rgba(0,240,255,0.3); }
 
-      /* BADGE - di tengah, lebih ke atas */
       .holo-badge {
         display: inline-flex;
         align-items: center;
@@ -521,7 +584,7 @@
         border-radius: 40px;
         border: 1px solid rgba(0,240,255,0.15);
         backdrop-filter: blur(6px);
-        margin: 0 auto 12px; /* kurangi margin bottom */
+        margin: 0 auto 12px;
         letter-spacing: 2px;
         font-size: 11px;
         font-weight: 700;
@@ -829,9 +892,7 @@
       }
       .holo-uni-input:focus { border-color: #00cc88; box-shadow: 0 0 40px rgba(0,204,136,0.1); }
 
-      /* =========================================================
-         NEW LOADING OVERLAY - SPINNER HOLOGRAPHIC
-         ========================================================= */
+      /* LOADING OVERLAY - spinner holografik + progress */
       .holo-loader-overlay {
         position: fixed;
         top: 0; left: 0;
@@ -1061,7 +1122,7 @@
     const autoPasteBtn = document.getElementById("auto-paste-btn");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
 
-    // --- EVENTS (sama) ---
+    // --- EVENTS ---
     profileTrigger.addEventListener("click", () => biodataPanel.classList.add("active"));
     closeBiodataBtn.addEventListener("click", () => biodataPanel.classList.remove("active"));
 
@@ -1261,7 +1322,7 @@
     }
 
     // ============================================================
-    // NEW TRIGGER EXECUTION - dengan spinner + progress
+    // TRIGGER EXECUTION - dengan spinner + progress + SOUND
     // ============================================================
     async function triggerExecution(seconds, targetType, customVpKey = null) {
       const panel = document.getElementById("lukyy-auth");
@@ -1318,6 +1379,7 @@
         progressBar.style.background = "#ff0055";
         percentEl.innerText = "FAILED";
         subEl.innerText = "Tidak ditemukan vplink.in di halaman ini";
+        playSound('error');
         setTimeout(() => {
           overlay.remove();
           document.body.appendChild(panel);
@@ -1334,7 +1396,7 @@
 
       const totalSteps = seconds;
       let currentStep = 0;
-      const interval = 1000; // 1 detik per step
+      const interval = 1000;
 
       const timer = setInterval(() => {
         currentStep++;
@@ -1349,24 +1411,23 @@
           statusEl.innerText = "SUCCESS ✓";
           statusEl.style.color = "#00ff88";
           subEl.innerText = "Bypass berhasil, mengarahkan...";
+          playSound('bypass_done'); // <--- SOUND BYPASS DONE
           setTimeout(() => {
             overlay.remove();
             redirectTo(finalUrl);
           }, 1200);
         } else {
-          // Update sub text dengan animasi titik
           const dots = ".".repeat((currentStep % 3) + 1);
           subEl.innerText = `Memproses${dots}`;
         }
       }, interval);
 
-      // Update status awal
       statusEl.innerText = "EXECUTING";
       subEl.innerText = "Memulai...";
     }
 
     // ============================================================
-    // VERIFY KEY (sama)
+    // VERIFY KEY - dengan SOUND
     // ============================================================
     async function verifyKey(rawKey, isAuto = false) {
       const clean = rawKey.trim();
@@ -1398,6 +1459,7 @@
             statusMsg.style.background = "rgba(255,215,0,0.03)";
             musicBtn.textContent = "⏭️";
 
+            playSound('success'); // <--- SOUND SUCCESS
             showHoloModal(
               "👑 SEPUH DETECTED",
               `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
@@ -1407,6 +1469,7 @@
           } else {
             statusMsg.innerText = "✅ STANDARD KEY OK!";
             statusMsg.style.color = "#00f0ff";
+            playSound('success'); // <--- SOUND SUCCESS
             showHoloModal(
               "⚡ ACCESS GRANTED",
               `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🚀 Default Auto Redirect (60s)`,
@@ -1420,6 +1483,7 @@
           statusMsg.style.color = "#ff0055";
           statusMsg.style.borderColor = "rgba(255,0,85,0.12)";
           statusMsg.style.background = "rgba(255,0,85,0.03)";
+          playSound('error'); // <--- SOUND ERROR
           if (keyInput) {
             keyInput.classList.add("shake-error");
             setTimeout(() => keyInput.classList.remove("shake-error"), 500);
@@ -1429,6 +1493,7 @@
         console.error("[✗] API error:", err);
         statusMsg.innerText = "❌ SERVER CONNECTION FAILED!";
         statusMsg.style.color = "#ff0055";
+        playSound('error');
         loginBtn.disabled = supportBtn.disabled = true;
       }
     }
@@ -1439,6 +1504,7 @@
       if (!val) {
         statusMsg.innerText = "🛑 KEY KOSONG CUY!";
         statusMsg.style.color = "#ff0055";
+        playSound('error');
         keyInput.classList.add("shake-error");
         setTimeout(() => keyInput.classList.remove("shake-error"), 500);
         return;
