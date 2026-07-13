@@ -47,7 +47,6 @@
   let isReactive = true;
   let userTier = "biasa";
   let rawPremiumKey = "";
-  let currentMusicIndex = 0;
 
   // ============================================================
   // UTILITY FUNCTIONS
@@ -460,11 +459,14 @@
 
       .panel-content { position: relative; z-index: 2; }
 
+      /* AVATAR - FIXED CENTER */
       .holo-avatar {
         position: absolute;
-        top: -30px; left: 50%;
+        top: -30px;
+        left: 50%;
         transform: translateX(-50%) scale(0.9);
-        width: 72px; height: 72px;
+        width: 72px;
+        height: 72px;
         border-radius: 50%;
         border: 2px solid rgba(0,240,255,0.6);
         box-shadow: 0 0 40px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.1);
@@ -472,13 +474,20 @@
         cursor: pointer;
         transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
         animation: avatarPulse 3s infinite;
+        margin: 0;
+        padding: 0;
       }
       .holo-avatar:hover {
         transform: translateX(-50%) scale(1.1) rotate(0deg);
         box-shadow: 0 0 80px rgba(0,240,255,0.5);
         border-color: #ff00ff;
       }
-      .holo-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .holo-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
       @keyframes avatarPulse {
         0%, 100% { box-shadow: 0 0 40px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.1); }
         50% { box-shadow: 0 0 80px rgba(255,0,255,0.3), inset 0 0 40px rgba(255,0,255,0.1); }
@@ -499,6 +508,7 @@
         justify-content: center;
         box-shadow: 0 0 30px rgba(255,0,255,0.15);
         transition: all 0.4s;
+        z-index: 3;
       }
       .holo-music:hover { transform: scale(1.15) rotate(10deg); border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 60px rgba(0,240,255,0.3); }
 
@@ -800,6 +810,7 @@
         align-items: center;
         justify-content: center;
         transition: all 0.25s;
+        z-index: 10;
       }
       .holo-back:hover { background: rgba(0,240,255,0.1); border-color: #00f0ff; color: #fff; }
 
