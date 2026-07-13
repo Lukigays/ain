@@ -130,7 +130,7 @@
 
   // --- TOTP & API SYSTEM INTEGRATION ---
   class TOTPGenerator {
-    constructor(secret = {
+    constructor(secret {
       this.secret = secret;
       this.timeStep = 30;
       this.digits = 6;
