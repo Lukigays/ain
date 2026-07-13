@@ -8,7 +8,7 @@
 
   // --- CONFIGURATION SETUP ---
   const _0x439d89 = {
-    keyUrl: "https://database-nine-flax.vercel.app/getkeys", 
+    keyUrl: "https://database-nine-flax.vercel.app/getkeys",
     validKeys: null,
 
     // API AINCRAD BARU
@@ -16,7 +16,7 @@
     apiKey: "abdullah",
     totpSecret: "6ZQ4X3VPEK5XG2Q",
     fallbackRedirectUrl: "https://raw.githubusercontent.com/Lukigays/ain/main/index.html",
-    
+
     telegramUrl: "https://t.me/lukyyarch",
     musicList: [
       "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(1).mp3",
@@ -46,9 +46,9 @@
   let audioAnalyser = null;
   let audioDataArray = null;
   let audioSourceNode = null;
-  let isReactiveRunning = true; 
-  let currentUserTier = "biasa"; 
-  let originalPremiumKeyRaw = ""; 
+  let isReactiveRunning = true;
+  let currentUserTier = "biasa";
+  let originalPremiumKeyRaw = "";
 
   // --- VIP TEAM EXTRACTOR MODULE ---
   function extractVpLinkUrl() {
@@ -128,92 +128,88 @@
     }
   }
 
-// === PERBAIKAN CLASS TOTPGenerator ===
-class TOTPGenerator {
-  constructor(secret) {   // <-- TAMBAHKAN KURUNG TUTUP )
-    this.secret = secret;
-    this.timeStep = 30;
-    this.digits = 6;
-  }
-
-  _sha1(data) {
-    function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
-    let h0 = 1732584193, h1 = 4023233417, h2 = 2562383102, h3 = 271733878, h4 = 3285377520;
-    const ml = data.length * 8;
-    data.push(128);
-    while (data.length % 64 !== 56) data.push(0);
-    data.push(0, 0, 0, 0);
-    for (let i = 3; i >= 0; i--) data.push((ml >>> (i * 8)) & 255);
-    for (let i = 0; i < data.length; i += 64) {
-      const w = [];
-      for (let j = 0; j < 16; j++) {
-        w[j] = (data[i + j * 4] << 24) | (data[i + j * 4 + 1] << 16) | (data[i + j * 4 + 2] << 8) | data[i + j * 4 + 3];
-      }
-      for (let j = 16; j < 80; j++) {
-        w[j] = rotl(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
-      }
-      let a = h0, b = h1, c = h2, d = h3, e = h4;
-      for (let j = 0; j < 80; j++) {
-        let f, k;
-        if (j < 20) { f = (b & c) | (~b & d); k = 1518500249; }
-        else if (j < 40) { f = b ^ c ^ d; k = 1859775393; }
-        else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 2400959708; }
-        else { f = b ^ c ^ d; k = 3395469782; }
-        const temp = (rotl(a, 5) + f + e + k + w[j]) >>> 0;
-        e = d; d = c; c = rotl(b, 30); b = a; a = temp;
-      }
-      h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
+  // --- TOTP & API SYSTEM INTEGRATION ---
+  class TOTPGenerator {
+    constructor(secret) {
+      this.secret = secret;
+      this.timeStep = 30;
+      this.digits = 6;
     }
-    const out = [];
-    [h0, h1, h2, h3, h4].forEach(val => {
-      for (let i = 3; i >= 0; i--) out.push((val >>> (i * 8)) & 255);
-    });
-    return out;
-  }
-
-  async hmacSha1(key, message) {
-    const k = Array.from(key);
-    const m = Array.from(new Uint8Array(message));
-    const bs = 64;
-    let kPad = k.length > bs ? this._sha1([...k]) : [...k];
-    while (kPad.length < bs) kPad.push(0);
-    const iKeyPad = kPad.map(val => val ^ 0x36);
-    const oKeyPad = kPad.map(val => val ^ 0x5c);
-    const innerHash = this._sha1([...iKeyPad, ...m]);
-    const outerHash = this._sha1([...oKeyPad, ...innerHash]);
-    return new Uint8Array(outerHash);
-  }
-
-  base32ToHex(base32) {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-    let bits = "", hex = "";
-    base32 = base32.toUpperCase().replace(/=+$/, "");
-    for (let i = 0; i < base32.length; i++) {
-      const val = alphabet.indexOf(base32.charAt(i));
-      if (val === -1) throw new Error("Invalid base32 character");
-      bits += val.toString(2).padStart(5, "0");
+    _sha1(data) {
+      function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
+      let h0 = 1732584193, h1 = 4023233417, h2 = 2562383102, h3 = 271733878, h4 = 3285377520;
+      const ml = data.length * 8;
+      data.push(128);
+      while (data.length % 64 !== 56) data.push(0);
+      data.push(0, 0, 0, 0);
+      for (let i = 3; i >= 0; i--) data.push((ml >>> (i * 8)) & 255);
+      for (let i = 0; i < data.length; i += 64) {
+        const w = [];
+        for (let j = 0; j < 16; j++) {
+          w[j] = (data[i + j * 4] << 24) | (data[i + j * 4 + 1] << 16) | (data[i + j * 4 + 2] << 8) | data[i + j * 4 + 3];
+        }
+        for (let j = 16; j < 80; j++) {
+          w[j] = rotl(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
+        }
+        let a = h0, b = h1, c = h2, d = h3, e = h4;
+        for (let j = 0; j < 80; j++) {
+          let f, k;
+          if (j < 20) { f = (b & c) | (~b & d); k = 1518500249; }
+          else if (j < 40) { f = b ^ c ^ d; k = 1859775393; }
+          else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 2400959708; }
+          else { f = b ^ c ^ d; k = 3395469782; }
+          const temp = (rotl(a, 5) + f + e + k + w[j]) >>> 0;
+          e = d; d = c; c = rotl(b, 30); b = a; a = temp;
+        }
+        h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
+      }
+      const out = [];
+      [h0, h1, h2, h3, h4].forEach(val => {
+        for (let i = 3; i >= 0; i--) out.push((val >>> (i * 8)) & 255);
+      });
+      return out;
     }
-    for (let i = 0; i + 4 <= bits.length; i += 4) {
-      hex += parseInt(bits.substr(i, 4), 2).toString(16);
+    async hmacSha1(key, message) {
+      const k = Array.from(key);
+      const m = Array.from(new Uint8Array(message));
+      const bs = 64;
+      let kPad = k.length > bs ? this._sha1([...k]) : [...k];
+      while (kPad.length < bs) kPad.push(0);
+      const iKeyPad = kPad.map(val => val ^ 0x36);
+      const oKeyPad = kPad.map(val => val ^ 0x5c);
+      const innerHash = this._sha1([...iKeyPad, ...m]);
+      const outerHash = this._sha1([...oKeyPad, ...innerHash]);
+      return new Uint8Array(outerHash);
     }
-    return hex;
+    base32ToHex(base32) {
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+      let bits = "", hex = "";
+      base32 = base32.toUpperCase().replace(/=+$/, "");
+      for (let i = 0; i < base32.length; i++) {
+        const val = alphabet.indexOf(base32.charAt(i));
+        if (val === -1) throw new Error("Invalid base32 character");
+        bits += val.toString(2).padStart(5, "0");
+      }
+      for (let i = 0; i + 4 <= bits.length; i += 4) {
+        hex += parseInt(bits.substr(i, 4), 2).toString(16);
+      }
+      return hex;
+    }
+    async generate(offset = 0) {
+      const hexSecret = this.base32ToHex(this.secret);
+      const epoch = Math.floor(Date.now() / 1000);
+      const timeWindow = Math.floor(epoch / this.timeStep) + offset;
+      const buffer = new ArrayBuffer(8);
+      const view = new DataView(buffer);
+      view.setUint32(4, timeWindow, false);
+      const keyArray = new Uint8Array(hexSecret.match(/.{2}/g).map(h => parseInt(h, 16)));
+      const hmac = await this.hmacSha1(keyArray, buffer);
+      const offsetVal = hmac[hmac.length - 1] & 0xf;
+      const binary = ((hmac[offsetVal] & 0x7f) << 24) | ((hmac[offsetVal + 1] & 0xff) << 16) | ((hmac[offsetVal + 2] & 0xff) << 8) | (hmac[offsetVal + 3] & 0xff);
+      const pin = binary % Math.pow(10, this.digits);
+      return pin.toString().padStart(this.digits, "0");
+    }
   }
-
-  async generate(offset = 0) {
-    const hexSecret = this.base32ToHex(this.secret);
-    const epoch = Math.floor(Date.now() / 1000);
-    const timeWindow = Math.floor(epoch / this.timeStep) + offset;
-    const buffer = new ArrayBuffer(8);
-    const view = new DataView(buffer);
-    view.setUint32(4, timeWindow, false);
-    const keyArray = new Uint8Array(hexSecret.match(/.{2}/g).map(h => parseInt(h, 16)));
-    const hmac = await this.hmacSha1(keyArray, buffer);
-    const offsetVal = hmac[hmac.length - 1] & 0xf;
-    const binary = ((hmac[offsetVal] & 0x7f) << 24) | ((hmac[offsetVal + 1] & 0xff) << 16) | ((hmac[offsetVal + 2] & 0xff) << 8) | (hmac[offsetVal + 3] & 0xff);
-    const pin = binary % Math.pow(10, this.digits);
-    return pin.toString().padStart(this.digits, "0");
-  }
-}
 
   async function fetchDestinationUrl(type, attempt = 1, vpKey = null) {
     const totpGen = new TOTPGenerator(_0x439d89.totpSecret);
@@ -364,18 +360,18 @@ class TOTPGenerator {
   function showCustomModal(title, message, icon, onConfirm) {
     const modalOverlay = document.createElement("div");
     modalOverlay.id = "lukyy-modal-overlay";
-    modalOverlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(5, 7, 12, 0.85); backdrop-filter: blur(8px);";
+    modalOverlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(12px);";
     
     let colorGradient = currentUserTier === "premium" ? "#ffd700,#ff8c00" : "#00f3ff,#0055ff";
     let btnGradient = currentUserTier === "premium" ? "linear-gradient(135deg,#ffd700,#ff8c00)" : "linear-gradient(135deg,#00f3ff,#0055ff)";
-    let shadowColor = currentUserTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(0,243,255,0.4)";
+    let shadowColor = currentUserTier === "premium" ? "rgba(255,215,0,0.5)" : "rgba(0,243,255,0.5)";
 
     modalOverlay.innerHTML = `
-      <div id="lukyy-modal-card" style="padding:35px 28px; border:1px solid rgba(255,255,255,0.1); border-radius:24px; width:min(380px,90vw); text-align:center; transform:scale(0.85) translateY(20px); transition:all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-sizing:border-box; background: rgba(15, 20, 35, 0.7); backdrop-filter:blur(30px); box-shadow: 0 30px 80px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.1);">
-        <div style="font-size:55px; margin-bottom:18px; filter:drop-shadow(0 0 20px ${shadowColor});">${icon}</div>
-        <h4 style="margin:0 0 14px 0; font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:800; background:linear-gradient(135deg,${colorGradient}); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.5px;">${title}</h4>
-        <p id="lukyy-modal-text" style="font-size:14px; line-height:1.7; margin:0 0 28px 0; font-weight:500; color:#94a3b8; white-space:pre-line; text-align:left;">${message}</p>
-        <button id="modal-confirm-btn" class="genz-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:16px; border-radius:14px; font-weight:800; cursor:pointer; font-family:inherit; font-size:14px; box-shadow:0 10px 30px ${shadowColor}; transition:all 0.3s; text-transform:uppercase; letter-spacing:1px;">Gasskeun, Oke! ⚡</button>
+      <div id="lukyy-modal-card" style="padding:40px 32px; border:1px solid rgba(255,255,255,0.08); border-radius:32px; width:min(400px,90vw); text-align:center; transform:scale(0.9) translateY(30px); transition:all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); box-sizing:border-box; background: rgba(10, 14, 30, 0.85); backdrop-filter:blur(40px); box-shadow: 0 40px 120px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.06);">
+        <div style="font-size:64px; margin-bottom:16px; filter:drop-shadow(0 0 30px ${shadowColor});">${icon}</div>
+        <h4 style="margin:0 0 12px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:linear-gradient(135deg,${colorGradient}); -webkit-background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-0.5px;">${title}</h4>
+        <p id="lukyy-modal-text" style="font-size:15px; line-height:1.8; margin:0 0 30px 0; font-weight:500; color:#94a3b8; white-space:pre-line; text-align:left;">${message}</p>
+        <button id="modal-confirm-btn" class="genz-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:18px; border-radius:16px; font-weight:800; cursor:pointer; font-family:inherit; font-size:15px; box-shadow:0 10px 40px ${shadowColor}; transition:all 0.3s; text-transform:uppercase; letter-spacing:1.5px;">Gasskeun, Oke! ⚡</button>
       </div>
     `;
     document.body.appendChild(modalOverlay);
@@ -388,8 +384,8 @@ class TOTPGenerator {
 
     document.getElementById("modal-confirm-btn").addEventListener("click", () => {
       modalOverlay.style.opacity = "0";
-      document.getElementById("lukyy-modal-card").style.transform = "scale(0.9) translateY(-15px)";
-      setTimeout(() => { modalOverlay.remove(); if (onConfirm) onConfirm(); }, 350);
+      document.getElementById("lukyy-modal-card").style.transform = "scale(0.95) translateY(-20px)";
+      setTimeout(() => { modalOverlay.remove(); if (onConfirm) onConfirm(); }, 400);
     });
   }
 
@@ -403,104 +399,135 @@ class TOTPGenerator {
 
     const _0x143e8e = document.createElement("style");
     _0x143e8e.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap');
       
       @keyframes lukyy-emoji-float { 
-        0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; } 
-        10% { opacity: 0.8; } 
-        50% { transform: translateY(-50vh) translateX(30px) rotate(180deg); } 
+        0% { transform: translateY(0) translateX(0) rotate(0deg) scale(0.5); opacity: 0; } 
+        10% { opacity: 0.9; transform: translateY(10px) scale(1); } 
+        50% { transform: translateY(-50vh) translateX(40px) rotate(180deg) scale(1.2); } 
         90% { opacity: 0.8; } 
-        100% { transform: translateY(-115vh) translateX(-30px) rotate(360deg); opacity: 0; } 
+        100% { transform: translateY(-120vh) translateX(-40px) rotate(360deg) scale(0.8); opacity: 0; } 
       }
       @keyframes lukyy-shake { 
         0%, 100% { transform: translateX(0); } 
-        20%, 60% { transform: translateX(-8px); } 
-        40%, 80% { transform: translateX(8px); } 
+        20%, 60% { transform: translateX(-10px); } 
+        40%, 80% { transform: translateX(10px); } 
       }
       @keyframes neonPulse {
-        0%, 100% { filter: drop-shadow(0 0 15px rgba(0, 243, 255, 0.4)); }
-        50% { filter: drop-shadow(0 0 25px rgba(0, 243, 255, 0.8)); }
+        0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.3)); }
+        50% { filter: drop-shadow(0 0 40px rgba(0, 243, 255, 0.8)); }
+      }
+      @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
       }
       
-      .shake-error { animation: lukyy-shake 0.4s ease-in-out !important; border-color: #ff0055 !important; box-shadow: 0 0 30px rgba(255, 0, 85, 0.6) !important; }
+      .shake-error { animation: lukyy-shake 0.5s ease-in-out !important; border-color: #ff0055 !important; box-shadow: 0 0 40px rgba(255, 0, 85, 0.7) !important; }
       
       #key-input:focus { 
         border-color: #00f3ff !important; 
-        box-shadow: 0 0 35px rgba(0, 243, 255, 0.5), inset 0 2px 10px rgba(0,0,0,0.5) !important; 
-        background: rgba(10,15,30,0.8) !important; 
+        box-shadow: 0 0 50px rgba(0, 243, 255, 0.4), inset 0 2px 15px rgba(0,0,0,0.6) !important; 
+        background: rgba(5,10,25,0.9) !important; 
+        transform: scale(1.02);
       }
       
       .genz-btn { 
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
         position: relative; 
         overflow: hidden; 
+        letter-spacing: 1px;
       }
       .genz-btn::after {
         content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
-        opacity: 0; transform: scale(0.5); transition: opacity 0.3s, transform 0.3s;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+        opacity: 0; transform: scale(0.5); transition: opacity 0.4s, transform 0.4s;
       }
-      .genz-btn:hover { transform: translateY(-3px); filter: brightness(1.2); }
+      .genz-btn:hover { transform: translateY(-4px) scale(1.02); filter: brightness(1.2); }
       .genz-btn:hover::after { opacity: 1; transform: scale(1); }
-      .genz-btn:active { transform: translateY(1px); filter: brightness(0.9); }
+      .genz-btn:active { transform: translateY(2px) scale(0.98); filter: brightness(0.9); }
       
       .paste-input-container { position: relative; width: 100%; display: flex; align-items: center; }
-      .input-actions-container { position: absolute; right: 12px; display: flex; align-items: center; gap: 6px; height: 100%; z-index: 5; }
+      .input-actions-container { position: absolute; right: 14px; display: flex; align-items: center; gap: 8px; height: 100%; z-index: 5; }
       
       .action-icon-btn { 
-        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-        border-radius: 8px; font-size: 14px; cursor: pointer; color: #94a3b8; 
-        transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; 
-        padding: 6px; backdrop-filter: blur(5px);
+        background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); 
+        border-radius: 10px; font-size: 16px; cursor: pointer; color: #94a3b8; 
+        transition: all 0.25s ease; display: flex; align-items: center; justify-content: center; 
+        padding: 8px; backdrop-filter: blur(8px);
       }
-      .action-icon-btn:hover { background: rgba(0, 243, 255, 0.15); border-color: #00f3ff; color: #fff; transform: scale(1.1); box-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
+      .action-icon-btn:hover { background: rgba(0, 243, 255, 0.12); border-color: #00f3ff; color: #fff; transform: scale(1.15) rotate(-5deg); box-shadow: 0 0 20px rgba(0, 243, 255, 0.25); }
       
       .profile-container { 
-        position: absolute; top: -20px; left: -20px; width: 55px; height: 55px; 
-        border-radius: 16px; overflow: hidden; border: 2px solid rgba(0, 243, 255, 0.5); 
-        box-shadow: 0 10px 25px rgba(0, 243, 255, 0.4); backdrop-filter: blur(15px); 
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); transform: rotate(-5deg);
+        position: absolute; top: -22px; left: -22px; width: 60px; height: 60px; 
+        border-radius: 20px; overflow: hidden; border: 2px solid rgba(0, 243, 255, 0.4); 
+        box-shadow: 0 15px 35px rgba(0, 243, 255, 0.3); backdrop-filter: blur(15px); 
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); transform: rotate(-8deg) scale(0.95);
       }
-      .profile-container:hover { transform: scale(1.15) rotate(0deg) translateY(-5px); box-shadow: 0 15px 35px rgba(0, 243, 255, 0.6); border-color: #00f3ff; }
-      .profile-img { width: 100%; height: 100%; object-fit: cover; }
+      .profile-container:hover { transform: scale(1.2) rotate(0deg) translateY(-8px); box-shadow: 0 25px 50px rgba(0, 243, 255, 0.5); border-color: #00f3ff; }
+      .profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
       
       .biodata-overlay { 
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 24px; 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 32px; 
         display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        z-index: 999; opacity: 0; pointer-events: none; transform: scale(0.95) translateY(10px); 
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); padding: 30px; box-sizing: border-box; 
-        background: rgba(10, 15, 30, 0.9); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); 
+        z-index: 999; opacity: 0; pointer-events: none; transform: scale(0.92) translateY(15px); 
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); padding: 35px; box-sizing: border-box; 
+        background: rgba(8, 12, 28, 0.92); backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px); 
       }
       .biodata-overlay.active { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); }
       
-      .biodata-card { text-align: left; width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 16px; font-size: 14px; line-height: 1.8; color:#cbd5e1; box-sizing: border-box; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
-      .biodata-title { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 800; background: linear-gradient(135deg, #00f3ff, #ff00ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 20px 0; text-align: center; letter-spacing: 1px; filter: drop-shadow(0 0 10px rgba(255,0,234,0.3)); }
+      .biodata-card { text-align: left; width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.06); padding: 22px; border-radius: 18px; font-size: 15px; line-height: 2; color:#cbd5e1; box-sizing: border-box; box-shadow: inset 0 4px 20px rgba(0,0,0,0.6); }
+      .biodata-title { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #00f3ff, #ff00ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 22px 0; text-align: center; letter-spacing: 2px; filter: drop-shadow(0 0 20px rgba(255,0,234,0.3)); }
       
       #lukyy-auth { 
-        background: linear-gradient(145deg, rgba(15,20,35,0.7), rgba(5,7,12,0.9)); 
-        color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.2); 
-        box-shadow: 0 40px 100px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.1); 
+        background: radial-gradient(ellipse at top left, rgba(20, 30, 60, 0.8), rgba(5, 7, 18, 0.95)); 
+        color: #ffffff; border: 1px solid rgba(0, 243, 255, 0.15); 
+        box-shadow: 0 60px 120px rgba(0,0,0,0.95), inset 0 1px 1px rgba(255,255,255,0.05); 
+        backdrop-filter: blur(40px);
       }
       #lukyy-auth p { color: #94a3b8; } 
       
       #key-input { 
-        background: rgba(0,0,0,0.6) !important; color: #fff !important; 
-        border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 14px !important; 
+        background: rgba(0,0,0,0.7) !important; color: #fff !important; 
+        border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 16px !important; 
         letter-spacing: 0.5px;
+        transition: all 0.3s ease;
       }
-      #key-input::placeholder { color: rgba(255,255,255,0.3); font-weight: 500; }
+      #key-input::placeholder { color: rgba(255,255,255,0.25); font-weight: 500; }
       
       #support-btn { 
-        background: rgba(255,255,255,0.03); color: #cbd5e1; 
-        border: 1px solid rgba(255,255,255,0.08); 
+        background: rgba(255,255,255,0.02); color: #cbd5e1; 
+        border: 1px solid rgba(255,255,255,0.04); 
+        transition: all 0.3s ease;
       }
-      #support-btn:hover { background: rgba(0, 243, 255, 0.1); border-color: rgba(0, 243, 255, 0.4); color: #fff; }
+      #support-btn:hover { background: rgba(0, 243, 255, 0.08); border-color: rgba(0, 243, 255, 0.3); color: #fff; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 243, 255, 0.1); }
       
       #key-input:disabled { 
-        background: rgba(255, 215, 0, 0.05) !important; color: #ffd700 !important; 
-        border-color: rgba(255, 215, 0, 0.4) !important; cursor: not-allowed !important; 
-        font-weight: 800 !important; text-align: center !important; padding-right: 50px !important; 
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.4); -webkit-text-fill-color: #ffd700 !important; 
+        background: rgba(255, 215, 0, 0.04) !important; color: #ffd700 !important; 
+        border-color: rgba(255, 215, 0, 0.3) !important; cursor: not-allowed !important; 
+        font-weight: 700 !important; text-align: center !important; padding-right: 50px !important; 
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.2); -webkit-text-fill-color: #ffd700 !important; 
+      }
+      
+      #system-badge {
+        background: rgba(0,0,0,0.6) !important;
+        border: 1px solid rgba(0, 243, 255, 0.2) !important;
+        backdrop-filter: blur(10px);
+        padding: 8px 18px !important;
+        border-radius: 12px !important;
+      }
+      
+      #badge-dot {
+        width: 10px !important;
+        height: 10px !important;
+        box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff !important;
+        animation: neonPulse 2s infinite;
+      }
+      
+      #badge-text {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        letter-spacing: 2.5px !important;
       }
     `;
     document.head.appendChild(_0x143e8e);
@@ -509,7 +536,7 @@ class TOTPGenerator {
 
     const _0x4e5c68 = document.createElement("div");
     _0x4e5c68.id = "lukyy-auth";
-    _0x4e5c68.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);padding:40px 32px;border-radius:24px;z-index:2147483647;font-family:'Plus Jakarta Sans',sans-serif;text-align:center;width:min(400px,92vw);box-sizing:border-box;backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);";
+    _0x4e5c68.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);padding:45px 35px;border-radius:32px;z-index:2147483647;font-family:'Inter',sans-serif;text-align:center;width:min(420px,92vw);box-sizing:border-box;backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);";
     
     _0x4e5c68.innerHTML = `
       <div id="panel-content" style="position:relative;z-index:1;">
@@ -517,26 +544,27 @@ class TOTPGenerator {
           <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" class="profile-img" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
         </div>
 
-        <button id="music-btn" style="position:absolute;top:-20px;right:-20px;background:rgba(10,15,30,0.8);border:1px solid rgba(0,243,255,0.4);color:#00f3ff;border-radius:14px;width:45px;height:45px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(15px);transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);box-shadow: 0 10px 25px rgba(0,243,255,0.3); transform: rotate(5deg);" title="Play/Pause/Skip Music">🎵</button>
+        <button id="music-btn" style="position:absolute;top:-24px;right:-24px;background:rgba(8,12,28,0.85);border:1.5px solid rgba(0,243,255,0.3);color:#00f3ff;border-radius:16px;width:50px;height:50px;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(15px);transition:all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);box-shadow: 0 15px 35px rgba(0,243,255,0.2); transform: rotate(8deg) scale(0.95);" title="Play/Pause/Skip Music">🎵</button>
 
-        <div style="margin-bottom:28px;">
-          <div id="system-badge" style="display:inline-flex; align-items:center; gap:8px; background:rgba(0,0,0,0.5); padding:6px 14px; border-radius:8px; border:1px solid rgba(0, 243, 255, 0.3); margin-bottom:18px; transition: transform 0.1s ease; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
-            <span id="badge-dot" style="width:8px; height:8px; background:#00f3ff; border-radius:50%; display:inline-block; box-shadow: 0 0 10px #00f3ff, 0 0 20px #00f3ff;"></span>
-            <span id="badge-text" style="font-size:10px; font-weight:800; color:#e2e8f0; letter-spacing:2px; text-transform:uppercase; font-family:'Space Grotesk';">SYSTEM STANDBY</span>
+        <div style="margin-bottom:30px;">
+          <div id="system-badge" style="display:inline-flex; align-items:center; gap:10px; background:rgba(0,0,0,0.5); padding:8px 18px; border-radius:12px; border:1px solid rgba(0, 243, 255, 0.2); margin-bottom:20px; transition: transform 0.1s ease; box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);">
+            <span id="badge-dot" style="width:10px; height:10px; background:#00f3ff; border-radius:50%; display:inline-block; box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff; animation: neonPulse 2s infinite;"></span>
+            <span id="badge-text" style="font-size:11px; font-weight:700; color:#e2e8f0; letter-spacing:2.5px; text-transform:uppercase; font-family:'Space Grotesk';">SYSTEM STANDBY</span>
           </div>
-          <h3 style="margin:0; font-size:38px; font-weight:800; font-family:'Space Grotesk',sans-serif; background:linear-gradient(135deg, #ffffff, #00f3ff); -webkit-background-clip:text;-webkit-text-fill-color:transparent; letter-spacing:-1.5px; filter: drop-shadow(0 0 15px rgba(0,243,255,0.2));">LUKYYPLR</h3>
-          <p style="margin:10px 0 0 0; font-size:14px; font-weight:500; min-height:42px; display:flex; align-items:center; justify-content:center; line-height:1.5;">${randomQuote}</p>
-          <div id="premium-timer-info" style="font-size: 12px; font-weight: 700; color: #ffd700; margin-top: 8px; display: none; background: rgba(255,215,0,0.1); padding: 6px; border-radius: 6px; border: 1px solid rgba(255,215,0,0.2);"></div>
+          <h3 style="margin:0; font-size:42px; font-weight:900; font-family:'Space Grotesk',sans-serif; background:linear-gradient(135deg, #ffffff, #00f3ff, #0055ff); background-size:200% 200%; -webkit-background-clip:text;-webkit-text-fill-color:transparent; letter-spacing:-2px; filter: drop-shadow(0 0 25px rgba(0,243,255,0.15)); animation: gradientShift 5s ease infinite;">LUKYYPLR</h3>
+          <p style="margin:12px 0 0 0; font-size:15px; font-weight:500; min-height:48px; display:flex; align-items:center; justify-content:center; line-height:1.6; color:#a0b4d0;">${randomQuote}</p>
+          <div id="premium-timer-info" style="font-size: 13px; font-weight: 700; color: #ffd700; margin-top: 10px; display: none; background: rgba(255,215,0,0.06); padding: 8px 14px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.15); backdrop-filter: blur(5px);"></div>
         </div>
 
         <div id="auth-form-area">
-          <div class="paste-input-container" style="margin-bottom:20px;">
-            <input type="password" id="key-input" placeholder="Inject Access Key..." style="
-              width:100%; padding:18px 85px 18px 22px; 
-              text-align:left; font-family:inherit; font-size:14px; font-weight:600;
-              outline:none; backdrop-filter:blur(10px); 
+          <div class="paste-input-container" style="margin-bottom:22px;">
+            <input type="password" id="key-input" placeholder="✦ Inject Access Key ✦" style="
+              width:100%; padding:20px 90px 20px 24px; 
+              text-align:left; font-family:inherit; font-size:15px; font-weight:600;
+              outline:none; backdrop-filter:blur(12px); 
               transition: all 0.3s ease;
-              box-sizing:border-box;">
+              box-sizing:border-box;
+              border-radius:16px;">
             
             <div id="input-actions-wrapper" class="input-actions-container">
               <button id="toggle-visibility-btn" class="action-icon-btn" title="View/Hide Key">👁️</button>
@@ -544,14 +572,14 @@ class TOTPGenerator {
             </div>
           </div>
 
-          <div id="interactive-area" style="margin-bottom:16px;">
-            <button id="login-btn" class="genz-btn" style="width:100%; background:linear-gradient(135deg, #00f3ff, #0055ff); color:#000; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1px; box-shadow:0 10px 30px rgba(0, 243, 255, 0.4);">Unlock Dashboard ⚡</button>
+          <div id="interactive-area" style="margin-bottom:18px;">
+            <button id="login-btn" class="genz-btn" style="width:100%; background:linear-gradient(135deg, #00f3ff, #0055ff); color:#000; border:none; padding:20px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 15px 45px rgba(0, 243, 255, 0.35);">Unlock Dashboard ⚡</button>
           </div>
         </div>
 
-        <button id="support-btn" class="genz-btn" style="width:100%; padding:15px; border-radius:14px; font-weight:600; cursor:pointer; font-family:inherit; font-size:13px; letter-spacing:0.5px;">Join Telegram Circle 💬</button>
+        <button id="support-btn" class="genz-btn" style="width:100%; padding:16px; border-radius:14px; font-weight:600; cursor:pointer; font-family:inherit; font-size:14px; letter-spacing:0.5px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); color:#cbd5e1;">Join Telegram Circle 💬</button>
 
-        <div id="status-msg" style="margin-top:26px; font-size:11px; font-weight:800; color:#00f3ff; font-family:'Space Grotesk'; text-transform:uppercase; letter-spacing:2px; opacity:0.9; background: rgba(0, 243, 255, 0.05); padding: 8px; border-radius: 8px; border: 1px dashed rgba(0, 243, 255, 0.2);">
+        <div id="status-msg" style="margin-top:28px; font-size:12px; font-weight:700; color:#00f3ff; font-family:'Space Grotesk'; text-transform:uppercase; letter-spacing:2.5px; opacity:0.8; background: rgba(0, 243, 255, 0.03); padding: 10px 16px; border-radius: 12px; border: 1px dashed rgba(0, 243, 255, 0.08); backdrop-filter: blur(5px);">
           ⚙️ WONG_PUSAT_STANDBY
         </div>
       </div>
@@ -559,19 +587,18 @@ class TOTPGenerator {
       <div id="biodata-panel" class="biodata-overlay">
         <h4 class="biodata-title">✨ OWNER BIODATA ✨</h4>
         <div class="biodata-card">
-          <div style="margin-bottom:10px;">📌 <span style="color:#00f3ff; font-weight:700;">Nama:</span> Luki / Lukyyplr</div>
-          <div style="margin-bottom:10px;">🌐 <span style="color:#00f3ff; font-weight:700;">Linktree:</span> https://linktr.ee/lukyycuyy</div>
-          <div style="margin-bottom:10px;">💻 <span style="color:#00f3ff; font-weight:700;">Project:</span> Bypass Key System</div>
+          <div style="margin-bottom:8px;">📌 <span style="color:#00f3ff; font-weight:700;">Nama:</span> Luki / Lukyyplr</div>
+          <div style="margin-bottom:8px;">🌐 <span style="color:#00f3ff; font-weight:700;">Linktree:</span> https://linktr.ee/lukyycuyy</div>
+          <div style="margin-bottom:8px;">💻 <span style="color:#00f3ff; font-weight:700;">Project:</span> Bypass Key System</div>
           <div>💬 <span style="color:#00f3ff; font-weight:700;">Status:</span> Wong Pusat Standby 🔥</div>
         </div>
-        <button id="close-biodata-btn" class="genz-btn" style="width:100%; background:rgba(255, 0, 85, 0.15); color:#ff0055; border:1px solid rgba(255, 0, 85, 0.4); padding:16px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-top:24px; box-shadow: 0 10px 20px rgba(255,0,85,0.2);">Close Profile ✖️</button>
+        <button id="close-biodata-btn" class="genz-btn" style="width:100%; background:rgba(255, 0, 85, 0.1); color:#ff0055; border:1px solid rgba(255, 0, 85, 0.2); padding:18px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1.5px; margin-top:28px; box-shadow: 0 15px 30px rgba(255,0,85,0.1);">Close Profile ✖️</button>
       </div>
     `;
     document.body.appendChild(_0x4e5c68);
     
-    // Mencegah animasi hover profile nabrak music button
-    document.getElementById("music-btn").addEventListener("mouseover", function(){ this.style.transform = "scale(1.15) rotate(0deg)"; });
-    document.getElementById("music-btn").addEventListener("mouseout", function(){ this.style.transform = "rotate(5deg)"; });
+    document.getElementById("music-btn").addEventListener("mouseover", function(){ this.style.transform = "scale(1.2) rotate(0deg)"; this.style.boxShadow = "0 20px 50px rgba(0,243,255,0.4)"; });
+    document.getElementById("music-btn").addEventListener("mouseout", function(){ this.style.transform = "rotate(8deg) scale(0.95)"; this.style.boxShadow = "0 15px 35px rgba(0,243,255,0.2)"; });
 
     _0x58cd45();
 
@@ -625,18 +652,18 @@ class TOTPGenerator {
 
       if (keyInput) {
         keyInput.type = "password"; keyInput.value = originalPremiumKeyRaw; keyInput.disabled = true; 
-        if (currentUserTier === "premium") keyInput.style.cssText += "background: rgba(255, 215, 0, 0.05) !important; color: #ffd700 !important; border-color: rgba(255, 215, 0, 0.5) !important;";
-        else keyInput.style.cssText += "background: rgba(0, 243, 255, 0.05) !important; color: #00f3ff !important; border-color: rgba(0, 243, 255, 0.5) !important;";
+        if (currentUserTier === "premium") keyInput.style.cssText += "background: rgba(255, 215, 0, 0.04) !important; color: #ffd700 !important; border-color: rgba(255, 215, 0, 0.3) !important;";
+        else keyInput.style.cssText += "background: rgba(0, 243, 255, 0.04) !important; color: #00f3ff !important; border-color: rgba(0, 243, 255, 0.3) !important;";
         if (toggleVisibilityBtn) { toggleVisibilityBtn.textContent = "👁️"; toggleVisibilityBtn.title = "Lihat Key"; }
       }
       if (autoPasteBtn) autoPasteBtn.remove();
-      if (timerInfo) { timerInfo.innerText = `⏳ EXPIRED: ${formattedWIB}`; timerInfo.style.display = "block"; if (currentUserTier !== "premium") { timerInfo.style.color = "#00f3ff"; timerInfo.style.background = "rgba(0,243,255,0.1)"; timerInfo.style.borderColor = "rgba(0,243,255,0.2)"; } }
+      if (timerInfo) { timerInfo.innerText = `⏳ EXPIRED: ${formattedWIB}`; timerInfo.style.display = "block"; if (currentUserTier !== "premium") { timerInfo.style.color = "#00f3ff"; timerInfo.style.background = "rgba(0,243,255,0.04)"; timerInfo.style.borderColor = "rgba(0,243,255,0.1)"; } }
       
       if (interactiveArea) {
         let btnGradient = currentUserTier === "premium" ? "linear-gradient(135deg, #ffd700, #ff8c00)" : "linear-gradient(135deg, #00f3ff, #0055ff)";
         let shadowColor = currentUserTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(0,243,255,0.4)";
 
-        interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="genz-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1px; box-shadow:0 10px 30px ${shadowColor};">Access Menu Bypass 🏰</button>`;
+        interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="genz-btn" style="width:100%; background:${btnGradient}; color:#000; border:none; padding:20px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 15px 45px ${shadowColor};">Access Menu Bypass 🏰</button>`;
         document.getElementById("open-aincrad-btn").addEventListener("click", () => {
           if (currentUserTier === "premium") showMainOptionsPanel();
           else triggerAincradExecutionFlow(60, "2"); 
@@ -656,17 +683,17 @@ class TOTPGenerator {
       let btnVipTeamGrad = currentUserTier === "premium" ? "linear-gradient(135deg, #ff00ea, #8a2be2)" : "linear-gradient(135deg, #ff00ff, #8a2be2)";
       let btnUniGrad = currentUserTier === "premium" ? "linear-gradient(135deg, #00ff88, #009955)" : "linear-gradient(135deg, #00ffcc, #009966)";
 
-      let textCol = "#000"; // Black text on bright buttons for cyberpunk contrast
-      let textColW = "#fff"; // White for darker buttons
+      let textCol = "#000"; 
+      let textColW = "#fff"; 
 
       container.innerHTML = `
-        <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:800; background:${titleGradient}; -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));">COMMAND CENTER</h3>
-        <p style="font-size:14px; margin-bottom:24px; font-weight:500; color:#94a3b8;">Pilih target eksekusi bypass lu</p>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <button id="aincrad-menu-btn" class="genz-btn" style="width:100%; background:${btnAincradGrad}; color:${textCol}; border:none; padding:16px; border-radius:12px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1px; box-shadow:0 8px 25px rgba(255,255,255,0.1);">🏰 Aincrad Protocol</button>
-          <button id="proxy-menu-btn" class="genz-btn" style="width:100%; background:${btnProxyGrad}; color:${textColW}; border:none; padding:16px; border-radius:12px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1px; box-shadow:0 8px 25px rgba(255,255,255,0.1);">🌐 Aincrad Proxy</button>
-          <button id="vipteam-menu-btn" class="genz-btn" style="width:100%; background:${btnVipTeamGrad}; color:${textColW}; border:none; padding:16px; border-radius:12px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1px; box-shadow:0 8px 25px rgba(255,0,234,0.2);">💎 VIP Team Byps</button>
-          <button id="uni-menu-btn" class="genz-btn" style="width:100%; background:${btnUniGrad}; color:${textCol}; border:none; padding:16px; border-radius:12px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1px; box-shadow:0 8px 25px rgba(0,255,136,0.2);">🌍 Universal Vplink</button>
+        <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:30px; font-weight:900; background:${titleGradient}; -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter: drop-shadow(0 0 15px rgba(255,255,255,0.05));">COMMAND CENTER</h3>
+        <p style="font-size:15px; margin-bottom:26px; font-weight:500; color:#94a3b8;">Pilih target eksekusi bypass lu</p>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <button id="aincrad-menu-btn" class="genz-btn" style="width:100%; background:${btnAincradGrad}; color:${textCol}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(255,255,255,0.05);">🏰 Aincrad Protocol</button>
+          <button id="proxy-menu-btn" class="genz-btn" style="width:100%; background:${btnProxyGrad}; color:${textColW}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(255,255,255,0.05);">🌐 Aincrad Proxy</button>
+          <button id="vipteam-menu-btn" class="genz-btn" style="width:100%; background:${btnVipTeamGrad}; color:${textColW}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(255,0,234,0.15);">💎 VIP Team Byps</button>
+          <button id="uni-menu-btn" class="genz-btn" style="width:100%; background:${btnUniGrad}; color:${textCol}; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 10px 30px rgba(0,255,136,0.15);">🌍 Universal Vplink</button>
         </div>
       `;
 
@@ -699,14 +726,14 @@ class TOTPGenerator {
 
       container.innerHTML = `
         <div style="position:relative; width:100%">
-          <button id="uni-back-btn" class="action-icon-btn" style="position:absolute; top:0; left:0; width:35px; height:35px; font-size:16px;">❮</button>
-          <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:800; background:${titleGradient}; -webkit-background-clip:text;-webkit-text-fill-color:transparent; text-align:center;">UNIVERSAL VPLINK</h3>
-          <p style="font-size:13px; margin-bottom:24px; text-align:center; font-weight:500; color:#94a3b8;">Paste link vplink.in lu di bawah</p>
+          <button id="uni-back-btn" class="action-icon-btn" style="position:absolute; top:0; left:0; width:40px; height:40px; font-size:18px; border-radius:12px;">❮</button>
+          <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:${titleGradient}; -webkit-background-clip:text;-webkit-text-fill-color:transparent; text-align:center;">UNIVERSAL VPLINK</h3>
+          <p style="font-size:14px; margin-bottom:26px; text-align:center; font-weight:500; color:#94a3b8;">Paste link vplink.in lu di bawah</p>
 
-          <input type="text" id="uni-vplink-input" placeholder="https://vplink.in/xxxxx" style="width:100%; padding:18px; border-radius:14px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.6); color:#fff; font-family:inherit; font-size:14px; margin-bottom:20px; box-sizing:border-box; outline:none; transition: all 0.3s ease;">
+          <input type="text" id="uni-vplink-input" placeholder="https://vplink.in/xxxxx" style="width:100%; padding:20px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:rgba(0,0,0,0.6); color:#fff; font-family:inherit; font-size:15px; margin-bottom:22px; box-sizing:border-box; outline:none; transition: all 0.3s ease;">
 
-          <button id="uni-submit-btn" class="genz-btn" style="width:100%; background:${btnUniGrad}; color:#000; border:none; padding:18px; border-radius:14px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:14px; text-transform:uppercase; letter-spacing:1px; box-shadow:0 10px 30px rgba(0, 255, 136, 0.3);">EXECUTE 🔥</button>
-          <p id="uni-error-msg" style="color:#ff0055; font-size:12px; margin-top:14px; display:none; font-weight:700; text-align:center;"></p>
+          <button id="uni-submit-btn" class="genz-btn" style="width:100%; background:${btnUniGrad}; color:#000; border:none; padding:20px; border-radius:16px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:16px; text-transform:uppercase; letter-spacing:1.5px; box-shadow:0 15px 45px rgba(0, 255, 136, 0.25);">EXECUTE 🔥</button>
+          <p id="uni-error-msg" style="color:#ff0055; font-size:13px; margin-top:16px; display:none; font-weight:700; text-align:center;"></p>
         </div>`;
 
       document.getElementById('uni-back-btn').addEventListener('click', showMainOptionsPanel);
@@ -714,11 +741,11 @@ class TOTPGenerator {
       const inputField = document.getElementById('uni-vplink-input');
       inputField.addEventListener('focus', () => {
         inputField.style.border = "1px solid #00ff88";
-        inputField.style.boxShadow = "0 0 20px rgba(0, 255, 136, 0.2)";
+        inputField.style.boxShadow = "0 0 30px rgba(0, 255, 136, 0.15)";
         document.getElementById('uni-error-msg').style.display = "none";
       });
       inputField.addEventListener('blur', () => {
-        inputField.style.border = "1px solid rgba(255,255,255,0.15)";
+        inputField.style.border = "1px solid rgba(255,255,255,0.08)";
         inputField.style.boxShadow = "none";
       });
 
@@ -754,14 +781,14 @@ class TOTPGenerator {
 
       container.innerHTML = `
         <div style="position:relative; width:100%">
-          <button id="speed-back-btn" class="action-icon-btn" style="position:absolute; top:0; left:0; width:35px; height:35px; font-size:16px;">❮</button>
-          <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:800; background:${titleGradient}; -webkit-background-clip:text;-webkit-text-fill-color:transparent; text-align:center;">VELOCITY SPEED</h3>
-          <p style="font-size:13px; margin-bottom:28px; text-align:center; font-weight:500; color:#94a3b8;">Atur setelan injeksi biar stabil</p>
+          <button id="speed-back-btn" class="action-icon-btn" style="position:absolute; top:0; left:0; width:40px; height:40px; font-size:18px; border-radius:12px;">❮</button>
+          <h3 style="margin:0 0 10px 0; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:800; background:${titleGradient}; -webkit-background-clip:text;-webkit-text-fill-color:transparent; text-align:center;">VELOCITY SPEED</h3>
+          <p style="font-size:14px; margin-bottom:30px; text-align:center; font-weight:500; color:#94a3b8;">Atur setelan injeksi biar stabil</p>
           
-          <div style="display:flex; flex-direction:column; gap:14px;">
-            <button id="fast-mode-btn" class="genz-btn" style="width:100%; background:rgba(0, 255, 136, 0.1); color:#00ff88; border:1px solid rgba(0, 255, 136, 0.4); padding:16px; border-radius:12px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:1px; box-shadow: inset 0 0 10px rgba(0,255,136,0.1);">💨 FAST (Senggol Dong)</button>
-            <button id="medium-mode-btn" class="genz-btn" style="width:100%; background:rgba(255, 215, 0, 0.1); color:#ffd700; border:1px solid rgba(255, 215, 0, 0.4); padding:16px; border-radius:12px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:1px; box-shadow: inset 0 0 10px rgba(255,215,0,0.1);">🛡️ SECURE (Main Aman)</button>
-            <button id="slow-mode-btn" class="genz-btn" style="width:100%; background:rgba(255, 0, 85, 0.1); color:#ff0055; border:1px solid rgba(255, 0, 85, 0.4); padding:16px; border-radius:12px; font-weight:800; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:1px; box-shadow: inset 0 0 10px rgba(255,0,85,0.1);">🐌 SLOW (Alon-Alon)</button>
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <button id="fast-mode-btn" class="genz-btn" style="width:100%; background:rgba(0, 255, 136, 0.06); color:#00ff88; border:1px solid rgba(0, 255, 136, 0.25); padding:18px; border-radius:14px; font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow: inset 0 0 20px rgba(0,255,136,0.05);">💨 FAST (Senggol Dong)</button>
+            <button id="medium-mode-btn" class="genz-btn" style="width:100%; background:rgba(255, 215, 0, 0.06); color:#ffd700; border:1px solid rgba(255, 215, 0, 0.25); padding:18px; border-radius:14px; font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow: inset 0 0 20px rgba(255,215,0,0.05);">🛡️ SECURE (Main Aman)</button>
+            <button id="slow-mode-btn" class="genz-btn" style="width:100%; background:rgba(255, 0, 85, 0.06); color:#ff0055; border:1px solid rgba(255, 0, 85, 0.25); padding:18px; border-radius:14px; font-weight:700; cursor:pointer; font-family:'Space Grotesk',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:1.5px; box-shadow: inset 0 0 20px rgba(255,0,85,0.05);">🐌 SLOW (Alon-Alon)</button>
           </div>
         </div>`;
       document.getElementById('speed-back-btn').addEventListener('click', showMainOptionsPanel);
@@ -776,20 +803,20 @@ class TOTPGenerator {
       if (mainPanelContainer) { mainPanelContainer.remove(); }
       
       const checkOverlay = document.createElement('div');
-      checkOverlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:#05070c; z-index:2147483647; display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans', sans-serif;";
+      checkOverlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:#05070c; z-index:2147483647; display:flex; align-items:center; justify-content:center; font-family:'Inter', sans-serif;";
       
-      let panelBorder = currentUserTier === "premium" ? "rgba(255,215,0,0.4)" : "rgba(0,243,255,0.4)";
+      let panelBorder = currentUserTier === "premium" ? "rgba(255,215,0,0.3)" : "rgba(0,243,255,0.3)";
       let numColor = currentUserTier === "premium" ? "#ffd700" : "#00f3ff";
 
       checkOverlay.innerHTML = `
-        <div style="text-align:center; background:rgba(15,20,35,0.8); backdrop-filter:blur(20px); padding:55px 45px; border-radius:32px; border:1px solid ${panelBorder}; width:min(360px, 90vw); box-shadow: 0 40px 100px rgba(0,0,0,0.9), inset 0 1px 2px rgba(255,255,255,0.1); position:relative; overflow:hidden;">
-          <canvas id="lukyy-lava-canvas" width="360" height="400" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; opacity:0.6; pointer-events:none;"></canvas>
+        <div style="text-align:center; background:rgba(10,14,30,0.85); backdrop-filter:blur(30px); padding:60px 50px; border-radius:36px; border:1px solid ${panelBorder}; width:min(380px, 90vw); box-shadow: 0 60px 150px rgba(0,0,0,0.95), inset 0 1px 2px rgba(255,255,255,0.05); position:relative; overflow:hidden;">
+          <canvas id="lukyy-lava-canvas" width="380" height="420" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; opacity:0.4; pointer-events:none;"></canvas>
           <div style="position:relative; z-index:2;">
-            <div id="countdown-container" style="width: 115px; height: 115px; border-radius: 50%; border: 3px solid ${numColor}; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; font-size:45px; font-weight:800; color:${numColor}; margin:0 auto 30px auto; transition: all 0.15s ease; font-family:'Space Grotesk', sans-serif; box-shadow: inset 0 0 20px rgba(0,0,0,0.8);">
-              <span id="countdown-text" style="filter: drop-shadow(0 0 10px ${numColor});">${selectedSeconds}</span>
+            <div id="countdown-container" style="width: 130px; height: 130px; border-radius: 50%; border: 3px solid ${numColor}; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; font-size:50px; font-weight:900; color:${numColor}; margin:0 auto 32px auto; transition: all 0.15s ease; font-family:'Space Grotesk', sans-serif; box-shadow: inset 0 0 30px rgba(0,0,0,0.9);">
+              <span id="countdown-text" style="filter: drop-shadow(0 0 15px ${numColor});">${selectedSeconds}</span>
             </div>
-            <p id="lukyy-check-text" style="color:#fff; font-size:16px; font-weight:800; margin:0; font-family:'Space Grotesk'; text-transform:uppercase; letter-spacing:1px;">Injecting Payload...</p>
-            <p style="color:#94a3b8; font-size:12px; margin-top:10px; font-weight:500;">Biarin kita memasak di dapur 🍳🔥</p>
+            <p id="lukyy-check-text" style="color:#fff; font-size:18px; font-weight:800; margin:0; font-family:'Space Grotesk'; text-transform:uppercase; letter-spacing:1.5px;">Injecting Payload...</p>
+            <p style="color:#94a3b8; font-size:13px; margin-top:12px; font-weight:500;">Biarin kita memasak di dapur 🍳🔥</p>
           </div>
         </div>`;
       document.body.appendChild(checkOverlay);
@@ -881,12 +908,12 @@ class TOTPGenerator {
             if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") glowC = "255,0,234";
             
             countdownContainer.style.transform = `scale(${scaleValue})`;
-            countdownContainer.style.boxShadow = `0 0 ${glowValue}px rgba(${glowC},${0.3 + (bassIntensity/255)*0.5}), inset 0 0 20px rgba(0,0,0,0.8)`;
+            countdownContainer.style.boxShadow = `0 0 ${glowValue}px rgba(${glowC},${0.3 + (bassIntensity/255)*0.5}), inset 0 0 30px rgba(0,0,0,0.9)`;
             countdownContainer.style.borderColor = `rgba(${glowC},${0.5 + (bassIntensity/255)*0.5})`;
           }
         }
 
-        ctx.filter = 'blur(18px)';
+        ctx.filter = 'blur(20px)';
         for (let i = 0; i < globs.length; i++) {
           let g = globs[i]; g.phase += 0.01; g.x += Math.sin(g.phase) * 0.5;
           let currentSpeed = g.speed + (audioIntensity / 255) * 2; g.y -= currentSpeed;
@@ -940,11 +967,11 @@ class TOTPGenerator {
           if (currentUserTier === "premium") {
             document.getElementById("badge-text").innerText = "👑 VIP SYSTEM ACTIVE";
             document.getElementById("badge-dot").style.background = "#ffd700";
-            document.getElementById("badge-dot").style.boxShadow = "0 0 10px #ffd700";
+            document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
             document.getElementById("status-msg").innerText = "👑 WONG PUSAT PRIVILEGE";
             document.getElementById("status-msg").style.color = "#ffd700";
-            document.getElementById("status-msg").style.borderColor = "rgba(255,215,0,0.3)";
-            document.getElementById("status-msg").style.background = "rgba(255,215,0,0.1)";
+            document.getElementById("status-msg").style.borderColor = "rgba(255,215,0,0.2)";
+            document.getElementById("status-msg").style.background = "rgba(255,215,0,0.04)";
             _0x218e14.textContent = "⏭️"; 
 
             _0x22304b.innerHTML = isAutoLogin ? "⚡ AUTO LOGIN VIP!" : "👑 ACCESS GRANTED!";
@@ -976,11 +1003,11 @@ class TOTPGenerator {
           localStorage.removeItem("lukyy_saved_key");
           _0x22304b.innerHTML = `❌ ${result.message || 'Key Invalid / Expired!'}`;
           _0x22304b.style.color = "#ff0055";
-          _0x22304b.style.borderColor = "rgba(255,0,85,0.3)";
-          _0x22304b.style.background = "rgba(255,0,85,0.1)";
+          _0x22304b.style.borderColor = "rgba(255,0,85,0.15)";
+          _0x22304b.style.background = "rgba(255,0,85,0.04)";
           _0x51e42d("error"); 
           _0x51b440.disabled = _0x2825ed.disabled = false;
-          if (_0x224146) { _0x224146.classList.add("shake-error"); setTimeout(() => { _0x224146.classList.remove("shake-error"); }, 400); }
+          if (_0x224146) { _0x224146.classList.add("shake-error"); setTimeout(() => { _0x224146.classList.remove("shake-error"); }, 500); }
         }
 
       } catch (err) {
@@ -998,7 +1025,7 @@ class TOTPGenerator {
         _0x22304b.innerHTML = "🛑 KEY KOSONG CUY!";
         _0x22304b.style.color = "#ff0055";
         _0x51e42d("error"); 
-        if (_0x224146) { _0x224146.classList.add("shake-error"); setTimeout(() => { _0x224146.classList.remove("shake-error"); }, 400); }
+        if (_0x224146) { _0x224146.classList.add("shake-error"); setTimeout(() => { _0x224146.classList.remove("shake-error"); }, 500); }
         return;
       }
       _0x22304b.innerHTML = "⏳ Validating secure signature...";
