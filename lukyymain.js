@@ -174,14 +174,14 @@
   // ═══════════════════ USER DATA ═══════════════════
   // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   const DEFAULT_USER_DATA = {
-    id: 0,
-    name: "TEAM PLR OFFICIAL",
+    id: 1,
+    name: "LUKYYPLR",
     password: "0",
-    tgChannel: "t.me/HQcrx",
+    tgChannel: "t.me/lukyyplr",
     banned: 0,
     creator: "@lukyyplr",
     chatId: "",
-    createdAt: ""
+    createdAt: "2026-09-15"
   };
   let USER_DATA = { ...DEFAULT_USER_DATA };
   let ACCESS_KEY_DATA = null;
@@ -273,11 +273,11 @@
       @keyframes nb-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 
       :root{
-        --bg:#120a10; --panel:#1a1018; --rose:#e879a9; --gold:#e8c47c;
-        --text-color:#fdf2f8; --text-muted:rgba(253,230,242,0.55);
-        --danger-color:#fb7185; --success-color:#86efac; --warning-color:#e8c47c; --info-color:#e879a9;
-        --font-ui: Georgia, 'Times New Roman', system-ui, serif;
-        --font-ui-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        --bg:#07070d; --panel:#10101b; --rose:#b8ff00; --gold:#7c5cff;
+        --text-color:#f7f7ff; --text-muted:rgba(235,235,255,0.62);
+        --danger-color:#ff3b81; --success-color:#b8ff00; --warning-color:#ffd166; --info-color:#00f5ff;
+        --font-ui: Inter, ui-sans-serif, system-ui, sans-serif;
+        --font-ui-sans: Inter, ui-sans-serif, system-ui, sans-serif;
       }
       .nb-overlay{
         position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:18px;
@@ -316,7 +316,7 @@
         background:rgba(232,121,169,0.08)!important;border:1px solid rgba(232,121,169,0.3)!important;box-shadow:none!important;
         transition:border-color .15s, box-shadow .15s, transform .12s;
       }
-      .nb-emboss-btn:hover{border-color:rgba(232,196,124,0.55)!important;box-shadow:0 8px 24px rgba(232,121,169,0.12)!important;transform:translateY(-1px)}
+      .nb-emboss-btn:hover{border-color:rgba(184,255,0,0.85)!important;box-shadow:0 8px 28px rgba(0,245,255,0.18)!important;transform:translateY(-1px)}
       .nb-emboss-btn:active{transform:scale(.99)}
       .nb-emboss-btn:disabled{opacity:.4;cursor:not-allowed}
       .nb-emboss-input{
@@ -491,59 +491,7 @@
 
   // ═══════════════════ USER DATA FETCH ═══════════════════
   // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
-  async function fetchUserData() {
-    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
-    DBG.log('USERS', 'Fetching user data from API...');
-    try {
-      const url = `${CONFIG.userDataApiUrl}/?id=${USER_ID}&key=crx`;
-      DBG.log('USERS', 'API URL: ' + url);
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        DBG.error('USERS', 'API failed with status: ' + response.status);
-        return false;
-      }
-      
-      let data;
-      const contentType = response.headers?.get('content-type') || '';
-      
-      if (typeof response.json === 'function') {
-        data = await response.json();
-      } else {
-        const text = await response.text();
-        try { data = JSON.parse(text); } catch { return false; }
-      }
-      
-      DBG.log('USERS', 'User data received:', JSON.stringify(data));
-      
-      if (data && data.id !== undefined && data.id !== null) {
-        USER_DATA = {
-          id: parseInt(data.id) || USER_ID,
-          name: data.name || DEFAULT_USER_DATA.name,
-          tgChannel: data.tgChannel || DEFAULT_USER_DATA.tgChannel,
-          password: data.password ? String(data.password).trim().toLowerCase() : DEFAULT_USER_DATA.password,
-          banned: parseInt(data.banned) || DEFAULT_USER_DATA.banned,
-          creator: data.creator || "",
-          chatId: data.chatId || "",
-          createdAt: data.createdAt || ""
-        };
-        
-        DBG.log('USERS', 'User loaded: ' + USER_DATA.name + ' (ID:' + USER_DATA.id + ')');
-        DBG.log('USERS', '  Banned: ' + USER_DATA.banned);
-        DBG.log('USERS', '  Password: ' + (USER_DATA.password !== "0" ? 'SET' : 'NONE'));
-        DBG.log('USERS', '  Channel: ' + (USER_DATA.tgChannel !== "0" ? USER_DATA.tgChannel : 'NONE'));
-        
-        return true;
-      } else {
-        DBG.error('USERS', 'Invalid data format');
-        return false;
-      }
-    } catch (e) {
-      DBG.error('USERS', 'Fetch error: ' + e.message);
-      return false;
-    }
-  }
+
 
   // ═══════════════════ API INTEGRATION ═══════════════════
   // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
@@ -2773,14 +2721,9 @@
     musicAutoPlay = !isMeteredConnection();
     DBG.log('BOOT', 'Network check: musicAutoPlay=' + musicAutoPlay + ', musicUserEnabled=' + musicUserEnabled);
     
-    const userDataLoaded = await fetchUserData();
-    if (!userDataLoaded) {
-      DBG.log('BOOT', '⚠ Failed to load user data, using defaults');
-    } else {
-      DBG.log('BOOT', '✅ User data loaded successfully');
-    }
-    
-    DBG.log('BOOT', 'User: ' + USER_DATA.name + ' (ID:' + USER_DATA.id + ')');
+    // User data dibuat manual/statik; tidak mengambil nama atau profil dari API.
+    USER_DATA = { ...DEFAULT_USER_DATA };
+    DBG.log('BOOT', 'Static user: ' + USER_DATA.name + ' (ID:' + USER_DATA.id + ')');
     
     if (isBannedUser()) { showBanPanel(); return; }
     if (isSuspendedUser()) { showSuspendedPanel(); return; }
