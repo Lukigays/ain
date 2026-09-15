@@ -3,7 +3,7 @@
 // ║  GITHUB: @LUKYYPLR                                       ║
 // ║  NEBULA /b6 — VELVET ROSE                     ║
 // ║  CREDITS: Abdullah Al Mamun (@LUKYYPLR)                  ║
-// ║  PORTFOLIO: a2mbd3.paged.dev                           ║
+// ║  PORTFOLIO: lukyyplr.paged.dev                           ║
 // ╚══════════════════════════════════════════════════════════╝
 
 (function () {
@@ -13,16 +13,16 @@
 
 
   // ═══════════════════ APP INFO ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   const APP_NAME = "LUKYYPLR";
   const APP_VERSION = "27.0";
   const APP_FULL_NAME = APP_NAME + " v" + APP_VERSION;
 
   // ═══════════════════ DEBUG LOGGER ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   const DBG = {
     _logs: [],
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     log: function(tag, msg, data) {
       const entry = {
         time: new Date().toISOString().split('T')[1].split('.')[0],
@@ -34,7 +34,7 @@
       if (this._logs.length > 500) this._logs.shift();
       console.log(`[${entry.time}] [${tag}] ${msg}`, data || '');
     },
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     error: function(tag, msg, data) {
       const entry = {
         time: new Date().toISOString().split('T')[1].split('.')[0],
@@ -47,18 +47,18 @@
       if (this._logs.length > 500) this._logs.shift();
       console.error(`[${entry.time}] [${tag}] ${msg}`, data || '');
     },
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     getLogs: function(count) {
       return this._logs.slice(-(count || 50));
     },
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     dump: function() {
       console.table(this._logs);
     }
   };
 
   // ═══════════════════ TARGET DETECTION ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   const DIRECT_TARGETS = {
     'aincrad': { target: 'aincrad', name: 'Aincrad', apiType: '2', moduleType: 'standard' },
     'aincrad-proxy': { target: 'aincrad-proxy', name: 'AINCRAD PROXY', apiType: '1', moduleType: 'standard' },
@@ -70,9 +70,9 @@
   let USER_ID = 0;
   let directTarget = null;
 
-  // Accept window.A2MBD3 (preferred) or legacy window.ABDULLAH_BOOKMARK_LOAD
-  const __BOOKMARK_RAW__ = (typeof window.A2MBD3 !== "undefined")
-    ? window.A2MBD3
+  // Accept window.LUKYYPLR (preferred) or legacy window.ABDULLAH_BOOKMARK_LOAD
+  const __BOOKMARK_RAW__ = (typeof window.LUKYYPLR !== "undefined")
+    ? window.LUKYYPLR
     : (typeof window.ABDULLAH_BOOKMARK_LOAD !== "undefined" ? window.ABDULLAH_BOOKMARK_LOAD : undefined);
 
   if (typeof __BOOKMARK_RAW__ !== "undefined") {
@@ -110,7 +110,7 @@
   DBG.log('INIT', 'Final USER_ID=' + USER_ID + ', directTarget=' + (directTarget ? directTarget.name : 'none'));
 
   // ═══════════════════ CONFIGURATION (beta /b — no secrets, no /conf) ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3)
+  // Credit: Abdullah Al Mamun (@lukyyplr)
   // __NEBULA_SECURE_TOKEN__ is injected by server on each GET /b
   let CONFIG = {
     status: 1,
@@ -172,14 +172,14 @@
 
 
   // ═══════════════════ USER DATA ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   const DEFAULT_USER_DATA = {
     id: 0,
     name: "TEAM PLR OFFICIAL",
     password: "0",
     tgChannel: "t.me/HQcrx",
     banned: 0,
-    creator: "@a2mbd3",
+    creator: "@lukyyplr",
     chatId: "",
     createdAt: ""
   };
@@ -215,7 +215,7 @@
   let musicUserEnabled = false;  // User manually enabled music on metered
 
   // TOTP API credential from Nebula: 6 digits, 30-second window.
-  // API credit: @A2MBD3
+  // API credit: @LUKYYPLR
   const NEBULA_TOTP_SECRET = "MG3FNS6P4TPBOPZH";
 
   function base32ToBytes(value) {
@@ -259,9 +259,9 @@
   };
 
   // ═══════════════════ STYLES ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function injectStyles() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (document.getElementById('nb-dynamic-styles-b6')) return;
     const st = document.createElement("style");
     st.id = 'nb-dynamic-styles-b6';
@@ -368,9 +368,9 @@
   }
 
   // ═══════════════════ GLOW MANAGEMENT ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function createGlowLayers(wrapper) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const defaultGlow = document.createElement("div");
     defaultGlow.className = "nb-glow-layer glow-default";
     wrapper.appendChild(defaultGlow);
@@ -383,22 +383,22 @@
     return { defaultGlow, focusGlow1, focusGlow2 };
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function activateFocusGlow(focusGlow1, focusGlow2) {
     if (focusGlow1) focusGlow1.style.opacity = "1";
     if (focusGlow2) focusGlow2.style.opacity = "1";
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function deactivateFocusGlow(focusGlow1, focusGlow2) {
     if (focusGlow1) focusGlow1.style.opacity = "0";
     if (focusGlow2) focusGlow2.style.opacity = "0";
   }
 
   // ═══════════════════ NETWORK DETECTION ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function isMeteredConnection() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (navigator.connection) {
       const conn = navigator.connection;
       if (conn.type === 'cellular') {
@@ -418,15 +418,15 @@
     return false;
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function shouldPlayMusic() {
     return musicAutoPlay || musicUserEnabled;
   }
 
   // ═══════════════════ LOG QUEUE SYSTEM ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function startLogQueue() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (isLoggingActive) return;
     isLoggingActive = true;
     DBG.log('UI', 'Log queue started');
@@ -439,9 +439,9 @@
     }, 150);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function stopLogQueue() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     isLoggingActive = false;
     DBG.log('UI', 'Log queue stopped, remaining: ' + logQueue.length);
     if (logInterval) {
@@ -454,18 +454,18 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function queueLog(icon, text, color, className = '') {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     logQueue.push({ icon, text, color, className });
     if (!isLoggingActive) {
       startLogQueue();
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function displayLogEntry(logEntry) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const lo = document.getElementById("log-output");
     if (!lo) return;
     
@@ -490,9 +490,9 @@
   // corsFetch proxy chain removed — direct fetch only
 
   // ═══════════════════ USER DATA FETCH ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function fetchUserData() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('USERS', 'Fetching user data from API...');
     try {
       const url = `${CONFIG.userDataApiUrl}/?id=${USER_ID}&key=crx`;
@@ -546,13 +546,13 @@
   }
 
   // ═══════════════════ API INTEGRATION ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function isValidRedirectUrl(url) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (!url) return false;
     if (url.includes('t.me/') || url.includes('telegram.me/') || url.includes('telegram.org/')) return false;
     if (url === CONFIG.fallbackRedirectUrl) return false;
-    if (url.includes('a2mbd3.pages.dev')) return false;
+    if (url.includes('lukyyplr.pages.dev')) return false;
     try {
       const parsed = new URL(url);
       return parsed.protocol === 'http:' || parsed.protocol === 'https:';
@@ -561,33 +561,33 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function isTelegramLink(url) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     return url && (url.includes('t.me/') || url.includes('telegram.me/'));
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function isHoneypotUrl(url) {
     if (!url) return true;
     const u = String(url).toLowerCase();
-    return u.includes('a2mbd3.pages.dev') || u.includes('crxx.pages.dev') || u === String(CONFIG.fallbackRedirectUrl || '').toLowerCase();
+    return u.includes('lukyyplr.pages.dev') || u.includes('crxx.pages.dev') || u === String(CONFIG.fallbackRedirectUrl || '').toLowerCase();
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
-  // Nebula Render API: POST /A2MBD3 with headers pin, mode, vp (no Cloudflare)
-  function getA2MBD3Endpoint() {
-    return String(CONFIG.apiBaseUrl || CONFIG.userDataApiUrl || '').replace(/\/+$/, '') + '/A2MBD3';
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
+  // Nebula Render API: POST /LUKYYPLR with headers pin, mode, vp (no Cloudflare)
+  function getLUKYYPLREndpoint() {
+    return String(CONFIG.apiBaseUrl || CONFIG.userDataApiUrl || '').replace(/\/+$/, '') + '/LUKYYPLR';
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function getRequestPin(fallbackPin) {
     return fallbackPin == null ? '' : String(fallbackPin);
   }
 
-  async function callA2MBD3Api({ mode, vp, pin, signal }) {
+  async function callLUKYYPLRApi({ mode, vp, pin, signal }) {
     const modeStr = String(mode || '');
     const pinStr = getRequestPin(pin);
     const bodyObj = { pin: pinStr, mode: modeStr, type: modeStr };
@@ -599,7 +599,7 @@
       'mode': modeStr
     };
     if (vp) headers['vp'] = String(vp);
-    return fetch(getA2MBD3Endpoint(), {
+    return fetch(getLUKYYPLREndpoint(), {
       method: 'POST',
       signal: signal,
       headers: headers,
@@ -607,9 +607,9 @@
     });
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function fetchRedirectUrlFromAPI(type, attempt = 1) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const maxRetries = 3;
     DBG.log('API', `fetchRedirectUrlFromAPI: type=${type}, attempt=${attempt}/${maxRetries}`);
     
@@ -623,7 +623,7 @@
         queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
       }
       
-      queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=******`, '#7dd3fc');
+      queueLog('📡', `POST ${getLUKYYPLREndpoint()} | mode=${type} | pin=******`, '#7dd3fc');
       
       const controller = new AbortController();
       const timeout = setTimeout(() => {
@@ -632,7 +632,7 @@
       }, 15000);
       
       const fetchStart = performance.now();
-      const response = await callA2MBD3Api({
+      const response = await callLUKYYPLRApi({
         mode: type,
         pin: pin,
         signal: controller.signal
@@ -650,7 +650,7 @@
         
         queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
         
-        const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin });
+        const retryResponse = await callLUKYYPLRApi({ mode: type, pin: prevPin });
         
         DBG.log('API', `Retry response: ${retryResponse.status}`);
         queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
@@ -681,7 +681,7 @@
             const altPin = getRequestPin(await totpGenerator.generate(off));
             currentPinCache = altPin;
             queueLog('🔐', `TRYING TOTP OFFSET ${off}...`, '#00f2ff');
-            const altRes = await callA2MBD3Api({ mode: type, pin: altPin });
+            const altRes = await callLUKYYPLRApi({ mode: type, pin: altPin });
             if (altRes.ok) {
               const altData = await altRes.json();
               if (altData && !isHoneypotUrl(altData.destinationLink) && isValidRedirectUrl(altData.destinationLink)) {
@@ -714,9 +714,9 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function processApiResponse(data, pin, attempt, originalType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const maxRetries = 3;
     const modeForRetry = originalType || '1';
     const destinationUrl = data && data.destinationLink ? data.destinationLink : null;
@@ -779,7 +779,7 @@
 
 
   function handleFetchSuccess(url, data, pin) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('API', 'SUCCESS, redirect: ' + url.substring(0, 60));
     isRealRedirectUrl = true;
     fetchEndTime = Date.now();
@@ -818,9 +818,9 @@
     return fetchResult;
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function handleFetchFailure(message) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.error('API', 'FAILURE: ' + message);
     isRealRedirectUrl = false;
     fetchEndTime = Date.now();
@@ -846,9 +846,9 @@
     return fetchResult;
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function scheduleFillerLogs(remainingTime) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('FILLER', 'Scheduling for ' + remainingTime + 'ms');
     fillerLogsScheduled = true;
     
@@ -910,18 +910,18 @@
     logTimers.push(finalTimerId);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function cancelFillerLogs() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     fillerLogsScheduled = false;
     logTimers.forEach(t => clearTimeout(t));
     logTimers = [];
     DBG.log('FILLER', 'All filler logs cancelled');
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function completeProgressNow() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('PROGRESS', 'Completing now');
     progressCompleted = true;
     exploitProgressActive = false;
@@ -970,9 +970,9 @@
   }
 
   // ═══════════════════ HELPERS ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function createWrapper(innerHTML, extraContainerStyle) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const wrapper = document.createElement("div");
     wrapper.className = "nb-electric-wrapper";
     const glowLayers = createGlowLayers(wrapper);
@@ -983,7 +983,7 @@
     return { wrapper, container, ...glowLayers };
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function fetchConfig() {
     // Beta /b: config is embedded in this template — never call /conf
     DBG.log('CONFIG', 'Beta template — embedded config, skip /conf');
@@ -1018,11 +1018,11 @@
     return ms;
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function isBannedUser() { return USER_DATA.banned === 1 || USER_DATA.banned === "1"; }
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function isSuspendedUser() { return USER_DATA.banned === 2 || USER_DATA.banned === "2"; }
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function validateAccessKey(rawKey) {
     const key = String(rawKey || '').trim();
     if (!key) throw new Error('Key wajib diisi');
@@ -1038,23 +1038,23 @@
   }
 
   function needPassword() { return USER_DATA.password !== "0" && USER_DATA.password !== 0 && USER_DATA.password !== ""; }
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function hasChannel() { return USER_DATA.tgChannel !== "0" && USER_DATA.tgChannel !== 0 && USER_DATA.tgChannel !== ""; }
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function getChannelUrl() {
     const c = USER_DATA.tgChannel;
     if (!c || c === "0") return null;
     return c.startsWith("http") ? c : "https://" + c;
   }
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function checkPassword(input) {
     if (!needPassword()) return true;
     return input.replace(/\s/g, '').toLowerCase() === USER_DATA.password.replace(/\s/g, '').toLowerCase();
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function fetchMusicList() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('MUSIC', 'Fetching...');
     try {
       const r = await fetch(CONFIG.musicListUrl + "?t=" + Date.now());
@@ -1065,9 +1065,9 @@
     } catch (e) { DBG.error('MUSIC', e.message); return false; }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function getRandomMusic() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (!musicList.length) return null;
     let i;
     if (musicList.length === 1) i = 0;
@@ -1076,9 +1076,9 @@
     return musicList[i];
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function initAudioConditionally() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (!shouldPlayMusic()) {
       DBG.log('MUSIC', 'Music blocked (metered + user not enabled)');
       updateTrackDisplay();
@@ -1108,9 +1108,9 @@
     updateTrackDisplay();
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function nextTrackAuto() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (!shouldPlayMusic()) {
       DBG.log('MUSIC', 'Next track blocked (metered)');
       return;
@@ -1125,9 +1125,9 @@
     updateTrackDisplay();
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function nextTrackManual() { 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (!shouldPlayMusic()) {
       showToast("📵 Music blocked on mobile data");
       return;
@@ -1136,13 +1136,13 @@
     showToast("📳 NEXT TRACK!"); 
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function setupMusicToggle(btnId) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const musicBtn = document.getElementById(btnId);
     if (!musicBtn) return;
     
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const updateMusicBtnAppearance = () => {
       if (!shouldPlayMusic()) {
         musicBtn.textContent = "✕";
@@ -1198,18 +1198,18 @@
     });
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function initShake() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (!window.DeviceMotionEvent) return;
     if (typeof DeviceMotionEvent.requestPermission === "function") {
       DeviceMotionEvent.requestPermission().then(p => { if (p === "granted") addShakeListener(); }).catch(() => {});
     } else addShakeListener();
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function applySnowDrift(dx, dy) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const x = Math.max(-48, Math.min(48, dx));
     const y = Math.max(-36, Math.min(36, dy));
     document.querySelectorAll('.nb-overlay').forEach(ov => {
@@ -1219,7 +1219,7 @@
   }
 
   function addShakeListener() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     window.addEventListener("devicemotion", (e) => {
       const a = e.accelerationIncludingGravity;
       if (!a) return;
@@ -1244,9 +1244,9 @@
     }, { passive: true });
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function showToast(msg) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const t = document.createElement("div");
     t.textContent = msg;
     t.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:2147483647;background:var(--bg-color);border:none;color:var(--text-color);padding:10px 24px;border-radius:14px;font-size:12px;font-weight:600;letter-spacing:1px;pointer-events:none;box-shadow:6px 6px 12px var(--emboss-shadow),-6px -6px 12px var(--emboss-light);animation:nb-toast-in 0.3s ease;font-family:'Segoe UI',Roboto,sans-serif;";
@@ -1254,9 +1254,9 @@
     setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity 0.3s"; setTimeout(() => t.remove(), 300); }, 1500);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function cleanupAll() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (autoInitTimeout) clearTimeout(autoInitTimeout);
     if (banRedirectTimeout) clearTimeout(banRedirectTimeout);
     if (initProgressRAF) cancelAnimationFrame(initProgressRAF);
@@ -1269,9 +1269,9 @@
   }
 
   // ═══════════════════ EXPLOIT COMPLETE HANDLER ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function handleExploitComplete(url, overlayEl, isReal) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     if (isRedirecting) return;
     // No fallback redirect — only leave on real success URL
     if (!url || !isReal || (fetchResult && (fetchResult.isError || fetchResult.isFakeUrl))) {
@@ -1297,9 +1297,9 @@
   }
 
   // ═══════════════════ STATUS PANELS ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function showStatusPanel(icon, title, descLines, btnText, btnAction, countdown, isSuspended = false) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('UI', 'Showing panel: ' + title);
     cleanupAll();
     document.querySelector(".nb-overlay")?.remove();
@@ -1317,7 +1317,7 @@
       ${descHTML}
       ${btnText ? `<button class="${btnClass}" id="nb-status-btn" style="margin-top:14px;">${btnText}</button>` : ''}
       ${countdown ? `<p style="color:var(--text-muted);font-size:10px;margin-top:12px;">Auto-redirect in <span id="nb-countdown" style="font-weight:700;">${countdown}</span>s</p>` : ''}
-      <p class="nb-footer" style="margin-top:12px;"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | API @A2MBD3 | 📳 Shake to change track 🎵</p>
+      <p class="nb-footer" style="margin-top:12px;"><a href="https://crxx.netlify.app" target="_blank">© LUKYYPLR</a> | ${APP_FULL_NAME} | API @LUKYYPLR | 📳 Shake to change track 🎵</p>
     `, "overflow-visible");
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -1329,36 +1329,36 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function showBanPanel() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     isBanned = true;
     showStatusPanel("🚫", "ACCESS BANNED", ["USER: " + USER_DATA.name, "ID: " + USER_DATA.id, "Contact developer for access"], "⚡ DEVELOPER CHANNEL", () => window.open("https://t.me/HQcrx", "_blank"), 10);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function showSuspendedPanel() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     isBanned = true;
     showStatusPanel("⛔", "ACCOUNT SUSPENDED", ["USER: " + USER_DATA.name, "ID: " + USER_DATA.id, "This custom bypass has been suspended.", "Bypass creator didn't subscribed to required channel. Click below to Restore."], "🔓 Regain Access", () => window.open("https://t.me/yournebulabot/start", "_blank"), null, true);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function showOutdated() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     showStatusPanel("⚠", "NEBULA OUTDATED", "SIGNATURE MISMATCH", hasChannel() ? "⬇ DOWNLOAD LATEST" : null, hasChannel() ? () => window.open(getChannelUrl(), "_blank") : null);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function showMaintenance() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     showStatusPanel("🔧", "MAINTENANCE", "SYSTEM UPDATE IN PROGRESS", hasChannel() ? "⚡ JOIN CHANNEL" : null, hasChannel() ? () => window.open(getChannelUrl(), "_blank") : null);
   }
 
   // ═══════════════════ INIT PANEL ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function renderInitPanel() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('UI', 'Rendering INIT panel');
     document.getElementById("nebula-auth")?.remove();
     targetSelectionActive = false;
@@ -1386,7 +1386,7 @@
       ${passHTML}
       <button id="init-btn" class="nb-emboss-btn">⬡ START BYPASS</button>
       ${hasChannel() ? '<button id="support-btn" class="nb-emboss-btn">⚡ TELEGRAM</button>' : ''}
-      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | API @A2MBD3 | 📳 Shake to change track 🎵</div>
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© LUKYYPLR</a> | ${APP_FULL_NAME} | API @LUKYYPLR | 📳 Shake to change track 🎵</div>
     `, "overflow-visible");
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -1397,7 +1397,7 @@
       passInput.addEventListener("blur", () => deactivateFocusGlow(focusGlow1, focusGlow2));
     }
 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     updateTrackDisplay = () => {
       const el = document.getElementById("nb-track-name");
       if (!el || !musicList.length) {
@@ -1449,7 +1449,7 @@
     const initBtn = document.getElementById("init-btn");
     const passError = document.getElementById("nb-pass-error");
 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     async function handleInitClick() {
       if (initBtn.disabled || targetSelectionActive) return;
       initBtn.disabled = true;
@@ -1510,9 +1510,9 @@
   }
 
   // ═══════════════════ TARGET SELECTION ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function showTargetSelection(authOverlay) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     document.getElementById("target-selection")?.remove();
     targetSelectionActive = true;
 
@@ -1537,7 +1537,7 @@
       <div class="nb-target-list">
       ${buttonsHtml}
       </div>
-      <div class="nb-footer"><a href="https://t.me/A2MBD3" target="_blank">@LUKYYPLR</a> · ${APP_FULL_NAME} | API @A2MBD3</div>
+      <div class="nb-footer"><a href="https://t.me/LUKYYPLR" target="_blank">@LUKYYPLR</a> · ${APP_FULL_NAME} | API @LUKYYPLR</div>
     `, "overflow-visible");
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -1575,9 +1575,9 @@
     return showTargetSelection(authOverlay);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function handleTargetSelect(target, targetName, apiType, moduleType, selectionOverlay, authOverlay) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const tcfg = getTargetConfig(target);
     // Only Aincrad shows time mode picker (3 modes). Others = 0s ASAP.
     if (tcfg && tcfg.timeModes && target === 'aincrad') {
@@ -1602,7 +1602,7 @@
     ov.className = "nb-overlay";
     const { wrapper } = createWrapper(`
       <button id="time-back-btn" class="nb-emboss-btn" style="margin-bottom:12px;">← BACK</button>
-      <div class="nb-uid">${APP_FULL_NAME} | API @A2MBD3</div>
+      <div class="nb-uid">${APP_FULL_NAME} | API @LUKYYPLR</div>
       <h3 class="nb-title">${targetName}</h3>
       <p class="nb-subtitle">SELECT TIME MODE</p>
       <div class="nb-mode-grid">
@@ -1611,7 +1611,7 @@
         <button class="nb-mode-btn" data-mode="safe">🛡 SAFE<br><span>${Math.round((modes.safe||80000)/1000)}s</span></button>
       </div>
       <button id="time-go-btn" class="nb-emboss-btn">⬡ CONTINUE</button>
-      <div class="nb-footer">@LUKYYPLR · ${APP_FULL_NAME} | API @A2MBD3</div>
+      <div class="nb-footer">@LUKYYPLR · ${APP_FULL_NAME} | API @LUKYYPLR</div>
     `, "overflow-visible");
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -1668,9 +1668,9 @@
   }
 
   // ═══════════════════ STANDARD EXPLOIT PANEL ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function renderExploitPanel(apiType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('UI', 'Rendering STANDARD EXPLOIT panel, apiType=' + apiType);
     document.getElementById("nebula-exploit")?.remove();
     
@@ -1704,7 +1704,7 @@
         <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
       </div>
       
-      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | API @A2MBD3 | 📳 Shake to change track 🎵</div>
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© LUKYYPLR</a> | ${APP_FULL_NAME} | API @LUKYYPLR | 📳 Shake to change track 🎵</div>
     `);
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -1720,7 +1720,7 @@
     queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
     queueLog('●', `MODULE: STANDARD`, '#00f2ff');
     queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
-    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /LUKYYPLR`, '#7dd3fc');
     queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
     queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
     queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
@@ -1737,9 +1737,9 @@
     performLiveFetch(apiType);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function performLiveFetch(apiType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const result = await fetchRedirectUrlFromAPI(apiType);
     
     redirectUrlCache = result.url;
@@ -1752,9 +1752,9 @@
     DBG.log('API', 'Live fetch completed, isReal=' + result.isReal);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function startProgressBar() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     exploitProgressActive = true;
     const bar = document.getElementById("nb-progress-exploit");
     const pct = document.getElementById("nb-progress-pct");
@@ -1803,9 +1803,9 @@
   }
 
   // ═══════════════════ VIPTEAM EXPLOIT PANEL ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function renderExploitPanelForVipteam(apiType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('UI', 'Rendering VIPTEAM EXPLOIT panel, apiType=' + apiType);
     document.getElementById("nebula-exploit")?.remove();
     
@@ -1839,7 +1839,7 @@
         <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
       </div>
       
-      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | API @A2MBD3 | 📳 Shake to change track 🎵</div>
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© LUKYYPLR</a> | ${APP_FULL_NAME} | API @LUKYYPLR | 📳 Shake to change track 🎵</div>
     `);
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -1855,7 +1855,7 @@
     queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
     queueLog('●', `MODULE: VIPTEAM EXTRACTOR`, '#ff00ff');
     queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
-    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /LUKYYPLR`, '#7dd3fc');
     queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
     queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
     queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
@@ -1871,9 +1871,9 @@
     performVipteamExtraction(apiType);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function extractVplinkFromPage() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     try {
         DBG.log('VIPTEAM', 'Starting comprehensive vplink.in scan...');
         
@@ -1940,9 +1940,9 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function extractVpKey(vplinkUrl) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     try {
         let cleanUrl = vplinkUrl.trim();
         cleanUrl = cleanUrl.split('?')[0].split('#')[0];
@@ -1978,9 +1978,9 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function performVipteamExtraction(apiType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('VIPTEAM', 'Starting extraction process');
     
     queueLog('🔍', 'EXTRACTING VPLINK.IN FROM PAGE...', '#ff00ff', 'log-highlight');
@@ -2044,9 +2044,9 @@
     await fetchVipteamRedirectUrl(apiType, vpKey);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function fetchVipteamRedirectUrl(type, vpKey, attempt = 1) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const maxRetries = 3;
     DBG.log('VPLINK', `fetchVipteamRedirectUrl: type=${type}, vpKey=${vpKey}, attempt=${attempt}/${maxRetries}`);
     
@@ -2060,7 +2060,7 @@
         queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
       }
       
-      queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
+      queueLog('📡', `POST ${getLUKYYPLREndpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
       
       const controller = new AbortController();
       const timeout = setTimeout(() => {
@@ -2069,7 +2069,7 @@
       }, 15000);
       
       const fetchStart = performance.now();
-      const response = await callA2MBD3Api({
+      const response = await callLUKYYPLRApi({
         mode: type,
         pin: pin,
         vp: vpKey,
@@ -2088,7 +2088,7 @@
         
         queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
         
-        const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin, vp: vpKey });
+        const retryResponse = await callLUKYYPLRApi({ mode: type, pin: prevPin, vp: vpKey });
         
         DBG.log('VPLINK', `Retry response: ${retryResponse.status}`);
         queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
@@ -2130,9 +2130,9 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function processVipteamResponse(data, pin, vpKey, attempt) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     const maxRetries = 3;
     const destinationUrl = data.destinationLink || CONFIG.fallbackRedirectUrl;
     
@@ -2183,9 +2183,9 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function handleVipteamSuccess(url, data, pin) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('VPLINK', 'SUCCESS, redirect: ' + url.substring(0, 60));
     isRealRedirectUrl = true;
     fetchEndTime = Date.now();
@@ -2217,9 +2217,9 @@
     return fetchResult;
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function handleVipteamFailure(message) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.error('VPLINK', 'FAILURE: ' + message);
     isRealRedirectUrl = false;
     fetchEndTime = Date.now();
@@ -2251,9 +2251,9 @@
   }
 
   // ═══════════════════ POWERCHEATS EXPLOIT PANEL ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function renderExploitPanelForPowerCheats(apiType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('UI', 'Rendering POWERCHEATS EXPLOIT panel, apiType=' + apiType);
     document.getElementById("nebula-exploit")?.remove();
     
@@ -2287,7 +2287,7 @@
         <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
       </div>
       
-      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | API @A2MBD3 | 📳 Shake to change track 🎵</div>
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© LUKYYPLR</a> | ${APP_FULL_NAME} | API @LUKYYPLR | 📳 Shake to change track 🎵</div>
     `);
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -2303,7 +2303,7 @@
     queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
     queueLog('●', `MODULE: POWERCHEATS EXTRACTOR`, '#ff00ff');
     queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
-    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /LUKYYPLR`, '#7dd3fc');
     queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
     queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
     queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
@@ -2319,9 +2319,9 @@
     performPowerCheatsExtraction(apiType);
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function extractVplinkFromPagePowerCheats() {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     try {
         DBG.log('POWERCHEATS', 'Starting PowerCheats vplink.in scan...');
         
@@ -2367,9 +2367,9 @@
     }
   }
 
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   async function performPowerCheatsExtraction(apiType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('POWERCHEATS', 'Starting PowerCheats extraction process');
     
     queueLog('🔍', 'EXTRACTING VPLINK.IN USING POWERCHEATS METHODS...', '#ff00ff', 'log-highlight');
@@ -2437,9 +2437,9 @@
   }
 
   // ═══════════════════ UNIVERSAL VPLINK.IN PANEL ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   function renderUniversalVplinkPanel(apiType) {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('UI', 'Rendering UNIVERSAL VPLINK panel, apiType=' + apiType);
     document.getElementById("nebula-exploit")?.remove();
     
@@ -2449,9 +2449,9 @@
     logQueue = [];
     fillerLogsScheduled = false;
 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     function resetUniversalPanel() {
-      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
       exploitProgressActive = false;
       progressCompleted = false;
       fetchCompleted = false;
@@ -2484,9 +2484,9 @@
       if (submitBtn) submitBtn.disabled = true;
     }
 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     function handleUniversalVplinkFailure(message) {
-      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
       DBG.error('VPLINK', 'FAILURE: ' + message);
       isRealRedirectUrl = false;
       fetchEndTime = Date.now();
@@ -2507,9 +2507,9 @@
       setTimeout(() => { resetUniversalPanel(); }, 2500);
     }
 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     function processUniversalVplinkResponse(data, pin, vpKey, attempt) {
-      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
       const maxRetries = 3;
       const destinationUrl = data.destinationLink || null;
 
@@ -2545,9 +2545,9 @@
       }
     }
 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     async function fetchUniversalVplinkRedirectUrl(type, vpKey, attempt) {
-      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
       attempt = attempt || 1;
       const maxRetries = 3;
       DBG.log('VPLINK', `fetchUniversalVplinkRedirectUrl: type=${type}, vpKey=${vpKey}, attempt=${attempt}/${maxRetries}`);
@@ -2560,12 +2560,12 @@
           queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
         }
 
-        queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
+        queueLog('📡', `POST ${getLUKYYPLREndpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 15000);
 
-        const response = await callA2MBD3Api({
+        const response = await callLUKYYPLRApi({
           mode: type,
           pin: pin,
           vp: vpKey,
@@ -2580,7 +2580,7 @@
           currentPinCache = prevPin;
           queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
 
-          const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin, vp: vpKey });
+          const retryResponse = await callLUKYYPLRApi({ mode: type, pin: prevPin, vp: vpKey });
 
           queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
 
@@ -2616,9 +2616,9 @@
       }
     }
 
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     async function performUniversalVplinkExtraction(vplinkUrl) {
-      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
       DBG.log('VPLINK', 'Starting universal extraction process');
 
       queueLog('🔍', 'EXTRACTING VP KEY FROM URL...', '#ff00ff', 'log-highlight');
@@ -2680,7 +2680,7 @@
         <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
       </div>
       
-      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | API @A2MBD3 | 📳 Shake to change track 🎵</div>
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© LUKYYPLR</a> | ${APP_FULL_NAME} | API @LUKYYPLR | 📳 Shake to change track 🎵</div>
     `);
     ov.appendChild(wrapper);
     document.body.appendChild(ov);
@@ -2761,9 +2761,9 @@
   }
 
   // ═══════════════════ BOOT ═══════════════════
-  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   (async function () {
-    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
     DBG.log('BOOT', '═══════ ' + APP_FULL_NAME + ' BOOTING ═══════');
     DBG.log('BOOT', 'USER_ID: ' + USER_ID);
     DBG.log('BOOT', 'directTarget: ' + (directTarget ? directTarget.name : 'none'));
