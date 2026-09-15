@@ -1,1779 +1,2763 @@
-(async function () {
+// ╔══════════════════════════════════════════════════════════╗
+// ║  AUTHOR: Abdullah Al Mamun                             ║
+// ║  GITHUB: @A2MBD3                                       ║
+// ║  NEBULA /b6 — VELVET ROSE                     ║
+// ║  CREDITS: Abdullah Al Mamun (@A2MBD3)                  ║
+// ║  PORTFOLIO: a2mbd3.paged.dev                           ║
+// ╚══════════════════════════════════════════════════════════╝
+
+(function () {
   "use strict";
 
-  if (typeof window.LUKYY_BOOKMARK_LOAD === "undefined") {
-    console.log("%c[!] ACCESS DENIED [!]", "color:#00ffff;font-size:15px;font-weight:bold;background:#0a0a0a;padding:5px;border: 1px solid #00ffff;");
-    return;
-  }
+  const __NEBULA_SECURE_TOKEN__ = "ABDULLAH-OPWWIZNVMOIQUOMZSVPNGMPKXYVQUKOC";
 
-  // ============================================================
-  // CONFIG
-  // ============================================================
-  const CONFIG = {
-    keyUrl: "https://database-nine-flax.vercel.app/getkeys",
-    apiBaseUrl: "https://nebula-bot-g8ey.onrender.com",
-    nebulaEndpointPath: "/A2MBD3",
-    apiKey: "abdullah",
-    requestTimeoutMs: 15000,
-    maxApiAttempts: 3,
-    // Isi dengan secret TOTP base32 milik Anda dari bot Nebula.
-    totpSecretB64: "YOURTOTPSECRETFROM@YOURNEBULABOT",
-    totpSecret: "YOURTOTPSECRETFROM@YOURNEBULABOT",
-    fallbackRedirectUrl: "https://htmlpreview.github.io/?https://github.com/Lukigays/ain/blob/main/index.html",
-    telegramUrl: "https://t.me/lukyyarch",
-    musicList: [
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(1).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(2).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(3).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(4).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(5).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(6).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(7).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(8).mp3",
-      "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(9).mp3"
-    ],
-    quotesList: [
-      "Drop key lu di bawah, jangan polosan, no cap! 🔥",
-      "Tetap putus asa, jangan pernah semangat! 🧠",
-      "Bypass lancar, jaya jaya jaya! 🔥",
-      "Vibe lu hari ini agak berbeda ya, cuy.. 🤔",
-      "Jangan lupa bernapas, lu bukan robot! 🤖",
-      "Wong pusat selalu memantau pergerakanmu. 👀",
-      "Kunci sukses itu dikit bicara, banyak bypass. ⚡",
-      "Masa depan lu tergantung key yang lu masukin. 🔮"
-    ]
+
+  // ═══════════════════ APP INFO ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  const APP_NAME = "LUKYYPLR";
+  const APP_VERSION = "27.0";
+  const APP_FULL_NAME = APP_NAME + " v" + APP_VERSION;
+
+  // ═══════════════════ DEBUG LOGGER ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  const DBG = {
+    _logs: [],
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    log: function(tag, msg, data) {
+      const entry = {
+        time: new Date().toISOString().split('T')[1].split('.')[0],
+        tag: tag,
+        msg: msg,
+        data: data || null
+      };
+      this._logs.push(entry);
+      if (this._logs.length > 500) this._logs.shift();
+      console.log(`[${entry.time}] [${tag}] ${msg}`, data || '');
+    },
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    error: function(tag, msg, data) {
+      const entry = {
+        time: new Date().toISOString().split('T')[1].split('.')[0],
+        tag: tag,
+        msg: msg,
+        data: data || null,
+        error: true
+      };
+      this._logs.push(entry);
+      if (this._logs.length > 500) this._logs.shift();
+      console.error(`[${entry.time}] [${tag}] ${msg}`, data || '');
+    },
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    getLogs: function(count) {
+      return this._logs.slice(-(count || 50));
+    },
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    dump: function() {
+      console.table(this._logs);
+    }
   };
 
-  let audioPlayer = null;
-  let audioCtx = null;
-  let audioAnalyser = null;
-  let audioData = null;
-  let audioSource = null;
-  let isReactive = true;
-  let userTier = "biasa";
-  let rawPremiumKey = "";
-  let isMusicPlaying = false;
-  let expiryTimerInterval = null;   // <-- TAMBAHAN
-  let expiryTimestamp = 0;          // <-- TAMBAHAN
+  // ═══════════════════ TARGET DETECTION ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  const DIRECT_TARGETS = {
+    'aincrad': { target: 'aincrad', name: 'Aincrad', apiType: '2', moduleType: 'standard' },
+    'aincrad-proxy': { target: 'aincrad-proxy', name: 'AINCRAD PROXY', apiType: '1', moduleType: 'standard' },
+    'vipteam': { target: 'vipteam', name: 'VIPTEAM', apiType: 'vp', moduleType: 'vipteam' },
+    'powercheats': { target: 'powercheats', name: 'POWERCHEATS', apiType: 'vp', moduleType: 'powercheats' },
+    'universal-vplink': { target: 'universal-vplink', name: 'UNIVERSAL VPLINK.IN', apiType: 'vp', moduleType: 'universal-vplink' }
+  };
 
-  // ============================================================
-  // [TAMBAHAN] Variabel untuk performa & cache
-  // ============================================================
-  let isPanelVisible = true;
-  let particleAnimationId = null;
-  const apiCache = {};
+  let USER_ID = 0;
+  let directTarget = null;
 
-  // ============================================================
-  // SOUND EFFECT
-  // ============================================================
-  function playSound(type) {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const ctx = new AudioCtx();
-      const now = ctx.currentTime;
+  // Accept window.A2MBD3 (preferred) or legacy window.ABDULLAH_BOOKMARK_LOAD
+  const __BOOKMARK_RAW__ = (typeof window.A2MBD3 !== "undefined")
+    ? window.A2MBD3
+    : (typeof window.ABDULLAH_BOOKMARK_LOAD !== "undefined" ? window.ABDULLAH_BOOKMARK_LOAD : undefined);
 
-      if (type === 'success') {
-        const osc1 = ctx.createOscillator();
-        const gain1 = ctx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.value = 880;
-        gain1.gain.setValueAtTime(0.3, now);
-        gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-        osc1.connect(gain1);
-        gain1.connect(ctx.destination);
-        osc1.start(now);
-        osc1.stop(now + 0.15);
-
-        const osc2 = ctx.createOscillator();
-        const gain2 = ctx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.value = 1100;
-        gain2.gain.setValueAtTime(0.3, now + 0.15);
-        gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-        osc2.start(now + 0.15);
-        osc2.stop(now + 0.3);
-      } 
-      else if (type === 'error') {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.value = 200;
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.5);
-      } 
-      else if (type === 'bypass_done') {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.linearRampToValueAtTime(880, now + 0.3);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.35);
+  if (typeof __BOOKMARK_RAW__ !== "undefined") {
+    const raw = __BOOKMARK_RAW__;
+    
+    // Check if it's a target name string
+    if (typeof raw === 'string') {
+      const targetKey = raw.trim().toLowerCase();
+      if (DIRECT_TARGETS[targetKey]) {
+        // It's a target name -> directTarget mode, USER_ID remains 0
+        directTarget = DIRECT_TARGETS[targetKey];
+        USER_ID = 0;
+        DBG.log('INIT', 'Direct target detected: ' + targetKey + ', USER_ID=0 (default)');
+      } else {
+        // Try parsing as number (for formats like "0/7/42")
+        const parts = raw.split('/');
+        const lastPart = parts[parts.length - 1];
+        const parsed = parseInt(lastPart);
+        if (!isNaN(parsed)) {
+          USER_ID = parsed;
+          DBG.log('INIT', 'USER_ID parsed from string: ' + USER_ID);
+        } else {
+          USER_ID = 0;
+          DBG.log('INIT', 'Unrecognized string, USER_ID=0');
+        }
       }
-    } catch (e) {}
-  }
-
-  // ============================================================
-  // COUNTDOWN EXPIRED REAL-TIME (TAMBAHAN)
-  // ============================================================
-  function startExpiryCountdown(expiry, onExpire) {
-    // Hentikan interval sebelumnya
-    if (expiryTimerInterval) {
-      clearInterval(expiryTimerInterval);
-      expiryTimerInterval = null;
+    } else if (typeof raw === 'number') {
+      USER_ID = raw;
+      DBG.log('INIT', 'USER_ID set from number: ' + USER_ID);
+    } else {
+      USER_ID = 0;
+      DBG.log('INIT', 'Unknown type, USER_ID=0');
     }
+  }
+  DBG.log('INIT', 'Final USER_ID=' + USER_ID + ', directTarget=' + (directTarget ? directTarget.name : 'none'));
 
-    const timerEl = document.getElementById("premium-timer-info");
-    if (!timerEl) return;
-
-    const updateTimer = () => {
-      const now = Date.now();
-      const diff = expiry - now;
-
-      if (diff <= 0) {
-        clearInterval(expiryTimerInterval);
-        expiryTimerInterval = null;
-        timerEl.innerText = "⏳ EXPIRED! Silakan login ulang.";
-        timerEl.style.color = "#ff0055";
-        timerEl.style.borderColor = "rgba(255,0,85,0.2)";
-        timerEl.style.background = "rgba(255,0,85,0.04)";
-        if (onExpire) onExpire();
-        return;
+  // ═══════════════════ CONFIGURATION (beta /b — no secrets, no /conf) ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3)
+  // __NEBULA_SECURE_TOKEN__ is injected by server on each GET /b
+  let CONFIG = {
+    status: 1,
+    musicListUrl: "https://raw.githubusercontent.com/Lukigays/music-ain/main/audio%20(1).mp3",
+    apiBaseUrl: "https://nebula-bot-g8ey.onrender.com",
+    keyUrl: "https://database-nine-flax.vercel.app/getkeys",
+    userDataApiUrl: "https://nebula-bot-g8ey.onrender.com",
+    fallbackRedirectUrl: "",
+    initProgressTime: 8000,
+    autoInitDelay: 10000,
+    exploitProgressTime: 0,
+    minProgressTime: 0,
+    selectedTimeMode: null,
+    selectedTimeMs: 0,
+    targets: {
+      "aincrad": {
+        "id": "aincrad",
+        "name": "AINCRAD",
+        "apiType": "2",
+        "moduleType": "standard",
+        "timeModes": {
+          "fast": 20000,
+          "smart": 50000,
+          "safe": 80000
+        },
+        "defaultMode": "smart"
+      },
+      "aincrad-proxy": {
+        "id": "aincrad-proxy",
+        "name": "AINCRAD PROXY",
+        "apiType": "1",
+        "moduleType": "standard",
+        "redirectTime": 0
+      },
+      "vipteam": {
+        "id": "vipteam",
+        "name": "VIPTEAM",
+        "apiType": "vp",
+        "moduleType": "vipteam",
+        "redirectTime": 0
+      },
+      "powercheats": {
+        "id": "powercheats",
+        "name": "POWERCHEATS",
+        "apiType": "vp",
+        "moduleType": "powercheats",
+        "redirectTime": 0
+      },
+      "universal-vplink": {
+        "id": "universal-vplink",
+        "name": "UNIVERSAL VPLINK.IN",
+        "apiType": "vp",
+        "moduleType": "universal-vplink",
+        "redirectTime": 0
       }
+    },
+    ui: {"glass": true, "rain": true, "rainDensity": 28}
+  };
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      let display = "";
-      if (days > 0) display += `${days}d `;
-      display += `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+  // ═══════════════════ USER DATA ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  const DEFAULT_USER_DATA = {
+    id: 0,
+    name: "TEAM CRX OFFICIAL",
+    password: "0",
+    tgChannel: "t.me/HQcrx",
+    banned: 0,
+    creator: "@a2mbd3",
+    chatId: "",
+    createdAt: ""
+  };
+  let USER_DATA = { ...DEFAULT_USER_DATA };
+  let ACCESS_KEY_DATA = null;
 
-      timerEl.innerText = `⏳ Sisa: ${display}`;
-      timerEl.style.display = "block";
-    };
+  let audioPlayer = null, musicList = [], currentTrackIndex = -1;
+  let lastX = null, lastY = null, lastZ = null, shakeTimeout = null;
+  let updateTrackDisplay = function () { };
+  let autoInitTimeout = null, banRedirectTimeout = null, isRedirecting = false;
+  let initProgressActive = false, exploitProgressActive = false;
+  let initProgressRAF = null, exploitProgressRAF = null;
+  let logTimers = [], redirectUrlCache = null, isBanned = false;
+  let selectedTarget = null, selectedTargetName = null, selectedModuleType = null;
+  let targetSelectionActive = false;
+  let authVerified = false;
+  let apiResponseCache = null;
+  let currentPinCache = '------';
+  let currentRedirectUrl = null;
+  let isRealRedirectUrl = false;
+  let fetchStartTime = null;
+  let fetchEndTime = null;
+  let actualProgressTime = null;
+  let logQueue = [];
+  let logInterval = null;
+  let isLoggingActive = false;
+  let fetchCompleted = false;
+  let fetchResult = null;
+  let progressCompleted = false;
+  let fillerLogTimer = null;
+  let fillerLogsScheduled = false;
+  let musicAutoPlay = true;      // Auto-play on WiFi
+  let musicUserEnabled = false;  // User manually enabled music on metered
 
-    updateTimer();
-    expiryTimerInterval = setInterval(updateTimer, 1000);
+  // TOTP engine removed — beta /b uses __NEBULA_SECURE_TOKEN__ only
+  const totpGenerator = { async generate() { return ''; }, secret: '' };
+
+  // ═══════════════════ STYLES ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function injectStyles() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (document.getElementById('nb-dynamic-styles-b6')) return;
+    const st = document.createElement("style");
+    st.id = 'nb-dynamic-styles-b6';
+    st.textContent = `
+      @keyframes nb-fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes nb-slideUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes nb-toast-in{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+      @keyframes nb-pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+      @keyframes nb-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+      :root{
+        --bg:#120a10; --panel:#1a1018; --rose:#e879a9; --gold:#e8c47c;
+        --text-color:#fdf2f8; --text-muted:rgba(253,230,242,0.55);
+        --danger-color:#fb7185; --success-color:#86efac; --warning-color:#e8c47c; --info-color:#e879a9;
+        --font-ui: Georgia, 'Times New Roman', system-ui, serif;
+        --font-ui-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      .nb-overlay{
+        position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:18px;
+        background:
+          radial-gradient(ellipse at 25% 20%, rgba(232,121,169,0.14), transparent 45%),
+          radial-gradient(ellipse at 80% 70%, rgba(232,196,124,0.08), transparent 40%),
+          var(--bg);
+        animation:nb-fadeIn .3s ease;font-family:var(--font-ui-sans);overflow:hidden;
+      }
+      .nb-overlay::before,.nb-overlay::after{content:none!important;display:none!important}
+      .nb-electric-wrapper{
+        position:relative;z-index:1;width:420px;max-width:calc(100vw - 36px);
+        border-radius:20px;background:var(--panel);
+        border:1px solid rgba(232,121,169,0.3);
+        box-shadow:0 24px 48px rgba(0,0,0,0.5), 0 0 48px rgba(232,121,169,0.08);
+        overflow:hidden;
+      }
+      .nb-electric-wrapper::before{
+        content:'';position:absolute;inset:0;border-radius:20px;pointer-events:none;z-index:3;
+        background:linear-gradient(145deg, rgba(232,121,169,0.08), transparent 40%, rgba(232,196,124,0.06));
+      }
+      .nb-electric-wrapper::after,.nb-glow-layer{content:none!important;display:none!important}
+      .nb-container{position:relative;z-index:2;padding:26px 22px;text-align:center;width:100%;box-sizing:border-box;max-height:calc(100vh - 42px);overflow-y:auto}
+      .nb-container::before,.nb-container::after{content:none!important;display:none!important}
+      .nb-title{color:var(--text-color);margin:0 0 6px;font-weight:600;font-size:22px;letter-spacing:0.3px;font-family:var(--font-ui)}
+      .nb-subtitle{color:var(--text-muted);font-size:12px;margin:0 0 16px;font-family:var(--font-ui-sans)}
+      .nb-uid{display:none!important}
+      .nb-divider{height:1px;background:linear-gradient(90deg, transparent, rgba(232,121,169,0.4), rgba(232,196,124,0.3), transparent);margin:14px 0;border:none}
+      .nb-track{color:var(--text-muted);font-size:11px;margin:6px 0 12px;min-height:14px;font-family:var(--font-ui-sans)}
+      .nb-track.metered{color:var(--danger-color)}
+      .nb-footer{color:var(--text-muted);font-size:10px;margin-top:16px;font-family:var(--font-ui-sans)}
+      .nb-footer a{color:var(--gold);text-decoration:none}
+      .nb-emboss-btn{
+        width:100%;padding:13px;margin-bottom:10px;border-radius:14px;cursor:pointer;font-family:var(--font-ui-sans);
+        font-weight:600;font-size:13px;color:var(--text-color)!important;
+        background:rgba(232,121,169,0.08)!important;border:1px solid rgba(232,121,169,0.3)!important;box-shadow:none!important;
+        transition:border-color .15s, box-shadow .15s, transform .12s;
+      }
+      .nb-emboss-btn:hover{border-color:rgba(232,196,124,0.55)!important;box-shadow:0 8px 24px rgba(232,121,169,0.12)!important;transform:translateY(-1px)}
+      .nb-emboss-btn:active{transform:scale(.99)}
+      .nb-emboss-btn:disabled{opacity:.4;cursor:not-allowed}
+      .nb-emboss-input{
+        width:100%;padding:13px;box-sizing:border-box;border-radius:14px;text-align:center;font-size:14px;font-weight:600;
+        color:var(--text-color)!important;background:rgba(0,0,0,0.3)!important;border:1px solid rgba(232,121,169,0.25)!important;
+        outline:none;font-family:var(--font-ui-sans);
+      }
+      .nb-emboss-input:focus{border-color:rgba(232,121,169,0.6)!important;box-shadow:0 0 0 3px rgba(232,121,169,0.12)}
+      .nb-emboss-input.error{border-color:var(--danger-color)!important;animation:nb-shake .35s ease}
+      .nb-emboss-input.success{border-color:var(--success-color)!important}
+      .nb-error-text{color:var(--danger-color);font-size:11px;font-weight:600;margin:6px 0 10px;display:none;font-family:var(--font-ui-sans)}
+      .nb-music-btn,.nb-back-btn{
+        position:absolute;top:12px;z-index:3;width:34px;height:34px;border-radius:50%;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--rose);
+        background:rgba(0,0,0,0.3);border:1px solid rgba(232,121,169,0.3);
+      }
+      .nb-music-btn{right:12px}.nb-back-btn{left:12px}
+      .nb-music-btn.metered{color:var(--danger-color)}
+      .nb-target-list{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px}
+      .nb-mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0 16px}
+      .nb-mode-btn{
+        border:1px solid rgba(232,121,169,0.25);background:rgba(0,0,0,0.22);color:var(--text-color);
+        border-radius:14px;padding:12px 6px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font-ui-sans);
+      }
+      .nb-mode-btn span{display:block;margin-top:4px;font-size:9px;color:var(--text-muted)}
+      .nb-mode-active{border-color:rgba(232,196,124,0.55);background:rgba(232,121,169,0.12);box-shadow:0 0 16px rgba(232,121,169,0.1)}
+      .nb-log-area{
+        background:rgba(0,0,0,0.35)!important;border:1px solid rgba(232,121,169,0.2)!important;border-radius:14px;
+        text-align:left;padding:10px 12px;max-height:180px;overflow-y:auto;margin:10px 0;font-size:11px;font-family:var(--font-ui-sans);
+      }
+      .nb-log-entry{display:flex;align-items:flex-start;gap:6px;padding:3px 0;margin:0;line-height:1.4}
+      .nb-log-icon{flex-shrink:0}.nb-log-text{flex:1;font-size:11px;font-weight:500;word-break:break-word;color:#fbcfe8}
+      .nb-progress-bar-bg{height:5px;border-radius:99px;margin-top:6px;background:rgba(232,121,169,0.12);overflow:hidden}
+      .nb-progress-bar-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--rose),var(--gold));transition:width .2s linear}
+      .nb-progress-bar-fill.error-fill{background:var(--danger-color)}
+      .nb-progress-label{display:flex;justify-content:space-between;color:var(--text-muted);font-size:11px;margin-top:10px;font-family:var(--font-ui-sans)}
+      .nb-exploit-header{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+      .nb-exploit-title{color:var(--rose);font-size:12px;font-weight:600;font-family:var(--font-ui-sans)}
+      .nb-live-dot{width:7px;height:7px;border-radius:50%;background:var(--rose);box-shadow:0 0 10px rgba(232,121,169,0.6);flex-shrink:0;animation:nb-pulse 1.3s ease infinite}
+      .nb-status-icon,.nb-suspended-icon{font-size:32px;margin-bottom:8px}
+      .nb-status-user{color:var(--text-muted);font-size:12px;font-family:var(--font-ui-sans)}
+      .nb-toast{
+        position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
+        background:rgba(26,16,24,0.96);color:var(--text-color);padding:11px 16px;border-radius:14px;
+        border:1px solid rgba(232,121,169,0.35);z-index:2147483647;animation:nb-toast-in .25s ease;font-size:12px;font-family:var(--font-ui-sans);
+      }
+`;
+    document.head.appendChild(st);
   }
 
-  // ============================================================
-  // UTILITY FUNCTIONS
-  // ============================================================
-  function extractVpLinkUrl() {
-    try {
-      const anchors = document.querySelectorAll("a");
-      for (let a of anchors) {
-        const href = a.getAttribute("href");
-        if (href && href.includes("vplink.in")) {
-          const match = href.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
-          if (match) return match[0].replace(/[.,;:'")\]}]+$/, "");
-        }
-      }
-      const elements = document.querySelectorAll("p, div, span, td, li, pre, code, strong, em, b, i, h1, h2, h3, h4, h5, h6");
-      for (let el of elements) {
-        const text = el.textContent || el.innerText || "";
-        const match = text.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
-        if (match) return match[0].replace(/[.,;:'")\]}]+$/, "");
-      }
-      const bodyText = document.body.innerText;
-      const matchBody = bodyText.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
-      if (matchBody) return matchBody[0].replace(/[.,;:'")\]}]+$/, "");
-      const allElements = document.querySelectorAll("*");
-      for (let el of allElements) {
-        for (let attr of el.attributes) {
-          if (attr.value && attr.value.includes("vplink.in")) {
-            const match = attr.value.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
-            if (match) return match[0].replace(/[.,;:'")\]}]+$/, "");
-          }
-        }
-      }
-      return null;
-    } catch (e) { return null; }
+  // ═══════════════════ GLOW MANAGEMENT ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function createGlowLayers(wrapper) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const defaultGlow = document.createElement("div");
+    defaultGlow.className = "nb-glow-layer glow-default";
+    wrapper.appendChild(defaultGlow);
+    const focusGlow1 = document.createElement("div");
+    focusGlow1.className = "nb-glow-layer glow-focus-1";
+    wrapper.appendChild(focusGlow1);
+    const focusGlow2 = document.createElement("div");
+    focusGlow2.className = "nb-glow-layer glow-focus-2";
+    wrapper.appendChild(focusGlow2);
+    return { defaultGlow, focusGlow1, focusGlow2 };
   }
 
-  function extractPowerCheatsUrl() {
-    try {
-      const href = window.location.href;
-      if (href.includes("vplink.in")) {
-        const match = href.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
-        if (match) return match[0].replace(/[.,;:'")\]}]+$/, "");
-        return href;
-      }
-      const scripts = document.querySelectorAll("script");
-      for (let s of scripts) {
-        const text = s.textContent || s.innerText || "";
-        const match = text.match(/window\.location\.href\s*=\s*["']([^"']+)["']/);
-        if (match && match[1] && match[1].includes("vplink.in")) {
-          return match[1].replace(/[.,;:'")\]}]+$/, "");
-        }
-      }
-      const html = document.documentElement.innerHTML;
-      const matchHtml = html.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
-      if (matchHtml) return matchHtml[0].replace(/[.,;:'")\]}]+$/, "");
-      return null;
-    } catch (e) { return null; }
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function activateFocusGlow(focusGlow1, focusGlow2) {
+    if (focusGlow1) focusGlow1.style.opacity = "1";
+    if (focusGlow2) focusGlow2.style.opacity = "1";
   }
 
-  function extractVpKey(urlStr) {
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function deactivateFocusGlow(focusGlow1, focusGlow2) {
+    if (focusGlow1) focusGlow1.style.opacity = "0";
+    if (focusGlow2) focusGlow2.style.opacity = "0";
+  }
+
+  // ═══════════════════ NETWORK DETECTION ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function isMeteredConnection() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (navigator.connection) {
+      const conn = navigator.connection;
+      if (conn.type === 'cellular') {
+        DBG.log('NET', 'Cellular connection detected -> metered');
+        return true;
+      }
+      if (conn.saveData === true) {
+        DBG.log('NET', 'saveData enabled -> metered');
+        return true;
+      }
+      if (conn.effectiveType && ['slow-2g', '2g', '3g'].includes(conn.effectiveType)) {
+        DBG.log('NET', 'Slow connection (' + conn.effectiveType + ') -> metered');
+        return true;
+      }
+    }
+    DBG.log('NET', 'Connection appears unmetered (WiFi)');
+    return false;
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function shouldPlayMusic() {
+    return musicAutoPlay || musicUserEnabled;
+  }
+
+  // ═══════════════════ LOG QUEUE SYSTEM ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function startLogQueue() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (isLoggingActive) return;
+    isLoggingActive = true;
+    DBG.log('UI', 'Log queue started');
+    
+    logInterval = setInterval(() => {
+      if (logQueue.length > 0) {
+        const logEntry = logQueue.shift();
+        displayLogEntry(logEntry);
+      }
+    }, 150);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function stopLogQueue() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    isLoggingActive = false;
+    DBG.log('UI', 'Log queue stopped, remaining: ' + logQueue.length);
+    if (logInterval) {
+      clearInterval(logInterval);
+      logInterval = null;
+    }
+    while (logQueue.length > 0) {
+      const logEntry = logQueue.shift();
+      displayLogEntry(logEntry);
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function queueLog(icon, text, color, className = '') {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    logQueue.push({ icon, text, color, className });
+    if (!isLoggingActive) {
+      startLogQueue();
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function displayLogEntry(logEntry) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const lo = document.getElementById("log-output");
+    if (!lo) return;
+    
+    const entry = document.createElement('div');
+    entry.className = `nb-log-entry ${logEntry.className}`;
+    
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'nb-log-icon';
+    iconSpan.textContent = logEntry.icon;
+    
+    const textSpan = document.createElement('span');
+    textSpan.className = 'nb-log-text';
+    textSpan.style.color = logEntry.color;
+    textSpan.textContent = logEntry.text;
+    
+    entry.appendChild(iconSpan);
+    entry.appendChild(textSpan);
+    lo.appendChild(entry);
+    lo.scrollTop = lo.scrollHeight;
+  }
+
+  // corsFetch proxy chain removed — direct fetch only
+
+  // ═══════════════════ USER DATA FETCH ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function fetchUserData() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('USERS', 'Fetching user data from API...');
     try {
-      let cleanUrl = urlStr.trim().split("?")[0].split("#")[0];
-      const urlObj = new URL(cleanUrl);
-      let path = urlObj.pathname.replace(/^\/+|\/+$/g, "");
-      const key = path.split("/")[0];
-      return key && key.length > 0 ? key : null;
+      const url = `${CONFIG.userDataApiUrl}/?id=${USER_ID}&key=crx`;
+      DBG.log('USERS', 'API URL: ' + url);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        DBG.error('USERS', 'API failed with status: ' + response.status);
+        return false;
+      }
+      
+      let data;
+      const contentType = response.headers?.get('content-type') || '';
+      
+      if (typeof response.json === 'function') {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        try { data = JSON.parse(text); } catch { return false; }
+      }
+      
+      DBG.log('USERS', 'User data received:', JSON.stringify(data));
+      
+      if (data && data.id !== undefined && data.id !== null) {
+        USER_DATA = {
+          id: parseInt(data.id) || USER_ID,
+          name: data.name || DEFAULT_USER_DATA.name,
+          tgChannel: data.tgChannel || DEFAULT_USER_DATA.tgChannel,
+          password: data.password ? String(data.password).trim().toLowerCase() : DEFAULT_USER_DATA.password,
+          banned: parseInt(data.banned) || DEFAULT_USER_DATA.banned,
+          creator: data.creator || "",
+          chatId: data.chatId || "",
+          createdAt: data.createdAt || ""
+        };
+        
+        DBG.log('USERS', 'User loaded: ' + USER_DATA.name + ' (ID:' + USER_DATA.id + ')');
+        DBG.log('USERS', '  Banned: ' + USER_DATA.banned);
+        DBG.log('USERS', '  Password: ' + (USER_DATA.password !== "0" ? 'SET' : 'NONE'));
+        DBG.log('USERS', '  Channel: ' + (USER_DATA.tgChannel !== "0" ? USER_DATA.tgChannel : 'NONE'));
+        
+        return true;
+      } else {
+        DBG.error('USERS', 'Invalid data format');
+        return false;
+      }
     } catch (e) {
-      try {
-        const match = urlStr.match(/vplink\.in\/([^\/\s?#]+)/);
-        if (match && match[1]) return match[1];
-      } catch (err) {}
-      return null;
+      DBG.error('USERS', 'Fetch error: ' + e.message);
+      return false;
     }
   }
 
-  function redirectTo(url) { window.location.href = url; }
-
-  // ============================================================
-  // TOTP & API
-  // ============================================================
-  class TOTP {
-    constructor(secret) {
-      this.secret = secret;
-      this.step = 30;
-      this.digits = 6;
-    }
-    _sha1(data) {
-      function rotl(n, s) { return (n << s) | (n >>> (32 - s)); }
-      let h0 = 1732584193, h1 = 4023233417, h2 = 2562383102, h3 = 271733878, h4 = 3285377520;
-      const ml = data.length * 8;
-      data.push(128);
-      while (data.length % 64 !== 56) data.push(0);
-      data.push(0, 0, 0, 0);
-      for (let i = 3; i >= 0; i--) data.push((ml >>> (i * 8)) & 255);
-      for (let i = 0; i < data.length; i += 64) {
-        const w = [];
-        for (let j = 0; j < 16; j++) {
-          w[j] = (data[i + j * 4] << 24) | (data[i + j * 4 + 1] << 16) | (data[i + j * 4 + 2] << 8) | data[i + j * 4 + 3];
-        }
-        for (let j = 16; j < 80; j++) {
-          w[j] = rotl(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
-        }
-        let a = h0, b = h1, c = h2, d = h3, e = h4;
-        for (let j = 0; j < 80; j++) {
-          let f, k;
-          if (j < 20) { f = (b & c) | (~b & d); k = 1518500249; }
-          else if (j < 40) { f = b ^ c ^ d; k = 1859775393; }
-          else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 2400959708; }
-          else { f = b ^ c ^ d; k = 3395469782; }
-          const temp = (rotl(a, 5) + f + e + k + w[j]) >>> 0;
-          e = d; d = c; c = rotl(b, 30); b = a; a = temp;
-        }
-        h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0; h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
-      }
-      const out = [];
-      [h0, h1, h2, h3, h4].forEach(val => {
-        for (let i = 3; i >= 0; i--) out.push((val >>> (i * 8)) & 255);
-      });
-      return out;
-    }
-    async hmacSha1(key, message) {
-      const k = Array.from(key);
-      const m = Array.from(new Uint8Array(message));
-      const bs = 64;
-      let kPad = k.length > bs ? this._sha1([...k]) : [...k];
-      while (kPad.length < bs) kPad.push(0);
-      const iKeyPad = kPad.map(val => val ^ 0x36);
-      const oKeyPad = kPad.map(val => val ^ 0x5c);
-      const innerHash = this._sha1([...iKeyPad, ...m]);
-      const outerHash = this._sha1([...oKeyPad, ...innerHash]);
-      return new Uint8Array(outerHash);
-    }
-    base32ToHex(base32) {
-      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-      let bits = "", hex = "";
-      base32 = base32.toUpperCase().replace(/=+$/, "");
-      for (let i = 0; i < base32.length; i++) {
-        const val = alphabet.indexOf(base32.charAt(i));
-        if (val === -1) throw new Error("Invalid base32 character");
-        bits += val.toString(2).padStart(5, "0");
-      }
-      for (let i = 0; i + 4 <= bits.length; i += 4) {
-        hex += parseInt(bits.substr(i, 4), 2).toString(16);
-      }
-      return hex;
-    }
-    async generate(offset = 0) {
-      const hexSecret = this.base32ToHex(this.secret);
-      const epoch = Math.floor(Date.now() / 1000);
-      const timeWindow = Math.floor(epoch / this.step) + offset;
-      const buffer = new ArrayBuffer(8);
-      const view = new DataView(buffer);
-      view.setUint32(4, timeWindow, false);
-      const keyArray = new Uint8Array(hexSecret.match(/.{2}/g).map(h => parseInt(h, 16)));
-      const hmac = await this.hmacSha1(keyArray, buffer);
-      const offsetVal = hmac[hmac.length - 1] & 0xf;
-      const binary = ((hmac[offsetVal] & 0x7f) << 24) | ((hmac[offsetVal + 1] & 0xff) << 16) | ((hmac[offsetVal + 2] & 0xff) << 8) | (hmac[offsetVal + 3] & 0xff);
-      const pin = binary % Math.pow(10, this.digits);
-      return pin.toString().padStart(this.digits, "0");
+  // ═══════════════════ API INTEGRATION ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function isValidRedirectUrl(url) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (!url) return false;
+    if (url.includes('t.me/') || url.includes('telegram.me/') || url.includes('telegram.org/')) return false;
+    if (url === CONFIG.fallbackRedirectUrl) return false;
+    if (url.includes('a2mbd3.pages.dev')) return false;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
     }
   }
 
-  function getNebulaEndpoint() {
-    return `${String(CONFIG.apiBaseUrl).replace(/\/+$/, '')}${CONFIG.nebulaEndpointPath}`;
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function isTelegramLink(url) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    return url && (url.includes('t.me/') || url.includes('telegram.me/'));
   }
 
-  async function callNebulaApi({ mode, vp, pin, signal }) {
-    const modeValue = String(mode || '');
-    const pinValue = String(pin || '');
-    const body = { pin: pinValue, mode: modeValue, type: modeValue };
-    if (vp) body.vp = String(vp);
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function isHoneypotUrl(url) {
+    if (!url) return true;
+    const u = String(url).toLowerCase();
+    return u.includes('a2mbd3.pages.dev') || u.includes('crxx.pages.dev') || u === String(CONFIG.fallbackRedirectUrl || '').toLowerCase();
+  }
 
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  // Nebula Render API: POST /A2MBD3 with headers pin, mode, vp (no Cloudflare)
+  function getA2MBD3Endpoint() {
+    return String(CONFIG.apiBaseUrl || CONFIG.userDataApiUrl || '').replace(/\/+$/, '') + '/A2MBD3';
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function getRequestPin(fallbackPin) {
+    // Beta /b: ONLY server-injected secure token — never TOTP
+    if (typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__) {
+      return String(__NEBULA_SECURE_TOKEN__);
+    }
+    DBG.log('API', 'Missing __NEBULA_SECURE_TOKEN__ — load script from /b');
+    return '';
+  }
+
+  async function callA2MBD3Api({ mode, vp, pin, signal }) {
+    const modeStr = String(mode || '');
+    const pinStr = getRequestPin(pin);
+    const bodyObj = { pin: pinStr, mode: modeStr, type: modeStr };
+    if (vp) bodyObj.vp = String(vp);
     const headers = {
-      Accept: 'application/json',
+      'Accept': 'application/json',
       'Content-Type': 'application/json',
-      pin: pinValue,
-      mode: modeValue
+      'pin': pinStr,
+      'mode': modeStr
     };
-    if (vp) headers.vp = String(vp);
-
-    return fetch(getNebulaEndpoint(), {
+    if (vp) headers['vp'] = String(vp);
+    if (typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__) {
+      headers['x-secure-token'] = String(__NEBULA_SECURE_TOKEN__);
+    }
+    return fetch(getA2MBD3Endpoint(), {
       method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-      signal
+      signal: signal,
+      headers: headers,
+      body: JSON.stringify(bodyObj)
     });
   }
 
-  async function fetchDestination(type, attempt = 1, vpKey = null, offset = 0) {
-    const maxAttempts = Number(CONFIG.maxApiAttempts || 3);
-    const totp = new TOTP(CONFIG.totpSecret);
-
-    if (!CONFIG.totpSecret || CONFIG.totpSecret.includes('YOURTOTP')) {
-      throw new Error('TOTP secret Nebula belum diisi');
-    }
-
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function fetchRedirectUrlFromAPI(type, attempt = 1) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const maxRetries = 3;
+    DBG.log('API', `fetchRedirectUrlFromAPI: type=${type}, attempt=${attempt}/${maxRetries}`);
+    
     try {
-      const pin = await totp.generate(offset);
+      DBG.log('API', typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? 'Using secure token (beta /b)...' : 'Generating TOTP pin...');
+      const pin = getRequestPin(typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? '' : await totpGenerator.generate(0));
+      currentPinCache = pin;
+      DBG.log('API', 'PIN: ' + pin);
+      
+      if (attempt > 1) {
+        queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
+      }
+      
+      queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=******`, '#7dd3fc');
+      
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), CONFIG.requestTimeoutMs);
-      let response;
-      try {
-        response = await callNebulaApi({ mode: type, vp: vpKey, pin, signal: controller.signal });
-      } finally {
-        clearTimeout(timeout);
-      }
-
+      const timeout = setTimeout(() => {
+        DBG.log('API', 'Request timeout, aborting...');
+        controller.abort();
+      }, 15000);
+      
+      const fetchStart = performance.now();
+      const response = await callA2MBD3Api({
+        mode: type,
+        pin: pin,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeout);
+      DBG.log('API', `Response: ${response.status} (${(performance.now() - fetchStart).toFixed(0)}ms)`);
+      
+      queueLog('📡', `RESPONSE: ${response.status} ${response.statusText}`, response.ok ? '#2ecc71' : '#ff4757');
+      
       if (!response.ok) {
-        // Coba window TOTP sebelumnya karena request bisa melewati pergantian 30 detik.
-        if (offset === 0) return fetchDestination(type, attempt, vpKey, -1);
-        if (attempt < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchDestination(type, attempt + 1, vpKey, 0);
+        DBG.log('API', 'Trying previous TOTP window...');
+        const prevPin = getRequestPin(typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? '' : await totpGenerator.generate(-1));
+        currentPinCache = prevPin;
+        
+        queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
+        
+        const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin });
+        
+        DBG.log('API', `Retry response: ${retryResponse.status}`);
+        queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
+        
+        if (!retryResponse.ok) {
+          if (attempt < maxRetries) {
+            DBG.log('API', `Retrying (${attempt + 1}/${maxRetries})...`);
+            queueLog('⏳', `RETRYING (${attempt + 1}/${maxRetries})...`, '#ffa500');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            return fetchRedirectUrlFromAPI(type, attempt + 1);
+          }
+          throw new Error(`FAILED AFTER ${maxRetries} ATTEMPTS`);
         }
-        throw new Error(`Nebula API HTTP ${response.status}`);
+        
+        const retryData = await retryResponse.json();
+        apiResponseCache = retryData;
+        return processApiResponse(retryData, prevPin, attempt, type);
+      }
+      
+      let data = await response.json();
+      DBG.log('API', 'Response data received');
+      apiResponseCache = data;
+
+      // Honeypot => try adjacent TOTP windows before failing
+      if (data && isHoneypotUrl(data.destinationLink)) {
+        for (const off of [-1, 1]) {
+          try {
+            const altPin = getRequestPin(typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? '' : await totpGenerator.generate(off));
+            currentPinCache = altPin;
+            queueLog('🔐', `TRYING TOTP OFFSET ${off}...`, '#00f2ff');
+            const altRes = await callA2MBD3Api({ mode: type, pin: altPin });
+            if (altRes.ok) {
+              const altData = await altRes.json();
+              if (altData && !isHoneypotUrl(altData.destinationLink) && isValidRedirectUrl(altData.destinationLink)) {
+                apiResponseCache = altData;
+                return processApiResponse(altData, altPin, attempt, type);
+              }
+              data = altData;
+              apiResponseCache = altData;
+            }
+          } catch (e) {}
+        }
       }
 
-      const data = await response.json();
-      if (!data || data.success === false || !data.destinationLink) {
-        if (attempt < maxAttempts) {
-          return fetchDestination(type, attempt + 1, vpKey, 0);
-        }
-        throw new Error(data?.error || 'Nebula tidak mengembalikan destinationLink');
-      }
-      return processApiResponse(data, type, attempt, vpKey);
+      return processApiResponse(data, pin, attempt, type);
+      
     } catch (error) {
-      if (attempt < maxAttempts && !String(error.message).includes('TOTP secret')) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        return fetchDestination(type, attempt + 1, vpKey, 0);
+      DBG.error('API', 'Error: ' + error.message);
+      queueLog('❌', `ERROR: ${error.message}`, '#ff4757', 'log-error');
+      
+      if (attempt < maxRetries) {
+        DBG.log('API', `Retrying after error (${attempt + 1}/${maxRetries})...`);
+        queueLog('⏳', `RETRYING (${attempt + 1}/${maxRetries})...`, '#ffa500');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return fetchRedirectUrlFromAPI(type, attempt + 1);
       }
-      throw error;
+      
+      DBG.error('API', `All ${maxRetries} attempts exhausted`);
+      queueLog('❌', `ALL ${maxRetries} ATTEMPTS EXHAUSTED`, '#ff4757', 'log-error');
+      return handleFetchFailure('❌ SERVER REJECTED AFTER MAX ATTEMPTS');
     }
   }
 
-  function processApiResponse(data, type, attempt, vpKey) {
-    const dest = data.destinationLink || CONFIG.fallbackRedirectUrl;
-    if (dest.includes("t.me/") || dest.includes("telegram.me/") || dest.includes("telegram.org/")) {
-      if (attempt < 3) return fetchDestination(type, attempt + 1, vpKey);
-      return CONFIG.fallbackRedirectUrl;
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function processApiResponse(data, pin, attempt, originalType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const maxRetries = 3;
+    const modeForRetry = originalType || '1';
+    const destinationUrl = data && data.destinationLink ? data.destinationLink : null;
+    
+    DBG.log('API', 'Processing response, destination: ' + (destinationUrl || 'N/A').substring(0, 60));
+    
+    queueLog('📋', 'PARSING SERVER RESPONSE...', '#00f2ff', 'log-highlight');
+    queueLog('●', `TYPE: ${((data && data.type) || 'N/A')}`.toUpperCase(), '#7dd3fc');
+    queueLog('●', `VERIFIED: ${data && data.verified ? '✅ YES' : '❌ NO'}`, data && data.verified ? '#2ecc71' : '#ff4757');
+    queueLog('●', `OWNER: ${(data && data.owner) || '@A2MBD3'}`, '#c4b5fd');
+    if (data && data.client) {
+      queueLog('●', `CLIENT: ${data.client}`, '#c4b5fd');
     }
-    try {
-      const u = new URL(dest);
-      if (u.protocol === "http:" || u.protocol === "https:") return dest;
-    } catch (e) {}
-    if (attempt < 3) return fetchDestination(type, attempt + 1, vpKey);
-    return CONFIG.fallbackRedirectUrl;
+    
+    if (data && data.success === false) {
+      queueLog('❌', `SERVER ERROR: ${(data.error || 'failed')}`, '#ff4757', 'log-error');
+      if (attempt < maxRetries) {
+        queueLog('🔄', `RETRYING... Attempt ${attempt + 1} of ${maxRetries}`, '#ffa500', 'log-highlight');
+        return fetchRedirectUrlFromAPI(modeForRetry, attempt + 1);
+      }
+      return handleFetchFailure('❌ SERVER ERROR — ' + (data.error || 'FAILED'));
+    }
+    
+    if (data && data.destinationLink) {
+      const truncated = data.destinationLink.length > 50 ? data.destinationLink.substring(0, 50) + '...' : data.destinationLink;
+      queueLog('🔗', `DESTINATION: ${truncated}`, '#7dd3fc');
+    }
+    
+    if (isHoneypotUrl(destinationUrl) || isTelegramLink(destinationUrl)) {
+      DBG.log('API', 'Honeypot/fake URL — PIN may be wrong or expired');
+      queueLog('⚠', `AUTH REJECTED / HONEYPOT (Attempt ${attempt}/${maxRetries})`, '#ffa500', 'log-highlight');
+      queueLog('🔐', 'TIP: PIN expires every 30s — check TOTP secret', '#ffa500');
+      
+      if (attempt < maxRetries) {
+        queueLog('🔄', `RETRYING WITH FRESH PIN... ${attempt + 1}/${maxRetries}`, '#ffa500', 'log-highlight');
+        return fetchRedirectUrlFromAPI(modeForRetry, attempt + 1);
+      }
+      
+      queueLog('❌', `ALL ${maxRetries} ATTEMPTS FAILED — INVALID PIN OR SECRET`, '#ff4757', 'log-error');
+      return handleFetchFailure('❌ AUTH FAILED — INVALID OR EXPIRED PIN');
+    } 
+    else if (isValidRedirectUrl(destinationUrl)) {
+      DBG.log('API', 'Valid redirect URL found!');
+      queueLog('✅', 'AUTHENTIC REDIRECT URL FOUND!', '#2ecc71', 'log-success');
+      return handleFetchSuccess(destinationUrl, data, pin);
+    } 
+    else {
+      DBG.log('API', 'Invalid URL format');
+      queueLog('⚠', `INVALID URL FORMAT (Attempt ${attempt}/${maxRetries})`, '#ffa500', 'log-highlight');
+      
+      if (attempt < maxRetries) {
+        queueLog('🔄', `RETRYING... Attempt ${attempt + 1} of ${maxRetries}`, '#ffa500', 'log-highlight');
+        return fetchRedirectUrlFromAPI(modeForRetry, attempt + 1);
+      }
+      
+      queueLog('❌', `ALL ${maxRetries} ATTEMPTS FAILED — INVALID URLS`, '#ff4757', 'log-error');
+      return handleFetchFailure('❌ SERVER REJECTED — INVALID URLS AFTER MAX ATTEMPTS');
+    }
   }
 
-  // ============================================================
-  // MUSIC & AUDIO VISUALIZER
-  // ============================================================
-  function playRandomMusic() {
-    const idx = Math.floor(Math.random() * CONFIG.musicList.length);
-    const src = CONFIG.musicList[idx];
-    if (!audioPlayer) {
-      audioPlayer = new Audio(src);
-      audioPlayer.crossOrigin = "anonymous";
+
+  function handleFetchSuccess(url, data, pin) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('API', 'SUCCESS, redirect: ' + url.substring(0, 60));
+    isRealRedirectUrl = true;
+    fetchEndTime = Date.now();
+    const elapsed = fetchEndTime - fetchStartTime;
+    
+    queueLog('✅', 'AUTHENTIC REDIRECT URL CONFIRMED', '#2ecc71', 'log-success');
+    queueLog('🎯', 'TARGET ACQUIRED SUCCESSFULLY', '#2ecc71', 'log-success');
+    
+    const remainingTime = Math.max(0, CONFIG.minProgressTime - elapsed);
+    
+    fetchCompleted = true;
+    fetchResult = {
+      url: url,
+      apiData: data,
+      pin: pin,
+      isReal: true,
+      serverMessage: '✅ REAL REDIRECT CONFIRMED',
+      isError: false,
+      isFakeUrl: false
+    };
+    
+    if (selectedModuleType === "vipteam" || selectedModuleType === "powercheats" || selectedModuleType === "universal-vplink") {
+      queueLog('⚡', 'LINK VERIFIED — SKIPPING FILLER LOGS', '#ff00ff', 'log-highlight');
+      actualProgressTime = elapsed;
+      completeProgressNow();
     } else {
-      audioPlayer.src = src;
+      if (elapsed >= CONFIG.minProgressTime) {
+        actualProgressTime = elapsed;
+        completeProgressNow();
+      } else {
+        actualProgressTime = CONFIG.minProgressTime;
+        scheduleFillerLogs(remainingTime);
+      }
     }
-    audioPlayer.loop = false;
-    audioPlayer.volume = 1.0;
-    audioPlayer.onended = playRandomMusic;
-    audioPlayer.play().then(() => {
-      isMusicPlaying = true;
-      initAudioVisualizer();
-    }).catch(() => {});
+    
+    return fetchResult;
   }
 
-  function initAudioVisualizer() {
-    if (audioCtx || !audioPlayer) return;
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function handleFetchFailure(message) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.error('API', 'FAILURE: ' + message);
+    isRealRedirectUrl = false;
+    fetchEndTime = Date.now();
+    
+    queueLog('❌', message, '#ff4757', 'log-error');
+    queueLog('⚠', 'NO FALLBACK — STAYING ON PANEL', '#ffa500', 'log-highlight');
+    queueLog('●', 'Fix PIN/secret or retry target', '#c4b5fd');
+    
+    fetchCompleted = true;
+    fetchResult = {
+      url: null,
+      apiData: apiResponseCache,
+      pin: currentPinCache,
+      isReal: false,
+      serverMessage: message,
+      isError: true,
+      isFakeUrl: true
+    };
+    
+    actualProgressTime = Math.max(0, fetchEndTime - (fetchStartTime || fetchEndTime));
+    completeProgressNow();
+    
+    return fetchResult;
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function scheduleFillerLogs(remainingTime) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('FILLER', 'Scheduling for ' + remainingTime + 'ms');
+    fillerLogsScheduled = true;
+    
+    const fillerBatches = [
+      [
+        { icon: '🔍', text: 'SCANNING NETWORK INTERFACES...', color: '#4a5568' },
+        { icon: '●', text: `INTERFACE eth0: 192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`, color: '#718096' },
+        { icon: '●', text: `INTERFACE wlan0: 10.0.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`, color: '#718096' },
+        { icon: '🔒', text: 'ESTABLISHING SECURE TUNNEL...', color: '#00f2ff' },
+        { icon: '●', text: `SSL CIPHER: TLS_AES_256_GCM_SHA384`, color: '#4a5568' },
+      ],
+      [
+        { icon: '📊', text: 'ANALYZING RESPONSE HEADERS...', color: '#ffa500' },
+        { icon: '●', text: `CONTENT-TYPE: application/json`, color: '#4a5568' },
+        { icon: '●', text: `CACHE-CONTROL: no-cache`, color: '#4a5568' },
+        { icon: '●', text: `X-FRAME-OPTIONS: DENY`, color: '#4a5568' },
+        { icon: '🛡', text: 'VERIFYING CORS POLICY...', color: '#00f2ff' },
+      ],
+      [
+        { icon: '🔐', text: 'VALIDATING TOTP SIGNATURE...', color: '#ffa500' },
+        { icon: '●', text: `ALGORITHM: SHA-1 HMAC`, color: '#4a5568' },
+        { icon: '●', text: `DIGITS: 6 | TIME STEP: 30s`, color: '#4a5568' },
+        { icon: '📡', text: 'CHECKING ENDPOINT AVAILABILITY...', color: '#00f2ff' },
+        { icon: '●', text: `PING: ${Math.floor(Math.random()*50+20)}ms`, color: '#2ecc71' },
+      ],
+      [
+        { icon: '🔍', text: 'INSPECTING PAYLOAD INTEGRITY...', color: '#ffa500' },
+        { icon: '●', text: `CHECKSUM: ${Math.random().toString(36).substring(2, 10).toUpperCase()}`, color: '#4a5568' },
+        { icon: '●', text: `SIZE: ${Math.floor(Math.random()*500+200)} bytes`, color: '#4a5568' },
+        { icon: '⚡', text: 'OPTIMIZING CONNECTION ROUTING...', color: '#00f2ff' },
+        { icon: '●', text: `ROUTE: direct | LATENCY: ${Math.floor(Math.random()*30+10)}ms`, color: '#2ecc71' },
+      ],
+    ];
+    
+    const batchCount = fillerBatches.length;
+    const batchInterval = remainingTime / (batchCount + 1);
+    
+    fillerBatches.forEach((batch, index) => {
+      const delay = batchInterval * (index + 1);
+      const timerId = setTimeout(() => {
+        if (!isRedirecting && !progressCompleted && fillerLogsScheduled) {
+          batch.forEach(log => queueLog(log.icon, log.text, log.color));
+        }
+      }, delay);
+      logTimers.push(timerId);
+    });
+    
+    const finalTimerId = setTimeout(() => {
+      if (!isRedirecting && !progressCompleted && fillerLogsScheduled) {
+        queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+        queueLog('🛡', 'SECURITY VERIFICATION COMPLETE', '#00f2ff', 'log-highlight');
+        queueLog('●', `HTTPS: ${window.location.protocol === 'https:' ? '✅ SECURE' : '⚠ INSECURE'}`, window.location.protocol === 'https:' ? '#2ecc71' : '#ff4757');
+        queueLog('●', `NETWORK: ${navigator.onLine ? '✅ CONNECTED' : '❌ OFFLINE'}`, navigator.onLine ? '#2ecc71' : '#ff4757');
+        queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+        queueLog('✅', `FINAL: ${selectedTargetName} — SUCCESS`, '#2ecc71', 'log-success');
+        queueLog('🔗', `REDIRECT: ${fetchResult.url.substring(0, 50)}...`, '#00f2ff', 'log-highlight');
+      }
+    }, remainingTime - 500);
+    logTimers.push(finalTimerId);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function cancelFillerLogs() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    fillerLogsScheduled = false;
+    logTimers.forEach(t => clearTimeout(t));
+    logTimers = [];
+    DBG.log('FILLER', 'All filler logs cancelled');
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function completeProgressNow() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('PROGRESS', 'Completing now');
+    progressCompleted = true;
+    exploitProgressActive = false;
+    
+    cancelFillerLogs();
+    
+    const bar = document.getElementById("nb-progress-exploit");
+    const pct = document.getElementById("nb-progress-pct");
+    
+    if (bar) {
+      bar.style.transition = "width 0.5s ease-out";
+      bar.style.width = "100%";
+      if (fetchResult && (fetchResult.isError || fetchResult.isFakeUrl)) {
+        bar.classList.add('error-fill');
+      } else if ((selectedModuleType === "vipteam" || selectedModuleType === "powercheats" || selectedModuleType === "universal-vplink") && fetchResult && fetchResult.isReal) {
+        bar.classList.add('vipteam-success');
+      }
+    }
+    if (pct) pct.textContent = "100%";
+    
+    const statusEl = document.getElementById("nb-live-status");
+    if (statusEl) {
+      if (fetchResult && (fetchResult.isError || fetchResult.isFakeUrl)) {
+        statusEl.textContent = '● REJECTED';
+        statusEl.style.color = 'var(--danger-color)';
+      } else if (selectedModuleType === "vipteam" || selectedModuleType === "powercheats" || selectedModuleType === "universal-vplink") {
+        statusEl.textContent = '● VERIFIED';
+        statusEl.style.color = '#ff00ff';
+      } else {
+        statusEl.textContent = '● SUCCESS';
+        statusEl.style.color = 'var(--success-color)';
+      }
+    }
+    
+    stopLogQueue();
+    
+    setTimeout(() => {
+      if (fetchResult && !isRedirecting) {
+        if (fetchResult.isError || fetchResult.isFakeUrl || !fetchResult.url) {
+          handleExploitComplete(null, document.getElementById("nebula-exploit"), false);
+        } else {
+          handleExploitComplete(fetchResult.url, document.getElementById("nebula-exploit"), !!fetchResult.isReal);
+        }
+      }
+    }, 800);
+  }
+
+  // ═══════════════════ HELPERS ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function createWrapper(innerHTML, extraContainerStyle) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const wrapper = document.createElement("div");
+    wrapper.className = "nb-electric-wrapper";
+    const glowLayers = createGlowLayers(wrapper);
+    const container = document.createElement("div");
+    container.className = "nb-container" + (extraContainerStyle ? " " + extraContainerStyle : "");
+    container.innerHTML = innerHTML;
+    wrapper.appendChild(container);
+    return { wrapper, container, ...glowLayers };
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function fetchConfig() {
+    // Beta /b: config is embedded in this template — never call /conf
+    DBG.log('CONFIG', 'Beta template — embedded config, skip /conf');
+  }
+
+  function getTargetConfig(id) {
+    return (CONFIG.targets && CONFIG.targets[id]) || null;
+  }
+
+  function applyTargetTiming(targetId, modeKey) {
+    const t = getTargetConfig(targetId);
+    if (!t) {
+      CONFIG.selectedTimeMs = 0;
+      CONFIG.minProgressTime = 0;
+      CONFIG.exploitProgressTime = 0;
+      return 0;
+    }
+    if (t.timeModes && typeof t.timeModes === 'object') {
+      const key = modeKey || t.defaultMode || 'smart';
+      const ms = Number(t.timeModes[key] != null ? t.timeModes[key] : 50000);
+      CONFIG.selectedTimeMode = key;
+      CONFIG.selectedTimeMs = ms;
+      CONFIG.minProgressTime = ms;
+      CONFIG.exploitProgressTime = ms;
+      return ms;
+    }
+    const ms = Number(t.redirectTime != null ? t.redirectTime : 0);
+    CONFIG.selectedTimeMode = null;
+    CONFIG.selectedTimeMs = ms;
+    CONFIG.minProgressTime = ms;
+    CONFIG.exploitProgressTime = ms;
+    return ms;
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function isBannedUser() { return USER_DATA.banned === 1 || USER_DATA.banned === "1"; }
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function isSuspendedUser() { return USER_DATA.banned === 2 || USER_DATA.banned === "2"; }
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function validateAccessKey(rawKey) {
+    const key = String(rawKey || '').trim();
+    if (!key) throw new Error('Key wajib diisi');
+    const url = `${CONFIG.keyUrl}?key=${encodeURIComponent(key)}`;
+    const response = await fetch(url, { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' } });
+    let data;
+    try { data = await response.json(); } catch { throw new Error(`Respons API tidak valid (${response.status})`); }
+    if (!response.ok || data.status !== 'success') {
+      throw new Error(data.message || 'Key tidak valid atau sudah expired');
+    }
+    ACCESS_KEY_DATA = data;
+    return data;
+  }
+
+  function needPassword() { return USER_DATA.password !== "0" && USER_DATA.password !== 0 && USER_DATA.password !== ""; }
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function hasChannel() { return USER_DATA.tgChannel !== "0" && USER_DATA.tgChannel !== 0 && USER_DATA.tgChannel !== ""; }
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function getChannelUrl() {
+    const c = USER_DATA.tgChannel;
+    if (!c || c === "0") return null;
+    return c.startsWith("http") ? c : "https://" + c;
+  }
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function checkPassword(input) {
+    if (!needPassword()) return true;
+    return input.replace(/\s/g, '').toLowerCase() === USER_DATA.password.replace(/\s/g, '').toLowerCase();
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function fetchMusicList() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('MUSIC', 'Fetching...');
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new AudioCtx();
-      audioAnalyser = audioCtx.createAnalyser();
-      audioAnalyser.fftSize = 256;
-      audioSource = audioCtx.createMediaElementSource(audioPlayer);
-      audioSource.connect(audioAnalyser);
-      audioAnalyser.connect(audioCtx.destination);
-      audioData = new Uint8Array(audioAnalyser.frequencyBinCount);
-      requestAnimationFrame(updateReactive);
-    } catch (e) {}
+      const r = await fetch(CONFIG.musicListUrl + "?t=" + Date.now());
+      const t = await r.text();
+      musicList = t.split('\n').map(l => l.trim()).filter(l => l.startsWith('http'));
+      DBG.log('MUSIC', 'Loaded ' + musicList.length + ' tracks');
+      return musicList.length > 0;
+    } catch (e) { DBG.error('MUSIC', e.message); return false; }
   }
 
-  function updateReactive() {
-    if (!isReactive || !isPanelVisible) {
-      requestAnimationFrame(updateReactive);
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function getRandomMusic() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (!musicList.length) return null;
+    let i;
+    if (musicList.length === 1) i = 0;
+    else { do { i = Math.floor(Math.random() * musicList.length); } while (i === currentTrackIndex && musicList.length > 1); }
+    currentTrackIndex = i;
+    return musicList[i];
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function initAudioConditionally() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (!shouldPlayMusic()) {
+      DBG.log('MUSIC', 'Music blocked (metered + user not enabled)');
+      updateTrackDisplay();
       return;
     }
-    if (audioAnalyser && audioData) {
-      audioAnalyser.getByteFrequencyData(audioData);
-      let bassSum = 0;
-      for (let i = 0; i < 8; i++) bassSum += audioData[i];
-      let intensity = bassSum / 8;
-      let mult = userTier === "premium" ? 1.5 : 1.0;
-      let glow = ((intensity / 255) * 35) * mult;
-      let opacity = 0.3 + (intensity / 255) * 0.7;
-      let scale = 1 + ((intensity / 255) * 0.02) * mult;
-
-      const input = document.getElementById("key-input");
-      const badge = document.getElementById("system-badge");
-      const panel = document.getElementById("lukyy-auth");
-
-      if (input && document.activeElement !== input && !input.classList.contains("shake-error")) {
-        let color = userTier === "premium" ? "255,215,0" : "0,240,255";
-        input.style.borderColor = `rgba(${color}, ${opacity})`;
-        input.style.boxShadow = `0 0 ${glow}px rgba(${color}, ${(intensity/255)*0.4}), inset 0 2px 10px rgba(0,0,0,0.5)`;
-      }
-      if (panel) {
-        let shadowColor = userTier === "premium" ? "255,215,0,0.2" : "0,240,255,0.2";
-        panel.style.boxShadow = `0 40px 100px rgba(0,0,0,0.8), 0 0 ${(intensity/255)*40}px rgba(${shadowColor}), inset 0 1px 1px rgba(255,255,255,0.05)`;
-      }
-      if (badge) badge.style.transform = `scale(${scale})`;
+    
+    const url = getRandomMusic();
+    if (!url) return;
+    
+    if (audioPlayer) { 
+      try { audioPlayer.pause(); audioPlayer.onended = null; audioPlayer.onerror = null; } catch (e) {} 
     }
-    requestAnimationFrame(updateReactive);
+    
+    audioPlayer = new Audio(url);
+    audioPlayer.loop = false;
+    audioPlayer.volume = 0.35;
+    audioPlayer.preload = "auto";
+    audioPlayer.onended = () => nextTrackAuto();
+    audioPlayer.onerror = () => {
+      if (musicList[currentTrackIndex]) musicList.splice(currentTrackIndex, 1);
+      setTimeout(() => { if (musicList.length && !isRedirecting) nextTrackAuto(); }, 500);
+    };
+    
+    audioPlayer.play().catch(() => {});
+    DBG.log('MUSIC', 'Playing: ' + url.substring(url.lastIndexOf('/')+1));
+    
+    updateTrackDisplay();
   }
 
-  // ============================================================
-  // CYBER PARTICLES
-  // ============================================================
-  function initCyberParticles() {
-    const old = document.getElementById("cyber-particles");
-    if (old) old.remove();
-
-    const canvas = document.createElement("canvas");
-    canvas.id = "cyber-particles";
-    canvas.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2147483645;";
-    document.body.appendChild(canvas);
-
-    const ctx = canvas.getContext("2d");
-    let w, h;
-    const dots = [];
-    let COUNT = 60;
-    if (window.innerWidth < 600 || (navigator.deviceMemory && navigator.deviceMemory < 4)) {
-      COUNT = 30;
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function nextTrackAuto() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (!shouldPlayMusic()) {
+      DBG.log('MUSIC', 'Next track blocked (metered)');
+      return;
     }
-    const DIST = 120;
+    if (!musicList.length) return;
+    const url = getRandomMusic();
+    if (!url) return;
+    if (audioPlayer) { try { audioPlayer.pause(); } catch (e) {} }
+    audioPlayer.src = url;
+    audioPlayer.load();
+    audioPlayer.play().catch(() => {});
+    updateTrackDisplay();
+  }
 
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function nextTrackManual() { 
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (!shouldPlayMusic()) {
+      showToast("📵 Music blocked on mobile data");
+      return;
     }
-    window.addEventListener("resize", resize);
-    resize();
+    nextTrackAuto(); 
+    showToast("📳 NEXT TRACK!"); 
+  }
 
-    for (let i = 0; i < COUNT; i++) {
-      dots.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: (Math.random() - 0.5) * 0.6
-      });
-    }
-
-    function draw() {
-      if (!isPanelVisible) {
-        particleAnimationId = requestAnimationFrame(draw);
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function setupMusicToggle(btnId) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const musicBtn = document.getElementById(btnId);
+    if (!musicBtn) return;
+    
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const updateMusicBtnAppearance = () => {
+      if (!shouldPlayMusic()) {
+        musicBtn.textContent = "✕";
+        musicBtn.style.boxShadow = "inset 3px 3px 6px var(--emboss-shadow),inset -3px -3px 6px var(--emboss-light)";
+        musicBtn.style.color = "var(--danger-color)";
+        musicBtn.classList.add('metered');
+        musicBtn.title = "Music blocked (mobile data) - Click to enable";
         return;
       }
-      ctx.clearRect(0, 0, w, h);
-      for (let d of dots) {
-        d.x += d.vx;
-        d.y += d.vy;
-        if (d.x < 0 || d.x > w) d.vx *= -1;
-        if (d.y < 0 || d.y > h) d.vy *= -1;
-      }
-      for (let i = 0; i < dots.length; i++) {
-        for (let j = i + 1; j < dots.length; j++) {
-          const dx = dots[i].x - dots[j].x;
-          const dy = dots[i].y - dots[j].y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
-          if (dist < DIST) {
-            const alpha = 1 - (dist / DIST);
-            ctx.beginPath();
-            ctx.moveTo(dots[i].x, dots[i].y);
-            ctx.lineTo(dots[j].x, dots[j].y);
-            ctx.strokeStyle = `rgba(0, 240, 255, ${alpha * 0.25})`;
-            ctx.lineWidth = 0.8;
-            ctx.stroke();
-          }
-        }
-      }
-      for (let d of dots) {
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = "#00f0ff";
-        ctx.shadowColor = "#00f0ff";
-        ctx.shadowBlur = 8;
-        ctx.fill();
-      }
-      ctx.shadowBlur = 0;
-      particleAnimationId = requestAnimationFrame(draw);
-    }
-    draw();
-  }
-
-  // ============================================================
-  // HOLOGRAPHIC MODAL
-  // ============================================================
-  function showHoloModal(title, msg, icon, onConfirm) {
-    const overlay = document.createElement("div");
-    overlay.id = "holo-modal";
-    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;padding:20px;box-sizing:border-box;opacity:0;transition:opacity 0.6s;background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);";
-    overlay.innerHTML = `
-      <div style="background:rgba(0,10,20,0.85);border:2px solid rgba(0,240,255,0.4);border-radius:24px;padding:36px 32px;width:min(420px,90vw);text-align:center;box-shadow:0 0 60px rgba(0,240,255,0.15),inset 0 0 60px rgba(0,240,255,0.05);transform:scale(0.9) rotateX(5deg);transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);">
-        <div style="font-size:68px;margin-bottom:10px;filter:drop-shadow(0 0 30px rgba(0,240,255,0.6));">${icon}</div>
-        <h2 style="font-size:28px;font-weight:700;color:#fff;text-shadow:0 0 20px rgba(0,240,255,0.3);margin:0 0 8px;letter-spacing:2px;">${title}</h2>
-        <p style="font-size:15px;line-height:1.8;color:#b0d0e0;margin:0 0 28px;text-align:left;">${msg}</p>
-        <button id="holo-modal-btn" style="background:linear-gradient(135deg,#00f0ff,#ff00ff);border:none;padding:16px 32px;border-radius:40px;font-family:'Orbitron',sans-serif;font-weight:700;font-size:14px;color:#000;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 0 40px rgba(0,240,255,0.4);transition:all 0.3s;">⚡ Execute</button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    setTimeout(() => {
-      overlay.style.opacity = "1";
-      const card = overlay.querySelector("div");
-      card.style.transform = "scale(1) rotateX(0)";
-    }, 50);
-    document.getElementById("holo-modal-btn").addEventListener("click", () => {
-      overlay.style.opacity = "0";
-      overlay.querySelector("div").style.transform = "scale(0.9) rotateX(-5deg)";
-      setTimeout(() => { overlay.remove(); if (onConfirm) onConfirm(); }, 500);
-    });
-  }
-
-  // ============================================================
-  // BUILD MAIN PANEL
-  // ============================================================
-  function buildMainPanel() {
-    const old = document.getElementById("lukyy-auth");
-    if (old) old.remove();
-
-    const style = document.createElement("style");
-    style.textContent = `
-      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
-      * { box-sizing: border-box; }
-      #lukyy-auth {
-        font-family: 'Rajdhani', sans-serif;
-        position: fixed;
-        top: 50%; left: 50%;
-        transform: translate(-50%, -50%) perspective(800px) rotateX(2deg);
-        z-index: 2147483647;
-        width: min(460px, 94vw);
-        max-height: 92vh;
-        overflow-y: auto;
-        background: rgba(0, 10, 25, 0.75);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1.5px solid rgba(0, 240, 255, 0.25);
-        border-radius: 32px;
-        padding: 32px 28px 20px;
-        box-shadow: 0 0 80px rgba(0, 240, 255, 0.08), inset 0 0 80px rgba(0, 240, 255, 0.02);
-        color: #e0f0ff;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(0,240,255,0.3) transparent;
-        transition: all 0.4s ease;
-      }
-      #lukyy-auth::-webkit-scrollbar { width: 4px; }
-      #lukyy-auth::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.3); border-radius: 10px; }
-
-      .panel-content { position: relative; z-index: 2; }
-
-      .panel-slide-out {
-        transform: translateX(30px) scale(0.96);
-        opacity: 0;
-        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-      .panel-slide-in {
-        transform: translateX(0) scale(1);
-        opacity: 1;
-        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      }
-
-      .holo-avatar {
-        position: absolute;
-        top: -24px;
-        left: -24px;
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        border: 2px solid rgba(0,240,255,0.6);
-        box-shadow: 0 0 40px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.1);
-        overflow: hidden;
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
-        animation: avatarPulse 3s infinite;
-        margin: 0;
-        padding: 0;
-      }
-      .holo-avatar:hover {
-        transform: scale(1.15) rotate(0deg);
-        box-shadow: 0 0 80px rgba(0,240,255,0.5);
-        border-color: #ff00ff;
-      }
-      .holo-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-      @keyframes avatarPulse {
-        0%, 100% { box-shadow: 0 0 40px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.1); }
-        50% { box-shadow: 0 0 80px rgba(255,0,255,0.3), inset 0 0 40px rgba(255,0,255,0.1); }
-      }
-
-      .holo-music {
-        position: absolute;
-        top: -24px;
-        right: -14px;
-        background: rgba(0,10,25,0.8);
-        border: 1px solid rgba(255,0,255,0.3);
-        color: #ff00ff;
-        border-radius: 50%;
-        width: 48px;
-        height: 48px;
-        cursor: pointer;
-        font-size: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 30px rgba(255,0,255,0.15);
-        transition: all 0.4s;
-        z-index: 3;
-      }
-      .holo-music:hover { transform: scale(1.15) rotate(10deg); border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 60px rgba(0,240,255,0.3); }
-
-      .holo-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        background: rgba(0,0,0,0.4);
-        padding: 6px 18px;
-        border-radius: 40px;
-        border: 1px solid rgba(0,240,255,0.15);
-        backdrop-filter: blur(6px);
-        margin: 0 auto 12px;
-        letter-spacing: 2px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-family: 'Orbitron', sans-serif;
-      }
-      .holo-badge-dot {
-        width: 8px; height: 8px;
-        background: #00f0ff;
-        border-radius: 50%;
-        box-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
-        animation: dotPulse 1.5s infinite;
-      }
-      @keyframes dotPulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.8); }
-      }
-
-      .holo-title {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 34px;
-        font-weight: 900;
-        text-align: center;
-        background: linear-gradient(135deg, #00f0ff, #ff00ff, #00f0ff);
-        background-size: 300% 300%;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: gradShift 4s ease infinite;
-        letter-spacing: 4px;
-        margin: 0 0 2px;
-        text-shadow: 0 0 40px rgba(0,240,255,0.2);
-      }
-      @keyframes gradShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-
-      .holo-quote {
-        font-size: 15px;
-        font-weight: 500;
-        color: #90b8d0;
-        text-align: center;
-        min-height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 10px;
-        margin: 4px 0 10px;
-        border-top: 1px solid rgba(0,240,255,0.06);
-        border-bottom: 1px solid rgba(0,240,255,0.06);
-        padding: 8px 0;
-        font-style: italic;
-      }
-
-      .holo-input-wrap {
-        position: relative;
-        width: 100%;
-        margin: 12px 0 16px;
-      }
-      .holo-input {
-        width: 100%;
-        padding: 16px 90px 16px 24px;
-        background: rgba(0,0,0,0.5);
-        border: 1px solid rgba(0,240,255,0.15);
-        border-radius: 40px;
-        color: #e0f0ff;
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 16px;
-        font-weight: 600;
-        outline: none;
-        backdrop-filter: blur(6px);
-        transition: all 0.3s;
-        letter-spacing: 1px;
-      }
-      .holo-input:focus {
-        border-color: #ff00ff;
-        box-shadow: 0 0 60px rgba(255,0,255,0.15), inset 0 0 20px rgba(255,0,255,0.05);
-        background: rgba(0,0,0,0.7);
-      }
-      .holo-input::placeholder { color: rgba(255,255,255,0.2); letter-spacing: 1px; }
-      .holo-input:disabled {
-        background: rgba(255,215,0,0.04);
-        color: #ffd700;
-        border-color: #ffd700;
-        text-align: center;
-        -webkit-text-fill-color: #ffd700;
-      }
-
-      .holo-actions {
-        position: absolute;
-        right: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        display: flex;
-        gap: 4px;
-        z-index: 5;
-      }
-      .holo-icon-btn {
-        background: rgba(0,0,0,0.3);
-        border: 1px solid rgba(0,240,255,0.08);
-        border-radius: 50%;
-        width: 34px; height: 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        cursor: pointer;
-        color: #70b0d0;
-        transition: all 0.25s;
-      }
-      .holo-icon-btn:hover {
-        background: rgba(0,240,255,0.1);
-        border-color: #00f0ff;
-        color: #fff;
-        transform: scale(1.1);
-        box-shadow: 0 0 30px rgba(0,240,255,0.15);
-      }
-
-      .holo-btn-primary {
-        width: 100%;
-        padding: 18px;
-        border: none;
-        border-radius: 40px;
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        font-size: 15px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        cursor: pointer;
-        background: linear-gradient(135deg, #00f0ff, #ff00ff);
-        color: #000;
-        box-shadow: 0 0 50px rgba(0,240,255,0.2);
-        transition: all 0.3s;
-        position: relative;
-        overflow: hidden;
-      }
-      .holo-btn-primary:hover {
-        transform: scale(1.02) translateY(-3px);
-        box-shadow: 0 0 80px rgba(0,240,255,0.4);
-        filter: brightness(1.1);
-      }
-      .holo-btn-primary:active { transform: scale(0.98); }
-
-      .holo-btn-secondary {
-        width: 100%;
-        padding: 14px;
-        border-radius: 40px;
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        letter-spacing: 1px;
-        cursor: pointer;
-        background: rgba(0,0,0,0.3);
-        border: 1px solid rgba(0,240,255,0.1);
-        color: #90b8d0;
-        transition: all 0.3s;
-        text-align: center;
-      }
-      .holo-btn-secondary:hover {
-        background: rgba(0,240,255,0.06);
-        border-color: #00f0ff;
-        color: #fff;
-        box-shadow: 0 0 30px rgba(0,240,255,0.05);
-      }
-
-      .holo-status {
-        margin-top: 18px;
-        font-size: 11px;
-        font-weight: 600;
-        color: #00f0ff;
-        font-family: 'Orbitron', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        padding: 8px 16px;
-        border-radius: 40px;
-        border: 1px solid rgba(0,240,255,0.06);
-        background: rgba(0,0,0,0.2);
-        text-align: center;
-        opacity: 0.8;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-
-      .holo-timer {
-        font-size: 13px;
-        font-weight: 700;
-        color: #ffdd00;
-        margin-top: 8px;
-        display: none;
-        background: rgba(255,215,0,0.04);
-        padding: 6px 14px;
-        border-radius: 40px;
-        border: 1px solid rgba(255,215,0,0.08);
-        text-align: center;
-        transition: all 0.3s;
-      }
-
-      .holo-menu-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 8px;
-        width: 100%;
-      }
-      .holo-menu-btn {
-        padding: 16px;
-        border-radius: 40px;
-        border: none;
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        cursor: pointer;
-        transition: all 0.3s;
-        background: rgba(0,0,0,0.3);
-        border: 1px solid rgba(0,240,255,0.08);
-        color: #b0d0e0;
-        text-align: center;
-        width: 100%;
-        position: relative;
-        overflow: hidden;
-      }
-      .holo-menu-btn::before {
-        content: '';
-        position: absolute;
-        top: -50%; left: -50%;
-        width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(0,240,255,0.05) 0%, transparent 60%);
-        opacity: 0;
-        transition: opacity 0.5s;
-      }
-      .holo-menu-btn:hover { transform: scale(1.02); border-color: #00f0ff; color: #fff; box-shadow: 0 0 40px rgba(0,240,255,0.05); }
-      .holo-menu-btn:hover::before { opacity: 1; }
-      .holo-menu-btn.aincrad { border-color: rgba(120,80,255,0.3); }
-      .holo-menu-btn.aincrad:hover { border-color: #7850ff; box-shadow: 0 0 60px rgba(120,80,255,0.2); }
-      .holo-menu-btn.proxy { border-color: rgba(0,85,255,0.3); }
-      .holo-menu-btn.proxy:hover { border-color: #0055ff; box-shadow: 0 0 60px rgba(0,85,255,0.2); }
-      .holo-menu-btn.vipteam { border-color: rgba(255,0,234,0.3); }
-      .holo-menu-btn.vipteam:hover { border-color: #ff00ea; box-shadow: 0 0 60px rgba(255,0,234,0.2); }
-      .holo-menu-btn.universal { border-color: rgba(0,204,136,0.3); }
-      .holo-menu-btn.universal:hover { border-color: #00cc88; box-shadow: 0 0 60px rgba(0,204,136,0.2); }
-      .holo-menu-btn.premium-gold { border-color: #ffd700; color: #ffd700; }
-      .holo-menu-btn.premium-gold:hover { border-color: #ffd700; box-shadow: 0 0 80px rgba(255,215,0,0.2); }
-
-      .holo-speed-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 8px;
-        width: 100%;
-      }
-      .holo-speed-btn {
-        padding: 16px;
-        border-radius: 40px;
-        border: 1px solid rgba(255,255,255,0.04);
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        cursor: pointer;
-        transition: all 0.3s;
-        background: rgba(0,0,0,0.2);
-        color: #b0d0e0;
-        text-align: center;
-        width: 100%;
-      }
-      .holo-speed-btn:hover { transform: scale(1.02); background: rgba(0,0,0,0.4); }
-      .holo-speed-btn.fast { border-color: rgba(0,255,136,0.2); color: #00ff88; }
-      .holo-speed-btn.fast:hover { border-color: #00ff88; box-shadow: 0 0 60px rgba(0,255,136,0.1); }
-      .holo-speed-btn.secure { border-color: rgba(255,215,0,0.2); color: #ffd700; }
-      .holo-speed-btn.secure:hover { border-color: #ffd700; box-shadow: 0 0 60px rgba(255,215,0,0.1); }
-      .holo-speed-btn.slow { border-color: rgba(255,0,85,0.2); color: #ff0055; }
-      .holo-speed-btn.slow:hover { border-color: #ff0055; box-shadow: 0 0 60px rgba(255,0,85,0.1); }
-
-      .holo-back {
-        position: absolute;
-        top: 8px; left: 8px;
-        background: rgba(0,0,0,0.3);
-        border: 1px solid rgba(0,240,255,0.08);
-        border-radius: 50%;
-        width: 36px; height: 36px;
-        color: #70b0d0;
-        font-size: 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.25s;
-        z-index: 10;
-      }
-      .holo-back:hover { background: rgba(0,240,255,0.1); border-color: #00f0ff; color: #fff; }
-
-      .holo-uni-input {
-        width: 100%;
-        padding: 16px 24px;
-        border-radius: 40px;
-        border: 1px solid rgba(0,240,255,0.1);
-        background: rgba(0,0,0,0.4);
-        color: #e0f0ff;
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 15px;
-        margin-bottom: 20px;
-        outline: none;
-        transition: all 0.3s;
-      }
-      .holo-uni-input:focus { border-color: #00cc88; box-shadow: 0 0 40px rgba(0,204,136,0.1); }
-
-      .holo-loader-overlay {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(20px);
-        z-index: 2147483647;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: 'Orbitron', sans-serif;
-      }
-      .holo-loader-card {
-        background: rgba(0,10,25,0.8);
-        border: 2px solid rgba(0,240,255,0.2);
-        border-radius: 40px;
-        padding: 50px 40px;
-        width: min(420px, 90vw);
-        text-align: center;
-        box-shadow: 0 0 120px rgba(0,240,255,0.05), inset 0 0 60px rgba(0,240,255,0.02);
-        position: relative;
-        overflow: hidden;
-      }
-      .holo-loader-spinner {
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 30px;
-        position: relative;
-        border-radius: 50%;
-        border: 4px solid transparent;
-        border-top: 4px solid #00f0ff;
-        border-right: 4px solid #ff00ff;
-        border-bottom: 4px solid #00f0ff;
-        animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        box-shadow: 0 0 60px rgba(0,240,255,0.2);
-      }
-      .holo-loader-spinner::after {
-        content: '';
-        position: absolute;
-        top: 6px; left: 6px;
-        right: 6px; bottom: 6px;
-        border-radius: 50%;
-        border: 3px solid transparent;
-        border-left: 3px solid #ff00ff;
-        border-bottom: 3px solid #00f0ff;
-        animation: spin 0.8s linear infinite reverse;
-      }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-
-      .holo-loader-text {
-        color: #e0f0ff;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        margin: 0 0 10px;
-        text-shadow: 0 0 20px rgba(0,240,255,0.3);
-      }
-      .holo-loader-progress {
-        width: 100%;
-        height: 6px;
-        background: rgba(0,240,255,0.1);
-        border-radius: 10px;
-        overflow: hidden;
-        margin: 10px 0 16px;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-      }
-      .holo-loader-progress-bar {
-        height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, #00f0ff, #ff00ff);
-        border-radius: 10px;
-        transition: width 0.3s ease;
-        box-shadow: 0 0 30px rgba(0,240,255,0.3);
-      }
-      .holo-loader-percent {
-        font-size: 14px;
-        color: #90b8d0;
-        letter-spacing: 2px;
-        font-weight: 600;
-      }
-      .holo-loader-sub {
-        color: #70b0d0;
-        font-size: 13px;
-        margin-top: 6px;
-        opacity: 0.6;
-      }
-
-      .holo-biodata {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        border-radius: 32px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 999;
-        opacity: 0;
-        pointer-events: none;
-        transform: scale(0.95) translateY(20px);
-        transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-        padding: 40px 28px;
-        background: rgba(0,8,20,0.92);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        border-radius: 32px;
-      }
-      .holo-biodata.active {
-        opacity: 1;
-        pointer-events: auto;
-        transform: scale(1) translateY(0);
-      }
-      .holo-biodata-title {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 22px;
-        font-weight: 700;
-        color: #00f0ff;
-        text-shadow: 0 0 30px rgba(0,240,255,0.3);
-        margin: 0 0 20px;
-        letter-spacing: 2px;
-      }
-      .holo-biodata-card {
-        width: 100%;
-        background: rgba(0,0,0,0.4);
-        border: 1px solid rgba(0,240,255,0.06);
-        padding: 20px 24px;
-        border-radius: 20px;
-        font-size: 15px;
-        line-height: 2.2;
-        color: #b0d0e0;
-      }
-      .holo-biodata-card strong { color: #ff00ff; }
-      .holo-bio-close {
-        width: 100%;
-        background: rgba(255,0,85,0.06);
-        color: #ff0055;
-        border: 1px solid rgba(255,0,85,0.1);
-        padding: 16px;
-        border-radius: 40px;
-        font-family: 'Orbitron', sans-serif;
-        font-weight: 700;
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        cursor: pointer;
-        margin-top: 24px;
-        transition: all 0.3s;
-      }
-      .holo-bio-close:hover { background: rgba(255,0,85,0.12); border-color: rgba(255,0,85,0.3); }
-
-      @media (max-width: 480px) {
-        #lukyy-auth { padding: 16px 12px 12px; width: 96vw; }
-        .holo-title { font-size: 22px; letter-spacing: 2px; }
-        .holo-input { font-size: 14px; padding: 14px 80px 14px 16px; }
-        .holo-btn-primary, .holo-btn-secondary { font-size: 13px; padding: 14px; }
-        .holo-avatar { width: 44px; height: 44px; top: -16px; left: -16px; }
-        .holo-music { width: 36px; height: 36px; font-size: 14px; top: -16px; right: -8px; }
-        .holo-badge { font-size: 9px; padding: 4px 12px; }
-        .holo-quote { font-size: 13px; min-height: 32px; }
-        .holo-menu-btn, .holo-speed-btn { font-size: 12px; padding: 12px; }
-        .holo-loader-card { padding: 30px 20px; }
-        .holo-loader-spinner { width: 80px; height: 80px; }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // --- HTML ---
-    const quote = CONFIG.quotesList[Math.floor(Math.random() * CONFIG.quotesList.length)];
-    const panel = document.createElement("div");
-    panel.id = "lukyy-auth";
-    panel.innerHTML = `
-      <div class="panel-content">
-        <div class="holo-avatar" id="profile-trigger" title="Lihat Biodata Owner">
-          <img src="https://raw.githubusercontent.com/Lukigays/ain/main/avatar.jpg" alt="Profile" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=lukyyplr'">
-        </div>
-        <button class="holo-music" id="music-btn" title="Putar/Jeda/Skip Musik">🔇</button>
-
-        <div style="text-align:center; margin-top:14px;">
-          <div class="holo-badge" id="system-badge">
-            <span class="holo-badge-dot" id="badge-dot"></span>
-            <span class="holo-badge-text" id="badge-text">SYSTEM STANDBY</span>
-          </div>
-          <h1 class="holo-title">LUKYYPLR</h1>
-          <div class="holo-quote">${quote}</div>
-          <div id="premium-timer-info" class="holo-timer"></div>
-        </div>
-
-        <div id="auth-form-area">
-          <div class="holo-input-wrap">
-            <input type="password" id="key-input" class="holo-input" placeholder="✦ INSERT ACCESS KEY ✦" autocomplete="off">
-            <div class="holo-actions">
-              <button id="toggle-visibility-btn" class="holo-icon-btn" title="Tampilkan/Sembunyikan Key">👁</button>
-              <button id="auto-paste-btn" class="holo-icon-btn" title="Tempel dari Clipboard">📋</button>
-            </div>
-          </div>
-          <div id="interactive-area" style="margin-bottom:12px;">
-            <button id="login-btn" class="holo-btn-primary">⚡ UNLOCK</button>
-          </div>
-        </div>
-
-        <button id="support-btn" class="holo-btn-secondary" title="Gabung Grup Telegram">💬 JOIN TELEGRAM</button>
-        <div id="status-msg" class="holo-status">
-          <span>⚙️ WONG_PUSAT_STANDBY · API @A2MBD3</span>
-        </div>
-      </div>
-
-      <div id="biodata-panel" class="holo-biodata">
-        <h4 class="holo-biodata-title">◈ OWNER BIODATA ◈</h4>
-        <div class="holo-biodata-card">
-          <div>📌 <strong>Nama:</strong> Luki / Lukyyplr</div>
-          <div>🌐 <strong>Linktree:</strong> https://linktr.ee/lukyycuyy</div>
-          <div>💻 <strong>Project:</strong> Bypass Key System</div>
-          <div>💬 <strong>Status:</strong> Wong Pusat Standby 🔥</div>
-        </div>
-        <button id="close-biodata-btn" class="holo-bio-close">✖ CLOSE</button>
-      </div>
-    `;
-    document.body.appendChild(panel);
-
-    // ============================================================
-    // IntersectionObserver untuk menjeda visualizer & partikel
-    // ============================================================
-    const panelElement = document.getElementById("lukyy-auth");
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        isPanelVisible = entry.isIntersecting;
-        if (!isPanelVisible) {
-          isReactive = false;
-        } else {
-          isReactive = true;
-        }
-      });
-    }, { threshold: 0.1 });
-    observer.observe(panelElement);
-
-    // --- ELEMENTS ---
-    const musicBtn = document.getElementById("music-btn");
-    const keyInput = document.getElementById("key-input");
-    const loginBtn = document.getElementById("login-btn");
-    const supportBtn = document.getElementById("support-btn");
-    const statusMsg = document.getElementById("status-msg");
-    const profileTrigger = document.getElementById("profile-trigger");
-    const biodataPanel = document.getElementById("biodata-panel");
-    const closeBiodataBtn = document.getElementById("close-biodata-btn");
-    const autoPasteBtn = document.getElementById("auto-paste-btn");
-    const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
-
-    // --- EVENTS ---
-    profileTrigger.addEventListener("click", () => biodataPanel.classList.add("active"));
-    closeBiodataBtn.addEventListener("click", () => biodataPanel.classList.remove("active"));
-
-    musicBtn.addEventListener("click", () => {
+      
+      musicBtn.classList.remove('metered');
+      musicBtn.style.color = "var(--text-color)";
+      
       if (!audioPlayer) {
-        playRandomMusic();
-        musicBtn.textContent = "🎵";
-        return;
-      }
-      if (audioPlayer.paused) {
-        audioPlayer.play().catch(() => {});
-        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-        musicBtn.textContent = "🎵";
-        isMusicPlaying = true;
+        musicBtn.textContent = "♪";
+        musicBtn.style.boxShadow = "3px 3px 6px var(--emboss-shadow),-3px -3px 6px var(--emboss-light)";
+        musicBtn.title = "Play music";
+      } else if (audioPlayer.paused) {
+        musicBtn.textContent = "✕";
+        musicBtn.style.boxShadow = "inset 3px 3px 6px var(--emboss-shadow),inset -3px -3px 6px var(--emboss-light)";
+        musicBtn.title = "Music paused - Click to play";
       } else {
-        audioPlayer.pause();
-        musicBtn.textContent = "🔇";
-        isMusicPlaying = false;
+        musicBtn.textContent = "♪";
+        musicBtn.style.boxShadow = "3px 3px 6px var(--emboss-shadow),-3px -3px 6px var(--emboss-light)";
+        musicBtn.title = "Music playing - Click to pause";
       }
-    });
-
-    supportBtn.addEventListener("click", () => window.open(CONFIG.telegramUrl, "_blank"));
-
-    toggleVisibilityBtn.addEventListener("click", () => {
-      if (keyInput.type === "password") {
-        keyInput.type = "text";
-        toggleVisibilityBtn.textContent = "🙈";
-        toggleVisibilityBtn.title = "Sembunyikan Key";
-        if (userTier === "premium") keyInput.value = "👑 VIP: " + rawPremiumKey;
-      } else {
-        keyInput.type = "password";
-        toggleVisibilityBtn.textContent = "👁️";
-        toggleVisibilityBtn.title = "Lihat Key";
-        if (userTier === "premium") keyInput.value = rawPremiumKey;
-      }
-    });
-
-    autoPasteBtn.addEventListener("click", async () => {
-      try {
-        const text = await navigator.clipboard.readText();
-        if (text) {
-          keyInput.value = text.trim();
-          statusMsg.innerHTML = `
-            <span>📋 Key di-paste, siap gas!</span>
-          `;
-          statusMsg.style.color = "#00f0ff";
-        } else {
-          statusMsg.innerHTML = `
-            <span>📭 Clipboard kosong, Cuy</span>
-          `;
-          statusMsg.style.color = "#ff8c00";
-        }
-      } catch (err) {
-        statusMsg.innerHTML = `
-          <span>🛑 Izin clipboard ditolak browser</span>
-        `;
-        statusMsg.style.color = "#ff0055";
-      }
-    });
-
-    // --- UI FUNCTIONS ---
-    function lockDashboard(formattedWIB, expiry) {
-      const keyInput = document.getElementById("key-input");
-      const autoPasteBtn = document.getElementById("auto-paste-btn");
-      const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
-      const interactiveArea = document.getElementById("interactive-area");
-      const timerInfo = document.getElementById("premium-timer-info");
-
-      if (keyInput) {
-        keyInput.type = "password";
-        keyInput.value = rawPremiumKey;
-        keyInput.disabled = true;
-        if (userTier === "premium") {
-          keyInput.style.cssText += "background: rgba(255,215,0,0.04) !important; color: #ffd700 !important; border-color: #ffd700 !important;";
-        } else {
-          keyInput.style.cssText += "background: rgba(0,240,255,0.04) !important; color: #00f0ff !important; border-color: #00f0ff !important;";
-        }
-        if (toggleVisibilityBtn) { toggleVisibilityBtn.textContent = "👁️"; toggleVisibilityBtn.title = "Lihat Key"; }
-      }
-      if (autoPasteBtn) autoPasteBtn.remove();
-      if (timerInfo) {
-        timerInfo.innerText = `⏳ EXPIRED: ${formattedWIB}`;
-        timerInfo.style.display = "block";
-        if (userTier !== "premium") {
-          timerInfo.style.color = "#00f0ff";
-          timerInfo.style.background = "rgba(0,240,255,0.04)";
-          timerInfo.style.borderColor = "rgba(0,240,255,0.08)";
-        }
-        // Mulai countdown jika ada expiry timestamp valid
-        if (expiry && expiry !== 'permanent' && !isNaN(expiry)) {
-          startExpiryCountdown(Number(expiry), () => {
-            // Callback expired: logout dan reset
-            localStorage.removeItem("lukyy_saved_key");
-            userTier = "biasa";
-            if (document.getElementById("lukyy-auth")) {
-              document.getElementById("lukyy-auth").remove();
-              buildMainPanel();
-            } else {
-              location.reload();
-            }
-          });
-        }
-      }
-
-      if (interactiveArea) {
-        const btnClass = userTier === "premium" ? "holo-menu-btn premium-gold" : "holo-menu-btn aincrad";
-        interactiveArea.innerHTML = `<button id="open-aincrad-btn" class="${btnClass}" style="width:100%;">🏰 Access Menu Bypass</button>`;
-        document.getElementById("open-aincrad-btn").addEventListener("click", () => {
-          if (userTier === "premium") showMainMenu();
-          else triggerExecution(60, "2");
-        });
-      }
-    }
-
-    // ============================================================
-    // Fungsi untuk animasi transisi panel
-    // ============================================================
-    function animatePanelTransition(container, newHTML, callback) {
-      container.classList.add('panel-slide-out');
-      setTimeout(() => {
-        container.innerHTML = newHTML;
-        container.classList.remove('panel-slide-out');
-        container.classList.add('panel-slide-in');
-        if (callback) callback();
-      }, 350);
-    }
-
-    function showMainMenu() {
-      isReactive = false;
-      const container = document.querySelector(".panel-content");
-      if (!container) return;
-
-      const newHTML = `
-        <div style="position:relative; width:100%;">
-          <button id="mini-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;" title="Kembali ke Panel Utama">❮</button>
-          <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:24px; font-weight:700; color:#00f0ff; text-align:center; text-shadow:0 0 30px rgba(0,240,255,0.3); letter-spacing:2px;">COMMAND CENTER</h3>
-          <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Pilih target eksekusi</p>
-          <div class="holo-menu-grid">
-            <button class="holo-menu-btn aincrad" data-target="2" title="Aincrad Protocol">🏰 Aincrad Protocol</button>
-            <button class="holo-menu-btn proxy" data-target="1" title="Aincrad Proxy">🌐 Aincrad Proxy</button>
-            <button class="holo-menu-btn vipteam" data-target="vp" title="VIP Team Bypass">💎 VIP Team Byps</button>
-            <button class="holo-menu-btn universal" data-target="uni_vp" title="Universal Vplink">🌍 Universal Vplink</button>
-          </div>
-        </div>
-      `;
-
-      animatePanelTransition(container, newHTML, () => {
-        document.getElementById("mini-back-btn").addEventListener("click", () => location.reload());
-
-        container.querySelectorAll(".holo-menu-btn").forEach(btn => {
-          btn.addEventListener("click", (e) => {
-            const target = btn.dataset.target;
-            if (target === "uni_vp") showUniversalPanel();
-            else {
-              if (userTier === "premium") showSpeedPanel(target);
-              else triggerExecution(60, target);
-            }
-          });
-        });
-      });
-    }
-
-    function showUniversalPanel() {
-      const container = document.querySelector(".panel-content");
-      if (!container) return;
-
-      const newHTML = `
-        <div style="position:relative; width:100%;">
-          <button id="uni-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;" title="Kembali ke Menu Utama">❮</button>
-          <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:22px; font-weight:700; color:#00cc88; text-align:center; text-shadow:0 0 30px rgba(0,204,136,0.3); letter-spacing:2px;">UNIVERSAL VPLINK</h3>
-          <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Paste link vplink.in</p>
-          <input type="text" id="uni-vplink-input" class="holo-uni-input" placeholder="https://vplink.in/xxxxx">
-          <button id="uni-submit-btn" class="holo-menu-btn universal" style="width:100%;">🔥 Execute</button>
-          <p id="uni-error-msg" style="color:#ff0055; font-size:13px; margin-top:16px; display:none; font-weight:700; text-align:center;"></p>
-        </div>
-      `;
-
-      animatePanelTransition(container, newHTML, () => {
-        document.getElementById("uni-back-btn").addEventListener("click", showMainMenu);
-
-        const input = document.getElementById("uni-vplink-input");
-        input.addEventListener("focus", () => {
-          input.style.borderColor = "#00cc88";
-          input.style.boxShadow = "0 0 40px rgba(0,204,136,0.15)";
-        });
-        input.addEventListener("blur", () => {
-          input.style.borderColor = "rgba(0,240,255,0.1)";
-          input.style.boxShadow = "none";
-        });
-
-        document.getElementById("uni-submit-btn").addEventListener("click", () => {
-          const val = input.value.trim();
-          const err = document.getElementById("uni-error-msg");
-          if (!val.includes("vplink.in")) {
-            err.innerText = "Target invalid! Kudu vplink.in cuy.";
-            err.style.display = "block";
-            input.style.borderColor = "#ff0055";
-            return;
-          }
-          const vpKey = extractVpKey(val);
-          if (!vpKey) {
-            err.innerText = "Gagal ekstrak key, cek format link.";
-            err.style.display = "block";
-            input.style.borderColor = "#ff0055";
-            return;
-          }
-          if (userTier === "premium") showSpeedPanel("uni_vp", vpKey);
-          else triggerExecution(60, "uni_vp", vpKey);
-        });
-      });
-    }
-
-    function showSpeedPanel(targetType, customVpKey = null) {
-      const container = document.querySelector(".panel-content");
-      if (!container) return;
-
-      const newHTML = `
-        <div style="position:relative; width:100%;">
-          <button id="speed-back-btn" class="holo-back" style="position:absolute; top:8px; left:8px;" title="Kembali ke Menu Utama">❮</button>
-          <h3 style="margin:20px 0 6px; font-family:'Orbitron',sans-serif; font-size:22px; font-weight:700; color:#ffd700; text-align:center; text-shadow:0 0 30px rgba(255,215,0,0.3); letter-spacing:2px;">VELOCITY SPEED</h3>
-          <p style="font-size:14px; margin-bottom:20px; text-align:center; font-weight:500; color:#90b8d0;">Atur kecepatan injeksi</p>
-          <div class="holo-speed-grid">
-            <button class="holo-speed-btn fast" data-sec="20" title="Kecepatan tinggi">💨 FAST</button>
-            <button class="holo-speed-btn secure" data-sec="30" title="Seimbang">🛡️ SECURE</button>
-            <button class="holo-speed-btn slow" data-sec="45" title="Kecepatan rendah">🐌 SLOW</button>
-          </div>
-        </div>
-      `;
-
-      animatePanelTransition(container, newHTML, () => {
-        document.getElementById("speed-back-btn").addEventListener("click", showMainMenu);
-
-        container.querySelectorAll(".holo-speed-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const sec = parseInt(btn.dataset.sec, 10);
-            triggerExecution(sec, targetType, customVpKey);
-          });
-        });
-      });
-    }
-
-    // ============================================================
-    // TRIGGER EXECUTION
-    // ============================================================
-    async function triggerExecution(seconds, targetType, customVpKey = null) {
-      const panel = document.getElementById("lukyy-auth");
-      if (panel) panel.remove();
-
-      const overlay = document.createElement("div");
-      overlay.className = "holo-loader-overlay";
-      overlay.id = "lukyy-countdown";
-
-      overlay.innerHTML = `
-        <div class="holo-loader-card">
-          <div class="holo-loader-spinner"></div>
-          <div class="holo-loader-text" id="loader-status">EXECUTING</div>
-          <div class="holo-loader-progress">
-            <div class="holo-loader-progress-bar" id="loader-progress-bar"></div>
-          </div>
-          <div class="holo-loader-percent" id="loader-percent">0%</div>
-          <div class="holo-loader-sub" id="loader-sub">Initializing...</div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-
-      if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-
-      const statusEl = document.getElementById("loader-status");
-      const progressBar = document.getElementById("loader-progress-bar");
-      const percentEl = document.getElementById("loader-percent");
-      const subEl = document.getElementById("loader-sub");
-
-      let vpKey = customVpKey;
-      let apiType = targetType;
-
-      if (targetType === "vp" || targetType === "pc" || targetType === "uni_vp") apiType = "vp";
-
-      if (targetType === "vp") {
-        statusEl.innerText = "🔍 SCANNING TARGET";
-        subEl.innerText = "Mencari vplink.in di halaman...";
-        const vpUrl = extractVpLinkUrl();
-        if (vpUrl) {
-          vpKey = extractVpKey(vpUrl);
-          subEl.innerText = `✅ Key ditemukan: ${vpKey.substring(0,8)}...`;
-        } else {
-          subEl.innerText = "❌ Tidak ditemukan vplink.in!";
-        }
-      } else if (targetType === "pc") {
-        statusEl.innerText = "🔍 SCANNING";
-        subEl.innerText = "Mencari PowerCheats...";
-        const vpUrl = extractPowerCheatsUrl();
-        if (vpUrl) {
-          vpKey = extractVpKey(vpUrl);
-          subEl.innerText = `✅ Key ditemukan: ${vpKey.substring(0,8)}...`;
-        } else {
-          subEl.innerText = "❌ Tidak ditemukan PowerCheats!";
-        }
-      } else if (targetType === "uni_vp") {
-        statusEl.innerText = "📡 PARSING";
-        subEl.innerText = `Memproses link...`;
-        if (vpKey) subEl.innerText = `✅ Key: ${vpKey.substring(0,8)}...`;
-      }
-
-      if ((targetType === "vp" || targetType === "pc" || targetType === "uni_vp") && !vpKey) {
-        statusEl.innerText = "❌ TARGET NOT FOUND";
-        progressBar.style.width = "100%";
-        progressBar.style.background = "#ff0055";
-        percentEl.innerText = "FAILED";
-        subEl.innerText = "Tidak ditemukan vplink.in di halaman ini";
-        playSound('error');
-        setTimeout(() => {
-          overlay.remove();
-          document.body.appendChild(panel);
-          showMainMenu();
-        }, 3500);
+    };
+    
+    updateMusicBtnAppearance();
+    
+    musicBtn.addEventListener("click", () => {
+      if (!shouldPlayMusic()) {
+        musicUserEnabled = true;
+        DBG.log('MUSIC', 'User manually enabled music on metered connection');
+        showToast("🎵 Music enabled (mobile data)");
+        initAudioConditionally();
+        updateMusicBtnAppearance();
+        updateTrackDisplay();
         return;
       }
-
-      let finalUrl = CONFIG.fallbackRedirectUrl;
-      statusEl.innerText = "📡 MENGHUBUNGI SERVER";
-      subEl.innerText = "Mengambil link bypass...";
-      fetchDestination(apiType, 1, vpKey).then(url => {
-        finalUrl = url;
-        subEl.innerText = "✅ Link berhasil didapatkan!";
-      }).catch(() => {
-        subEl.innerText = "⚠️ Gagal fetch, pakai fallback...";
-      });
-
-      const totalSteps = seconds;
-      let currentStep = 0;
-      const interval = 1000;
-
-      const timer = setInterval(() => {
-        currentStep++;
-        const progress = Math.min((currentStep / totalSteps) * 100, 100);
-        progressBar.style.width = progress + "%";
-        percentEl.innerText = Math.round(progress) + "%";
-
-        if (currentStep >= totalSteps) {
-          clearInterval(timer);
-          progressBar.style.width = "100%";
-          percentEl.innerText = "100%";
-          statusEl.innerText = "✅ SUCCESS";
-          statusEl.style.color = "#00ff88";
-          subEl.innerText = "Bypass berhasil, mengarahkan...";
-          playSound('bypass_done');
-          setTimeout(() => {
-            overlay.remove();
-            redirectTo(finalUrl);
-          }, 1200);
-        } else {
-          const dots = ".".repeat((currentStep % 3) + 1);
-          subEl.innerText = `⏳ Memproses${dots} (${currentStep}/${totalSteps}s)`;
-        }
-      }, interval);
-
-      statusEl.innerText = "⚡ EXECUTING";
-    }
-
-    // ============================================================
-    // VERIFY KEY - dengan Cache
-    // ============================================================
-    async function verifyKey(rawKey, isAuto = false) {
-      const clean = rawKey.trim();
-      rawPremiumKey = clean;
-      const cacheKey = clean;
-
-      if (apiCache[cacheKey] && Date.now() - apiCache[cacheKey].timestamp < 300000) {
-        processVerificationResult(apiCache[cacheKey].data);
-        return;
+      
+      if (!audioPlayer) { 
+        initAudioConditionally(); 
+        updateMusicBtnAppearance();
+        return; 
       }
-
-      try {
-        const url = `${CONFIG.keyUrl}?key=${encodeURIComponent(clean)}`;
-        const resp = await fetch(url);
-        const result = await resp.json();
-
-        if (resp.ok && result.status === "success") {
-          apiCache[cacheKey] = { data: result, timestamp: Date.now() };
-          processVerificationResult(result);
-        } else {
-          delete apiCache[cacheKey];
-          localStorage.removeItem("lukyy_saved_key");
-          statusMsg.innerHTML = `<span>❌ ${result.message || 'Key Invalid / Expired!'}</span>`;
-          statusMsg.style.color = "#ff0055";
-          statusMsg.style.borderColor = "rgba(255,0,85,0.12)";
-          statusMsg.style.background = "rgba(255,0,85,0.03)";
-          // Izinkan user mencoba key lain tanpa refresh halaman.
-          loginBtn.disabled = false;
-          supportBtn.disabled = false;
-          playSound('error');
-          if (keyInput) {
-            keyInput.classList.add("shake-error");
-            setTimeout(() => keyInput.classList.remove("shake-error"), 500);
-          }
-        }
-      } catch (err) {
-        console.error("[✗] API error:", err);
-        statusMsg.innerHTML = `<span>❌ SERVER CONNECTION FAILED!</span>`;
-        statusMsg.style.color = "#ff0055";
-        // Error jaringan juga tidak boleh mengunci tombol selamanya.
-        loginBtn.disabled = false;
-        supportBtn.disabled = false;
-        playSound('error');
+      if (audioPlayer.paused) { 
+        audioPlayer.play().catch(()=>{}); 
+      } else { 
+        audioPlayer.pause(); 
       }
-    }
-
-    function processVerificationResult(result) {
-      userTier = result.type ? result.type.toLowerCase().trim() : "biasa";
-      localStorage.setItem("lukyy_saved_key", rawPremiumKey);
-      if (keyInput) keyInput.value = rawPremiumKey;
-
-      let formatted = "LIFETIME / PERMANENT";
-      let expiry = result.expiry;
-      if (expiry && expiry !== "permanent" && !isNaN(expiry)) {
-        const d = new Date(Number(expiry));
-        const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
-        formatted = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} | ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} WIB`;
-      }
-
-      if (userTier === "premium") {
-        document.getElementById("badge-text").innerText = "VIP ACTIVE";
-        document.getElementById("badge-dot").style.background = "#ffd700";
-        document.getElementById("badge-dot").style.boxShadow = "0 0 30px #ffd700, 0 0 60px #ffd700";
-        statusMsg.innerHTML = `
-          <span>👑 WONG PUSAT PRIVILEGE</span>
-        `;
-        statusMsg.style.color = "#ffd700";
-        statusMsg.style.borderColor = "rgba(255,215,0,0.15)";
-        statusMsg.style.background = "rgba(255,215,0,0.03)";
-        musicBtn.textContent = "⏭️";
-
-        playSound('success');
-        showHoloModal(
-          "👑 SEPUH DETECTED",
-          `Welcome back Wong Pusat!\n\nExpired: ${formatted}\n\n🚀 VIP FEATURES:\n• All-Access Menu Bypass\n• Velocity Speed Control\n• Premium Music Controller\n• Cyber-Gold Interface`,
-          "👑",
-          () => {
-            expiryTimestamp = expiry;
-            lockDashboard(formatted, expiryTimestamp);
-          }
-        );
-      } else {
-        statusMsg.innerHTML = `
-          <span>✅ STANDARD KEY OK!</span>
-        `;
-        statusMsg.style.color = "#00f0ff";
-        playSound('success');
-        showHoloModal(
-          "⚡ ACCESS GRANTED",
-          `Key Biasa Valid.\n\nExpired: ${formatted}\n\n🚀 Default Auto Redirect (60s)`,
-          "⚡",
-          () => {
-            expiryTimestamp = expiry;
-            lockDashboard(formatted, expiryTimestamp);
-          }
-        );
-      }
-    }
-
-    // --- LOGIN ---
-    loginBtn.addEventListener("click", async () => {
-      const val = keyInput.value.trim();
-      if (!val) {
-        statusMsg.innerHTML = `
-          <span>🛑 KEY KOSONG CUY!</span>
-        `;
-        statusMsg.style.color = "#ff0055";
-        playSound('error');
-        keyInput.classList.add("shake-error");
-        setTimeout(() => keyInput.classList.remove("shake-error"), 500);
-        return;
-      }
-      statusMsg.innerHTML = `
-        <span>⏳ Validating secure signature...</span>
-      `;
-      statusMsg.style.color = "#00f0ff";
-      loginBtn.disabled = supportBtn.disabled = true;
-
-      setTimeout(async () => {
-        try {
-          await verifyKey(val, false);
-        } catch (error) {
-          loginBtn.disabled = false;
-          supportBtn.disabled = false;
-        }
-      }, 1200);
+      updateMusicBtnAppearance();
     });
-
-    // --- AUTO LOAD ---
-    const saved = localStorage.getItem("lukyy_saved_key");
-    if (saved) {
-      keyInput.value = saved;
-      statusMsg.innerHTML = `
-        <span>💾 SAVED KEY LOADED. CLICK UNLOCK!</span>
-      `;
-      statusMsg.style.color = "#ff8c00";
-    }
-
-    // --- START PARTICLES ---
-    initCyberParticles();
   }
 
-  // ============================================================
-  // RUN
-  // ============================================================
-  buildMainPanel();
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function initShake() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (!window.DeviceMotionEvent) return;
+    if (typeof DeviceMotionEvent.requestPermission === "function") {
+      DeviceMotionEvent.requestPermission().then(p => { if (p === "granted") addShakeListener(); }).catch(() => {});
+    } else addShakeListener();
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function applySnowDrift(dx, dy) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const x = Math.max(-48, Math.min(48, dx));
+    const y = Math.max(-36, Math.min(36, dy));
+    document.querySelectorAll('.nb-overlay').forEach(ov => {
+      ov.style.setProperty('--snow-x', x.toFixed(1) + 'px');
+      ov.style.setProperty('--snow-y', y.toFixed(1) + 'px');
+    });
+  }
+
+  function addShakeListener() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    window.addEventListener("devicemotion", (e) => {
+      const a = e.accelerationIncludingGravity;
+      if (!a) return;
+      if (lastX === null) { lastX = a.x; lastY = a.y; lastZ = a.z; return; }
+      // Drift snow toward tilt / shake direction
+      if (a.x != null && a.y != null) {
+        applySnowDrift(-(a.x || 0) * 4.5, (a.y || 0) * 2.2);
+      }
+      if (Math.abs(a.x - lastX) + Math.abs(a.y - lastY) + Math.abs(a.z - lastZ) > 15 && !shakeTimeout) {
+        shakeTimeout = setTimeout(() => shakeTimeout = null, 1000);
+        nextTrackManual();
+      }
+      lastX = a.x; lastY = a.y; lastZ = a.z;
+    }, { passive: true });
+
+    // Continuous tilt parallax when available
+    window.addEventListener("deviceorientation", (e) => {
+      if (e.gamma == null && e.beta == null) return;
+      const gx = (e.gamma || 0); // left-right -90..90
+      const gy = (e.beta || 0);  // front-back
+      applySnowDrift(gx * 1.1, (gy - 45) * 0.55);
+    }, { passive: true });
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function showToast(msg) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const t = document.createElement("div");
+    t.textContent = msg;
+    t.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:2147483647;background:var(--bg-color);border:none;color:var(--text-color);padding:10px 24px;border-radius:14px;font-size:12px;font-weight:600;letter-spacing:1px;pointer-events:none;box-shadow:6px 6px 12px var(--emboss-shadow),-6px -6px 12px var(--emboss-light);animation:nb-toast-in 0.3s ease;font-family:'Segoe UI',Roboto,sans-serif;";
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity 0.3s"; setTimeout(() => t.remove(), 300); }, 1500);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function cleanupAll() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (autoInitTimeout) clearTimeout(autoInitTimeout);
+    if (banRedirectTimeout) clearTimeout(banRedirectTimeout);
+    if (initProgressRAF) cancelAnimationFrame(initProgressRAF);
+    if (exploitProgressRAF) cancelAnimationFrame(exploitProgressRAF);
+    if (fillerLogTimer) clearTimeout(fillerLogTimer);
+    logTimers.forEach(t => clearTimeout(t));
+    logTimers = [];
+    cancelFillerLogs();
+    stopLogQueue();
+  }
+
+  // ═══════════════════ EXPLOIT COMPLETE HANDLER ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function handleExploitComplete(url, overlayEl, isReal) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    if (isRedirecting) return;
+    // No fallback redirect — only leave on real success URL
+    if (!url || !isReal || (fetchResult && (fetchResult.isError || fetchResult.isFakeUrl))) {
+      DBG.log('REDIRECT', 'Skipped — error or empty URL (no fallback)');
+      isRedirecting = false;
+      queueLog('⏸', 'PANEL HELD — NO REDIRECT', '#ffa500', 'log-highlight');
+      return;
+    }
+    isRedirecting = true;
+    DBG.log('REDIRECT', 'Redirecting to: ' + String(url).substring(0, 60));
+
+    if (audioPlayer) { try { audioPlayer.pause(); } catch(e) {} }
+
+    if (overlayEl) {
+      overlayEl.style.transition = "opacity 0.4s";
+      overlayEl.style.opacity = "0";
+      setTimeout(() => { overlayEl.remove(); }, 400);
+    }
+
+    setTimeout(() => {
+      window.location.href = url;
+    }, 500);
+  }
+
+  // ═══════════════════ STATUS PANELS ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function showStatusPanel(icon, title, descLines, btnText, btnAction, countdown, isSuspended = false) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('UI', 'Showing panel: ' + title);
+    cleanupAll();
+    document.querySelector(".nb-overlay")?.remove();
+    injectStyles();
+    const ov = document.createElement("div");
+    ov.className = "nb-overlay";
+    const descHTML = Array.isArray(descLines) ? descLines.map(l => `<p class="nb-status-user" style="margin:2px 0;">${l}</p>`).join('') : `<p class="nb-subtitle">${descLines}</p>`;
+    
+    const iconClass = isSuspended ? "nb-suspended-icon" : "nb-status-icon";
+    const btnClass = isSuspended ? "nb-emboss-btn nb-unban-btn" : "nb-emboss-btn";
+    
+    const { wrapper } = createWrapper(`
+      <div class="${iconClass}">${icon}</div>
+      <h3 class="nb-title">${title}</h3>
+      ${descHTML}
+      ${btnText ? `<button class="${btnClass}" id="nb-status-btn" style="margin-top:14px;">${btnText}</button>` : ''}
+      ${countdown ? `<p style="color:var(--text-muted);font-size:10px;margin-top:12px;">Auto-redirect in <span id="nb-countdown" style="font-weight:700;">${countdown}</span>s</p>` : ''}
+      <p class="nb-footer" style="margin-top:12px;"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | 📳 Shake to change track 🎵</p>
+    `, "overflow-visible");
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+    if (btnText && btnAction) document.getElementById("nb-status-btn")?.addEventListener("click", btnAction);
+    if (countdown && btnAction) {
+      let cd = countdown;
+      const cdEl = document.getElementById("nb-countdown");
+      banRedirectTimeout = setInterval(() => { cd--; if (cdEl) cdEl.textContent = cd; if (cd <= 0) { clearInterval(banRedirectTimeout); btnAction(); } }, 1000);
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function showBanPanel() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    isBanned = true;
+    showStatusPanel("🚫", "ACCESS BANNED", ["USER: " + USER_DATA.name, "ID: " + USER_DATA.id, "Contact developer for access"], "⚡ DEVELOPER CHANNEL", () => window.open("https://t.me/HQcrx", "_blank"), 10);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function showSuspendedPanel() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    isBanned = true;
+    showStatusPanel("⛔", "ACCOUNT SUSPENDED", ["USER: " + USER_DATA.name, "ID: " + USER_DATA.id, "This custom bypass has been suspended.", "Bypass creator didn't subscribed to required channel. Click below to Restore."], "🔓 Regain Access", () => window.open("https://t.me/yournebulabot/start", "_blank"), null, true);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function showOutdated() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    showStatusPanel("⚠", "NEBULA OUTDATED", "SIGNATURE MISMATCH", hasChannel() ? "⬇ DOWNLOAD LATEST" : null, hasChannel() ? () => window.open(getChannelUrl(), "_blank") : null);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function showMaintenance() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    showStatusPanel("🔧", "MAINTENANCE", "SYSTEM UPDATE IN PROGRESS", hasChannel() ? "⚡ JOIN CHANNEL" : null, hasChannel() ? () => window.open(getChannelUrl(), "_blank") : null);
+  }
+
+  // ═══════════════════ INIT PANEL ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function renderInitPanel() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('UI', 'Rendering INIT panel');
+    document.getElementById("nebula-auth")?.remove();
+    targetSelectionActive = false;
+    authVerified = false;
+    injectStyles();
+
+    const ov = document.createElement("div");
+    ov.id = "nebula-auth";
+    ov.className = "nb-overlay";
+
+    const passHTML = `
+      <div style="margin-bottom:8px;">
+        <input id="nb-pass-input" class="nb-emboss-input" type="password" autocomplete="off" placeholder="ACCESS KEY">
+      </div>
+      <p id="nb-pass-error" class="nb-error-text">⛔ KEY TIDAK VALID</p>
+    `;
+
+    const { wrapper, focusGlow1, focusGlow2 } = createWrapper(`
+      <button id="music-btn" class="nb-music-btn">♪</button>
+      <div class="nb-uid">${APP_FULL_NAME} [UID:${USER_DATA.id}]</div>
+      <h3 class="nb-title">${USER_DATA.name}</h3>
+      <div class="nb-divider"></div>
+      <p style="color:var(--text-color);font-size:10px;letter-spacing:3px;">◆ SYSTEM READY</p>
+      <div id="nb-track-name" class="nb-track"></div>
+      ${passHTML}
+      <button id="init-btn" class="nb-emboss-btn">⬡ START BYPASS</button>
+      ${hasChannel() ? '<button id="support-btn" class="nb-emboss-btn">⚡ TELEGRAM</button>' : ''}
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | 📳 Shake to change track 🎵</div>
+    `, "overflow-visible");
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+
+    const passInput = document.getElementById("nb-pass-input");
+    if (passInput) {
+      passInput.addEventListener("focus", () => activateFocusGlow(focusGlow1, focusGlow2));
+      passInput.addEventListener("blur", () => deactivateFocusGlow(focusGlow1, focusGlow2));
+    }
+
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    updateTrackDisplay = () => {
+      const el = document.getElementById("nb-track-name");
+      if (!el || !musicList.length) {
+        if (el) {
+          if (!shouldPlayMusic()) {
+            el.textContent = "♫ Music blocked (tap ♪ to enable)";
+            el.className = "nb-track metered";
+          } else {
+            el.textContent = "";
+            el.className = "nb-track";
+          }
+        }
+        return;
+      }
+      if (!shouldPlayMusic()) {
+        if (el) {
+          el.textContent = "♫ Music blocked (tap ♪ to enable)";
+          el.className = "nb-track metered";
+        }
+        return;
+      }
+      try { 
+        const n = decodeURIComponent(musicList[currentTrackIndex].split('/').pop().replace(/\.[^.]+$/,'').replace(/[-_]/g,' ')); 
+        if (el) {
+          el.textContent = "♫ " + (n.length > 20 ? n.slice(0,20)+'…' : n);
+          el.className = "nb-track";
+        }
+      } catch { 
+        if (el) {
+          el.textContent = "♫ Track " + (currentTrackIndex+1);
+          el.className = "nb-track";
+        }
+      }
+    };
+    
+    if (musicList.length && shouldPlayMusic()) {
+      initAudioConditionally();
+    } else {
+      updateTrackDisplay();
+    }
+    
+    initShake();
+    
+    setupMusicToggle("music-btn");
+
+    const suppBtn = document.getElementById("support-btn");
+    if (suppBtn) suppBtn.addEventListener("click", () => window.open(getChannelUrl(), "_blank"));
+
+    const initBtn = document.getElementById("init-btn");
+    const passError = document.getElementById("nb-pass-error");
+
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    async function handleInitClick() {
+      if (initBtn.disabled || targetSelectionActive) return;
+      initBtn.disabled = true;
+      if (suppBtn) suppBtn.disabled = true;
+
+      try {
+        await validateAccessKey(passInput ? passInput.value : '');
+        if (passError) passError.style.display = "none";
+        if (passInput) { passInput.classList.remove("error"); passInput.classList.add("success"); }
+        authVerified = true;
+      } catch (error) {
+        if (passError) {
+          passError.textContent = `⛔ ${error.message}`;
+          passError.style.display = "block";
+        }
+        if (passInput) {
+          passInput.classList.add("error");
+          setTimeout(() => passInput.classList.remove("error"), 400);
+        }
+        initBtn.disabled = false;
+        if (suppBtn) suppBtn.disabled = false;
+        return;
+      }
+      if (suppBtn) suppBtn.disabled = true;
+      if (autoInitTimeout) clearTimeout(autoInitTimeout);
+      deactivateFocusGlow(focusGlow1, focusGlow2);
+      
+      if (directTarget) {
+        selectedTarget = directTarget.target;
+        selectedTargetName = directTarget.name;
+        selectedModuleType = directTarget.moduleType;
+        
+        ov.style.transition = "opacity 0.3s";
+        ov.style.opacity = "0";
+        setTimeout(() => {
+          ov.remove();
+          if (directTarget.moduleType === "vipteam") {
+            renderExploitPanelForVipteam(directTarget.apiType);
+          } else if (directTarget.moduleType === "powercheats") {
+            renderExploitPanelForPowerCheats(directTarget.apiType);
+          } else if (directTarget.moduleType === "universal-vplink") {
+            renderUniversalVplinkPanel(directTarget.apiType);
+          } else {
+            renderExploitPanel(directTarget.apiType);
+          }
+        }, 300);
+      } else {
+        showTargetSelection(ov);
+      }
+    }
+
+    initBtn.addEventListener("click", handleInitClick);
+    if (passInput) {
+      passInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleInitClick(); } });
+      passInput.addEventListener("input", () => { if (passError && passError.style.display === "block") { passError.style.display = "none"; passInput.classList.remove("error"); } });
+    }
+    autoInitTimeout = setTimeout(() => { const b = document.getElementById("init-btn"); if (b && !b.disabled && !targetSelectionActive) handleInitClick(); }, CONFIG.autoInitDelay);
+  }
+
+  // ═══════════════════ TARGET SELECTION ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function showTargetSelection(authOverlay) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    document.getElementById("target-selection")?.remove();
+    targetSelectionActive = true;
+
+    const targets = CONFIG.targets || {};
+    const order = Object.keys(targets);
+    const buttonsHtml = order.map(id => {
+      const t = targets[id];
+      const label = (t && t.name) ? t.name : id;
+      return `<button id="target-btn-${id}" class="nb-emboss-btn" data-target="${id}">⬡ ${label}</button>`;
+    }).join('');
+
+    const ov = document.createElement("div");
+    ov.id = "target-selection";
+    ov.className = "nb-overlay";
+    ov.style.zIndex = "2147483648";
+
+    const { wrapper } = createWrapper(`
+      <button id="target-back-btn" class="nb-back-btn">←</button>
+      <button id="target-music-btn" class="nb-music-btn">♪</button>
+      <h3 class="nb-title">SELECT TARGET</h3>
+      <div class="nb-divider"></div>
+      <div class="nb-target-list">
+      ${buttonsHtml}
+      </div>
+      <div class="nb-footer"><a href="https://t.me/A2MBD3" target="_blank">@A2MBD3</a> · ${APP_FULL_NAME}</div>
+    `, "overflow-visible");
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+
+    document.getElementById("target-back-btn").addEventListener("click", function() {
+      if (!targetSelectionActive) return;
+      targetSelectionActive = false;
+      ov.style.transition = "opacity 0.3s";
+      ov.style.opacity = "0";
+      setTimeout(() => {
+        ov.remove();
+        authVerified = false;
+        renderInitPanel();
+      }, 300);
+    });
+
+    setupMusicToggle("target-music-btn");
+
+    order.forEach(id => {
+      const el = document.getElementById("target-btn-" + id);
+      if (!el) return;
+      el.addEventListener("click", async function() {
+        if (!targetSelectionActive) return;
+        const t = targets[id] || {};
+        const name = t.name || id;
+        const apiType = t.apiType || "2";
+        const moduleType = t.moduleType || "standard";
+        DBG.log('UI', 'Selected: ' + name);
+        await handleTargetSelect(id, name, apiType, moduleType, ov, authOverlay);
+      });
+    });
+  }
+
+  function renderTargetSelection(authOverlay) {
+    return showTargetSelection(authOverlay);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function handleTargetSelect(target, targetName, apiType, moduleType, selectionOverlay, authOverlay) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const tcfg = getTargetConfig(target);
+    // Only Aincrad shows time mode picker (3 modes). Others = 0s ASAP.
+    if (tcfg && tcfg.timeModes && target === 'aincrad') {
+      return renderTimeModePicker(target, targetName, apiType, moduleType, selectionOverlay, authOverlay);
+    }
+    applyTargetTiming(target, null);
+    return launchTarget(target, targetName, apiType, moduleType, selectionOverlay, authOverlay);
+  }
+
+  function renderTimeModePicker(target, targetName, apiType, moduleType, selectionOverlay, authOverlay) {
+    const tcfg = getTargetConfig(target) || {};
+    const modes = tcfg.timeModes || { fast: 20000, smart: 50000, safe: 80000 };
+    targetSelectionActive = true;
+    if (selectionOverlay) {
+      selectionOverlay.style.transition = "opacity 0.25s";
+      selectionOverlay.style.opacity = "0";
+      setTimeout(() => selectionOverlay.remove(), 250);
+    }
+    document.getElementById("nebula-time-mode")?.remove();
+    const ov = document.createElement("div");
+    ov.id = "nebula-time-mode";
+    ov.className = "nb-overlay";
+    const { wrapper } = createWrapper(`
+      <button id="time-back-btn" class="nb-emboss-btn" style="margin-bottom:12px;">← BACK</button>
+      <div class="nb-uid">${APP_FULL_NAME}</div>
+      <h3 class="nb-title">${targetName}</h3>
+      <p class="nb-subtitle">SELECT TIME MODE</p>
+      <div class="nb-mode-grid">
+        <button class="nb-mode-btn" data-mode="fast">⚡ FAST<br><span>${Math.round((modes.fast||20000)/1000)}s</span></button>
+        <button class="nb-mode-btn nb-mode-active" data-mode="smart">◆ SMART<br><span>${Math.round((modes.smart||50000)/1000)}s</span></button>
+        <button class="nb-mode-btn" data-mode="safe">🛡 SAFE<br><span>${Math.round((modes.safe||80000)/1000)}s</span></button>
+      </div>
+      <button id="time-go-btn" class="nb-emboss-btn">⬡ CONTINUE</button>
+      <div class="nb-footer">@A2MBD3 · ${APP_FULL_NAME}</div>
+    `, "overflow-visible");
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+    let chosen = tcfg.defaultMode || 'smart';
+    ov.querySelectorAll('.nb-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        ov.querySelectorAll('.nb-mode-btn').forEach(b => b.classList.remove('nb-mode-active'));
+        btn.classList.add('nb-mode-active');
+        chosen = btn.getAttribute('data-mode');
+      });
+    });
+    document.getElementById('time-back-btn').addEventListener('click', () => {
+      ov.remove();
+      if (authOverlay) authOverlay.style.opacity = '1';
+      renderTargetSelection(authOverlay || document.getElementById('nebula-auth'));
+    });
+    document.getElementById('time-go-btn').addEventListener('click', () => {
+      applyTargetTiming(target, chosen);
+      launchTarget(target, targetName, apiType, moduleType, ov, authOverlay);
+    });
+  }
+
+  function launchTarget(target, targetName, apiType, moduleType, selectionOverlay, authOverlay) {
+    selectedTarget = target;
+    selectedTargetName = targetName;
+    selectedModuleType = moduleType;
+    targetSelectionActive = false;
+    document.querySelectorAll('[id^="target-"]').forEach(b => { try { b.disabled = true; } catch(e) {} });
+    
+    if (selectionOverlay) {
+      selectionOverlay.style.transition = "opacity 0.3s";
+      selectionOverlay.style.opacity = "0";
+    }
+    if (authOverlay) {
+      authOverlay.style.transition = "opacity 0.3s";
+      authOverlay.style.opacity = "0";
+    }
+    
+    setTimeout(() => {
+      if (selectionOverlay) selectionOverlay.remove();
+      if (authOverlay) authOverlay.remove();
+      document.getElementById("nebula-time-mode")?.remove();
+      
+      if (moduleType === "vipteam") {
+        renderExploitPanelForVipteam(apiType);
+      } else if (moduleType === "powercheats") {
+        renderExploitPanelForPowerCheats(apiType);
+      } else if (moduleType === "universal-vplink") {
+        renderUniversalVplinkPanel(apiType);
+      } else {
+        renderExploitPanel(apiType);
+      }
+    }, 280);
+  }
+
+  // ═══════════════════ STANDARD EXPLOIT PANEL ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function renderExploitPanel(apiType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('UI', 'Rendering STANDARD EXPLOIT panel, apiType=' + apiType);
+    document.getElementById("nebula-exploit")?.remove();
+    
+    fetchCompleted = false;
+    fetchResult = null;
+    progressCompleted = false;
+    logQueue = [];
+    fillerLogsScheduled = false;
+    
+    const ov = document.createElement("div");
+    ov.id = "nebula-exploit";
+    ov.className = "nb-overlay";
+
+    const { wrapper } = createWrapper(`
+      <button id="exploit-music-btn" class="nb-music-btn">♪</button>
+      <div class="nb-exploit-header">
+        <span class="nb-live-dot"></span>
+        <span style="width:7px;height:7px;background:#f90;border-radius:50%;box-shadow:0 0 6px #f90;flex-shrink:0;"></span>
+        <span style="width:7px;height:7px;background:var(--electric-glow-1);border-radius:50%;box-shadow:0 0 6px var(--electric-glow-1);flex-shrink:0;"></span>
+        <span class="nb-exploit-title">${APP_NAME}://${USER_DATA.name.replace(/\s+/g,'_').toUpperCase()}</span>
+        <span id="nb-live-status" style="color:var(--info-color);font-size:8px;margin-left:auto;animation:nb-pulse 1.5s infinite;flex-shrink:0;font-weight:700;">● LIVE</span>
+      </div>
+      
+      <div id="log-output" class="nb-log-area"></div>
+      
+      <div class="nb-progress-label">
+        <span>PROGRESS</span>
+        <span id="nb-progress-pct" style="font-weight:700;">0%</span>
+      </div>
+      <div class="nb-progress-bar-bg">
+        <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
+      </div>
+      
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | 📳 Shake to change track 🎵</div>
+    `);
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+
+    setupMusicToggle("exploit-music-btn");
+
+    startLogQueue();
+
+    queueLog('⚡', `${APP_FULL_NAME} — ${selectedTargetName}`, '#00f2ff', 'log-highlight');
+    queueLog('◆', `PLATFORM: ${navigator.platform.toUpperCase()}`, '#c4b5fd');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('⚙', 'SYSTEM CONFIGURATION', '#ffa500', 'log-highlight');
+    queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
+    queueLog('●', `MODULE: STANDARD`, '#00f2ff');
+    queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
+    queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
+    queueLog('●', `USER ID: ${USER_DATA.id}`, '#7dd3fc');
+    queueLog('●', `AUTH REQUIRED: ${needPassword() ? 'YES' : 'NO'}`, needPassword() ? '#ffa500' : '#2ecc71');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('📡', 'INITIALIZING CONNECTION...', '#00f2ff', 'log-highlight');
+    queueLog('●', `TARGET TYPE: ${apiType}`, '#7dd3fc');
+
+    fetchStartTime = Date.now();
+    actualProgressTime = CONFIG.minProgressTime;
+    
+    startProgressBar();
+    performLiveFetch(apiType);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function performLiveFetch(apiType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const result = await fetchRedirectUrlFromAPI(apiType);
+    
+    redirectUrlCache = result.url;
+    currentRedirectUrl = result.url;
+    apiResponseCache = result.apiData;
+    currentPinCache = result.pin || currentPinCache;
+    isRealRedirectUrl = result.isReal;
+    fetchResult = result;
+    fetchCompleted = true;
+    DBG.log('API', 'Live fetch completed, isReal=' + result.isReal);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function startProgressBar() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    exploitProgressActive = true;
+    const bar = document.getElementById("nb-progress-exploit");
+    const pct = document.getElementById("nb-progress-pct");
+    const t0 = Date.now();
+    
+    (function tick() {
+      if (!exploitProgressActive) return;
+      
+      const elapsed = Date.now() - t0;
+      const totalTime = actualProgressTime || CONFIG.minProgressTime;
+      const p = Math.min(elapsed / totalTime * 100, 100);
+      
+      if (bar) {
+        bar.style.width = p + "%";
+        if (fetchCompleted && fetchResult && (fetchResult.isError || fetchResult.isFakeUrl)) {
+          bar.classList.add('error-fill');
+        }
+      }
+      if (pct) pct.textContent = Math.floor(p) + "%";
+      
+      if (p >= 100) { 
+        exploitProgressActive = false;
+        progressCompleted = true;
+        stopLogQueue();
+        
+        const statusEl = document.getElementById("nb-live-status");
+        if (statusEl && fetchResult) {
+          if (fetchResult.isError || fetchResult.isFakeUrl) {
+            statusEl.textContent = '● REJECTED';
+            statusEl.style.color = 'var(--danger-color)';
+          } else {
+            statusEl.textContent = '● SUCCESS';
+            statusEl.style.color = 'var(--success-color)';
+          }
+        }
+        
+        if (fetchResult) {
+          setTimeout(() => {
+            handleExploitComplete(fetchResult.url, document.getElementById("nebula-exploit"), fetchResult.isReal);
+          }, 300);
+        }
+      } else {
+        exploitProgressRAF = requestAnimationFrame(tick);
+      }
+    })();
+  }
+
+  // ═══════════════════ VIPTEAM EXPLOIT PANEL ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function renderExploitPanelForVipteam(apiType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('UI', 'Rendering VIPTEAM EXPLOIT panel, apiType=' + apiType);
+    document.getElementById("nebula-exploit")?.remove();
+    
+    fetchCompleted = false;
+    fetchResult = null;
+    progressCompleted = false;
+    logQueue = [];
+    fillerLogsScheduled = false;
+    
+    const ov = document.createElement("div");
+    ov.id = "nebula-exploit";
+    ov.className = "nb-overlay";
+
+    const { wrapper } = createWrapper(`
+      <button id="exploit-music-btn" class="nb-music-btn">♪</button>
+      <div class="nb-exploit-header">
+        <span class="nb-live-dot"></span>
+        <span style="width:7px;height:7px;background:#ff00ff;border-radius:50%;box-shadow:0 0 6px #ff00ff;flex-shrink:0;"></span>
+        <span style="width:7px;height:7px;background:var(--electric-glow-1);border-radius:50%;box-shadow:0 0 6px var(--electric-glow-1);flex-shrink:0;"></span>
+        <span class="nb-exploit-title">${APP_NAME}://${USER_DATA.name.replace(/\s+/g,'_').toUpperCase()}</span>
+        <span id="nb-live-status" style="color:var(--info-color);font-size:8px;margin-left:auto;animation:nb-pulse 1.5s infinite;flex-shrink:0;font-weight:700;">● LIVE</span>
+      </div>
+      
+      <div id="log-output" class="nb-log-area"></div>
+      
+      <div class="nb-progress-label">
+        <span>PROGRESS</span>
+        <span id="nb-progress-pct" style="font-weight:700;">0%</span>
+      </div>
+      <div class="nb-progress-bar-bg">
+        <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
+      </div>
+      
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | 📳 Shake to change track 🎵</div>
+    `);
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+
+    setupMusicToggle("exploit-music-btn");
+
+    startLogQueue();
+
+    queueLog('⚡', `${APP_FULL_NAME} — ${selectedTargetName}`, '#ff00ff', 'log-highlight');
+    queueLog('◆', `PLATFORM: ${navigator.platform.toUpperCase()}`, '#c4b5fd');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('⚙', 'SYSTEM CONFIGURATION', '#ffa500', 'log-highlight');
+    queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
+    queueLog('●', `MODULE: VIPTEAM EXTRACTOR`, '#ff00ff');
+    queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
+    queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
+    queueLog('●', `USER ID: ${USER_DATA.id}`, '#7dd3fc');
+    queueLog('●', `AUTH REQUIRED: ${needPassword() ? 'YES' : 'NO'}`, needPassword() ? '#ffa500' : '#2ecc71');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('🔍', 'SCANNING PAGE FOR VPLINK.IN...', '#ff00ff', 'log-highlight');
+
+    fetchStartTime = Date.now();
+    actualProgressTime = CONFIG.minProgressTime;
+    
+    startProgressBar();
+    performVipteamExtraction(apiType);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function extractVplinkFromPage() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    try {
+        DBG.log('VIPTEAM', 'Starting comprehensive vplink.in scan...');
+        
+        const allLinks = document.querySelectorAll('a');
+        DBG.log('VIPTEAM', 'Scanning ' + allLinks.length + ' anchor tags...');
+        
+        for (let link of allLinks) {
+            const href = link.getAttribute('href');
+            if (href && href.includes('vplink.in')) {
+                const match = href.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
+                if (match) {
+                    const cleanUrl = match[0].replace(/[.,;:'")\]}]+$/, '');
+                    DBG.log('VIPTEAM', 'Found vplink URL in <a> tag: ' + cleanUrl);
+                    return cleanUrl;
+                }
+            }
+        }
+        
+        DBG.log('VIPTEAM', 'Scanning text content of all elements...');
+        const allElements = document.querySelectorAll('p, div, span, td, li, pre, code, strong, em, b, i, h1, h2, h3, h4, h5, h6');
+        
+        for (let el of allElements) {
+            const text = el.textContent || el.innerText || '';
+            const match = text.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
+            if (match) {
+                const cleanUrl = match[0].replace(/[.,;:'")\]}]+$/, '');
+                DBG.log('VIPTEAM', 'Found vplink URL in element text: ' + cleanUrl);
+                return cleanUrl;
+            }
+        }
+        
+        DBG.log('VIPTEAM', 'Full page text scan...');
+        const bodyText = document.body.innerText;
+        const match = bodyText.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
+        
+        if (match) {
+            const cleanUrl = match[0].replace(/[.,;:'")\]}]+$/, '');
+            DBG.log('VIPTEAM', 'Found vplink URL in body text: ' + cleanUrl);
+            return cleanUrl;
+        }
+        
+        DBG.log('VIPTEAM', 'Scanning all element attributes...');
+        const allElementsWithAttrs = document.querySelectorAll('*');
+        
+        for (let el of allElementsWithAttrs) {
+            for (let attr of el.attributes) {
+                if (attr.value && attr.value.includes('vplink.in')) {
+                    const match = attr.value.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
+                    if (match) {
+                        const cleanUrl = match[0].replace(/[.,;:'")\]}]+$/, '');
+                        DBG.log('VIPTEAM', 'Found vplink URL in attribute: ' + cleanUrl);
+                        return cleanUrl;
+                    }
+                }
+            }
+        }
+        
+        DBG.log('VIPTEAM', 'No vplink.in URL found after comprehensive scan');
+        return null;
+        
+    } catch (error) {
+        DBG.error('VIPTEAM', 'Extraction error: ' + error.message);
+        return null;
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function extractVpKey(vplinkUrl) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    try {
+        let cleanUrl = vplinkUrl.trim();
+        cleanUrl = cleanUrl.split('?')[0].split('#')[0];
+        
+        const urlObj = new URL(cleanUrl);
+        let path = urlObj.pathname;
+        path = path.replace(/^\/+|\/+$/g, '');
+        const key = path.split('/')[0];
+        
+        if (!key || key.length === 0) {
+            DBG.error('VPLINK', 'Empty key extracted from URL: ' + vplinkUrl);
+            return null;
+        }
+        
+        DBG.log('VPLINK', 'Extracted VP key: ' + key);
+        return key;
+        
+    } catch (error) {
+        DBG.log('VPLINK', 'URL parsing failed, trying regex extraction');
+        
+        try {
+            const match = vplinkUrl.match(/vplink\.in\/([^\/\s?#]+)/);
+            if (match && match[1]) {
+                DBG.log('VPLINK', 'Regex extracted VP key: ' + match[1]);
+                return match[1];
+            }
+        } catch (regexError) {
+            DBG.error('VPLINK', 'Regex extraction also failed: ' + regexError.message);
+        }
+        
+        DBG.error('VPLINK', 'All key extraction methods failed for URL: ' + vplinkUrl);
+        return null;
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function performVipteamExtraction(apiType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('VIPTEAM', 'Starting extraction process');
+    
+    queueLog('🔍', 'EXTRACTING VPLINK.IN FROM PAGE...', '#ff00ff', 'log-highlight');
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const vplinkUrl = extractVplinkFromPage();
+    
+    if (!vplinkUrl) {
+      queueLog('❌', 'NO VPLINK.IN URL FOUND ON PAGE', '#ff4757', 'log-error');
+      queueLog('⚠', 'PAGE EXTRACTION FAILED', '#ffa500', 'log-highlight');
+      queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+      queueLog('📊', 'FAILURE ANALYSIS', '#ff4757', 'log-highlight');
+      queueLog('●', `STATUS: FAILED`, '#ff4757');
+      queueLog('●', `MODULE: VIPTEAM`, '#ff00ff');
+      
+      fetchCompleted = true;
+      fetchResult = {
+        url: CONFIG.fallbackRedirectUrl,
+        apiData: null,
+        pin: currentPinCache,
+        isReal: false,
+        serverMessage: '❌ NO VPLINK.IN URL FOUND',
+        isError: true,
+        isFakeUrl: true
+      };
+      
+      actualProgressTime = Date.now() - fetchStartTime;
+      completeProgressNow();
+      return;
+    }
+    
+    queueLog('✅', `FOUND: ${vplinkUrl.length > 50 ? vplinkUrl.substring(0, 50) + '...' : vplinkUrl}`, '#2ecc71', 'log-success');
+    
+    const vpKey = extractVpKey(vplinkUrl);
+    
+    if (!vpKey) {
+      queueLog('❌', 'FAILED TO EXTRACT KEY FROM URL', '#ff4757', 'log-error');
+      queueLog('⚠', 'KEY EXTRACTION FAILED', '#ffa500', 'log-highlight');
+      
+      fetchCompleted = true;
+      fetchResult = {
+        url: CONFIG.fallbackRedirectUrl,
+        apiData: null,
+        pin: currentPinCache,
+        isReal: false,
+        serverMessage: '❌ KEY EXTRACTION FAILED',
+        isError: true,
+        isFakeUrl: true
+      };
+      
+      actualProgressTime = Date.now() - fetchStartTime;
+      completeProgressNow();
+      return;
+    }
+    
+    queueLog('🔑', `VP KEY: ${vpKey.toUpperCase()}`, '#ff00ff', 'log-key-found');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('📡', 'INITIALIZING VIPTEAM CONNECTION...', '#00f2ff', 'log-highlight');
+    
+    await fetchVipteamRedirectUrl(apiType, vpKey);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function fetchVipteamRedirectUrl(type, vpKey, attempt = 1) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const maxRetries = 3;
+    DBG.log('VPLINK', `fetchVipteamRedirectUrl: type=${type}, vpKey=${vpKey}, attempt=${attempt}/${maxRetries}`);
+    
+    try {
+      DBG.log('VPLINK', 'Generating TOTP pin...');
+      const pin = getRequestPin(typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? '' : await totpGenerator.generate());
+      currentPinCache = pin;
+      DBG.log('VPLINK', 'PIN: ' + pin);
+      
+      if (attempt > 1) {
+        queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
+      }
+      
+      queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
+      
+      const controller = new AbortController();
+      const timeout = setTimeout(() => {
+        DBG.log('VPLINK', 'Request timeout, aborting...');
+        controller.abort();
+      }, 15000);
+      
+      const fetchStart = performance.now();
+      const response = await callA2MBD3Api({
+        mode: type,
+        pin: pin,
+        vp: vpKey,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeout);
+      DBG.log('VPLINK', `Response: ${response.status} (${(performance.now() - fetchStart).toFixed(0)}ms)`);
+      
+      queueLog('📡', `RESPONSE: ${response.status} ${response.statusText}`, response.ok ? '#2ecc71' : '#ff4757');
+      
+      if (!response.ok) {
+        DBG.log('VPLINK', 'Trying previous TOTP window...');
+        const prevPin = getRequestPin(typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? '' : await totpGenerator.generate(-1));
+        currentPinCache = prevPin;
+        
+        queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
+        
+        const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin, vp: vpKey });
+        
+        DBG.log('VPLINK', `Retry response: ${retryResponse.status}`);
+        queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
+        
+        if (!retryResponse.ok) {
+          if (attempt < maxRetries) {
+            DBG.log('VPLINK', `Retrying (${attempt + 1}/${maxRetries})...`);
+            queueLog('⏳', `RETRYING (${attempt + 1}/${maxRetries})...`, '#ffa500');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            return fetchVipteamRedirectUrl(type, vpKey, attempt + 1);
+          }
+          throw new Error(`FAILED AFTER ${maxRetries} ATTEMPTS`);
+        }
+        
+        const retryData = await retryResponse.json();
+        apiResponseCache = retryData;
+        return processVipteamResponse(retryData, prevPin, vpKey, attempt);
+      }
+      
+      const data = await response.json();
+      DBG.log('VPLINK', 'Response data received');
+      apiResponseCache = data;
+      return processVipteamResponse(data, pin, vpKey, attempt);
+      
+    } catch (error) {
+      DBG.error('VPLINK', 'Error: ' + error.message);
+      queueLog('❌', `ERROR: ${error.message}`, '#ff4757', 'log-error');
+      
+      if (attempt < maxRetries) {
+        DBG.log('VPLINK', `Retrying after error (${attempt + 1}/${maxRetries})...`);
+        queueLog('⏳', `RETRYING (${attempt + 1}/${maxRetries})...`, '#ffa500');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return fetchVipteamRedirectUrl(type, vpKey, attempt + 1);
+      }
+      
+      DBG.error('VPLINK', `All ${maxRetries} attempts exhausted`);
+      queueLog('❌', `ALL ${maxRetries} ATTEMPTS EXHAUSTED`, '#ff4757', 'log-error');
+      return handleVipteamFailure('❌ SERVER REJECTED AFTER MAX ATTEMPTS');
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function processVipteamResponse(data, pin, vpKey, attempt) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    const maxRetries = 3;
+    const destinationUrl = data.destinationLink || CONFIG.fallbackRedirectUrl;
+    
+    DBG.log('VPLINK', 'Processing response, destination: ' + (destinationUrl || 'N/A').substring(0, 60));
+    
+    queueLog('📋', 'PARSING SERVER RESPONSE...', '#00f2ff', 'log-highlight');
+    queueLog('●', `TYPE: ${(data.type || 'N/A').toUpperCase()}`, '#7dd3fc');
+    queueLog('●', `VERIFIED: ${data.verified ? '✅ YES' : '❌ NO'}`, data.verified ? '#2ecc71' : '#ff4757');
+    queueLog('●', `OWNER: ${data.owner || '@A2MBD3'}`, '#c4b5fd');
+    
+    if (data.success !== undefined) {
+      queueLog('●', `SUCCESS FLAG: ${data.success}`, data.success ? '#2ecc71' : '#ff4757');
+    }
+    
+    if (data.destinationLink) {
+      const truncated = data.destinationLink.length > 50 ? data.destinationLink.substring(0, 50) + '...' : data.destinationLink;
+      queueLog('🔗', `DESTINATION: ${truncated}`, '#7dd3fc');
+    }
+    
+    if (isHoneypotUrl(destinationUrl) || isTelegramLink(destinationUrl)) {
+      DBG.log('VPLINK', 'Fake URL (Telegram link) detected');
+      queueLog('⚠', `FAKE URL DETECTED (Attempt ${attempt}/${maxRetries})`, '#ffa500', 'log-highlight');
+      
+      if (attempt < maxRetries) {
+        queueLog('🔄', `RETRYING... Attempt ${attempt + 1} of ${maxRetries}`, '#ffa500', 'log-highlight');
+        return fetchVipteamRedirectUrl(data.type || 'vp', vpKey, attempt + 1);
+      }
+      
+      queueLog('❌', `ALL ${maxRetries} ATTEMPTS FAILED — FAKE URLS`, '#ff4757', 'log-error');
+      return handleVipteamFailure('❌ SERVER REJECTED — FAKE URLS AFTER MAX ATTEMPTS');
+    } 
+    else if (isValidRedirectUrl(destinationUrl)) {
+      DBG.log('VPLINK', 'Valid redirect URL found!');
+      queueLog('✅', 'AUTHENTIC LINK FOUND!', '#2ecc71', 'log-success');
+      return handleVipteamSuccess(destinationUrl, data, pin);
+    } 
+    else {
+      DBG.log('VPLINK', 'Invalid URL format');
+      queueLog('⚠', `INVALID URL FORMAT (Attempt ${attempt}/${maxRetries})`, '#ffa500', 'log-highlight');
+      
+      if (attempt < maxRetries) {
+        queueLog('🔄', `RETRYING... Attempt ${attempt + 1} of ${maxRetries}`, '#ffa500', 'log-highlight');
+        return fetchVipteamRedirectUrl(data.type || 'vp', vpKey, attempt + 1);
+      }
+      
+      queueLog('❌', `ALL ${maxRetries} ATTEMPTS FAILED — INVALID URLS`, '#ff4757', 'log-error');
+      return handleVipteamFailure('❌ SERVER REJECTED — INVALID URLS AFTER MAX ATTEMPTS');
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function handleVipteamSuccess(url, data, pin) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('VPLINK', 'SUCCESS, redirect: ' + url.substring(0, 60));
+    isRealRedirectUrl = true;
+    fetchEndTime = Date.now();
+    const elapsed = fetchEndTime - fetchStartTime;
+    
+    queueLog('✅', 'LINK VERIFIED SUCCESSFULLY', '#2ecc71', 'log-success');
+    queueLog('🎯', 'TARGET ACQUIRED SUCCESSFULLY', '#2ecc71', 'log-success');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('📊', 'FINAL ANALYSIS', '#ffa500', 'log-highlight');
+    queueLog('●', `STATUS: SUCCESS`, '#2ecc71', 'log-success');
+    queueLog('●', `TYPE: ${selectedModuleType.toUpperCase()}`, '#ff00ff');
+    queueLog('●', `ELAPSED: ${(elapsed / 1000).toFixed(1)}s`, '#7dd3fc');
+    queueLog('⚡', 'LINK VERIFIED — NO FILLER LOGS', '#ff00ff', 'log-key-found');
+    
+    fetchCompleted = true;
+    fetchResult = {
+      url: url,
+      apiData: data,
+      pin: pin,
+      isReal: true,
+      serverMessage: '✅ LINK VERIFIED',
+      isError: false,
+      isFakeUrl: false
+    };
+    
+    actualProgressTime = elapsed;
+    completeProgressNow();
+    
+    return fetchResult;
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function handleVipteamFailure(message) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.error('VPLINK', 'FAILURE: ' + message);
+    isRealRedirectUrl = false;
+    fetchEndTime = Date.now();
+    const elapsed = fetchEndTime - fetchStartTime;
+    
+    queueLog('❌', message, '#ff4757', 'log-error');
+    queueLog('⚠', 'FALLBACK PROTOCOL ACTIVATED', '#ffa500', 'log-highlight');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('📊', 'FAILURE ANALYSIS', '#ff4757', 'log-highlight');
+    queueLog('●', `STATUS: FAILED`, '#ff4757');
+    queueLog('●', `TYPE: ${selectedModuleType.toUpperCase()}`, '#ff00ff');
+    queueLog('●', `ELAPSED: ${(elapsed / 1000).toFixed(1)}s`, '#7dd3fc');
+    
+    fetchCompleted = true;
+    fetchResult = {
+      url: CONFIG.fallbackRedirectUrl,
+      apiData: apiResponseCache,
+      pin: currentPinCache,
+      isReal: false,
+      serverMessage: message,
+      isError: true,
+      isFakeUrl: true
+    };
+    
+    actualProgressTime = elapsed;
+    completeProgressNow();
+    
+    return fetchResult;
+  }
+
+  // ═══════════════════ POWERCHEATS EXPLOIT PANEL ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function renderExploitPanelForPowerCheats(apiType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('UI', 'Rendering POWERCHEATS EXPLOIT panel, apiType=' + apiType);
+    document.getElementById("nebula-exploit")?.remove();
+    
+    fetchCompleted = false;
+    fetchResult = null;
+    progressCompleted = false;
+    logQueue = [];
+    fillerLogsScheduled = false;
+    
+    const ov = document.createElement("div");
+    ov.id = "nebula-exploit";
+    ov.className = "nb-overlay";
+
+    const { wrapper } = createWrapper(`
+      <button id="exploit-music-btn" class="nb-music-btn">♪</button>
+      <div class="nb-exploit-header">
+        <span class="nb-live-dot"></span>
+        <span style="width:7px;height:7px;background:#ff00ff;border-radius:50%;box-shadow:0 0 6px #ff00ff;flex-shrink:0;"></span>
+        <span style="width:7px;height:7px;background:var(--electric-glow-1);border-radius:50%;box-shadow:0 0 6px var(--electric-glow-1);flex-shrink:0;"></span>
+        <span class="nb-exploit-title">${APP_NAME}://${USER_DATA.name.replace(/\s+/g,'_').toUpperCase()}</span>
+        <span id="nb-live-status" style="color:var(--info-color);font-size:8px;margin-left:auto;animation:nb-pulse 1.5s infinite;flex-shrink:0;font-weight:700;">● LIVE</span>
+      </div>
+      
+      <div id="log-output" class="nb-log-area"></div>
+      
+      <div class="nb-progress-label">
+        <span>PROGRESS</span>
+        <span id="nb-progress-pct" style="font-weight:700;">0%</span>
+      </div>
+      <div class="nb-progress-bar-bg">
+        <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
+      </div>
+      
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | 📳 Shake to change track 🎵</div>
+    `);
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+
+    setupMusicToggle("exploit-music-btn");
+
+    startLogQueue();
+
+    queueLog('⚡', `${APP_FULL_NAME} — ${selectedTargetName}`, '#ff00ff', 'log-highlight');
+    queueLog('◆', `PLATFORM: ${navigator.platform.toUpperCase()}`, '#c4b5fd');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('⚙', 'SYSTEM CONFIGURATION', '#ffa500', 'log-highlight');
+    queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
+    queueLog('●', `MODULE: POWERCHEATS EXTRACTOR`, '#ff00ff');
+    queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
+    queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
+    queueLog('●', `USER ID: ${USER_DATA.id}`, '#7dd3fc');
+    queueLog('●', `AUTH REQUIRED: ${needPassword() ? 'YES' : 'NO'}`, needPassword() ? '#ffa500' : '#2ecc71');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('🔍', 'SCANNING PAGE FOR VPLINK.IN (POWERCHEATS)...', '#ff00ff', 'log-highlight');
+
+    fetchStartTime = Date.now();
+    actualProgressTime = CONFIG.minProgressTime;
+    
+    startProgressBar();
+    performPowerCheatsExtraction(apiType);
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function extractVplinkFromPagePowerCheats() {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    try {
+        DBG.log('POWERCHEATS', 'Starting PowerCheats vplink.in scan...');
+        
+        const currentURL = window.location.href;
+        if (currentURL.includes('vplink.in')) {
+            const match = currentURL.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
+            if (match) {
+                const cleanUrl = match[0].replace(/[.,;:'")\]}]+$/, '');
+                DBG.log('POWERCHEATS', 'Method 1 - Found in window.location.href: ' + cleanUrl);
+                return cleanUrl;
+            }
+            DBG.log('POWERCHEATS', 'Method 1 - Raw URL: ' + currentURL);
+            return currentURL;
+        }
+        
+        DBG.log('POWERCHEATS', 'Method 1 failed, trying Method 2: script tag extraction...');
+        const scripts = document.querySelectorAll('script');
+        for (let script of scripts) {
+            const content = script.textContent || script.innerText || '';
+            const match = content.match(/window\.location\.href\s*=\s*["']([^"']+)["']/);
+            if (match && match[1] && match[1].includes('vplink.in')) {
+                const cleanUrl = match[1].replace(/[.,;:'")\]}]+$/, '');
+                DBG.log('POWERCHEATS', 'Method 2 - Extracted from script: ' + cleanUrl);
+                return cleanUrl;
+            }
+        }
+        
+        DBG.log('POWERCHEATS', 'Method 2 failed, trying Method 3: full HTML scan...');
+        const html = document.documentElement.innerHTML;
+        const htmlMatch = html.match(/https?:\/\/vplink\.in\/[^\s"'<>]+/);
+        if (htmlMatch) {
+            const cleanUrl = htmlMatch[0].replace(/[.,;:'")\]}]+$/, '');
+            DBG.log('POWERCHEATS', 'Method 3 - Found in HTML: ' + cleanUrl);
+            return cleanUrl;
+        }
+        
+        DBG.log('POWERCHEATS', 'No vplink.in URL found after all 3 methods');
+        return null;
+        
+    } catch (error) {
+        DBG.error('POWERCHEATS', 'Extraction error: ' + error.message);
+        return null;
+    }
+  }
+
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  async function performPowerCheatsExtraction(apiType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('POWERCHEATS', 'Starting PowerCheats extraction process');
+    
+    queueLog('🔍', 'EXTRACTING VPLINK.IN USING POWERCHEATS METHODS...', '#ff00ff', 'log-highlight');
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const vplinkUrl = extractVplinkFromPagePowerCheats();
+    
+    if (!vplinkUrl) {
+      queueLog('❌', 'NO VPLINK.IN URL FOUND ON PAGE', '#ff4757', 'log-error');
+      queueLog('⚠', 'ALL 3 EXTRACTION METHODS FAILED', '#ffa500', 'log-highlight');
+      queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+      queueLog('📊', 'FAILURE ANALYSIS', '#ff4757', 'log-highlight');
+      queueLog('●', `STATUS: FAILED`, '#ff4757');
+      queueLog('●', `MODULE: POWERCHEATS`, '#ff00ff');
+      queueLog('●', `METHOD 1 (location.href): FAILED`, '#c4b5fd');
+      queueLog('●', `METHOD 2 (script tag): FAILED`, '#c4b5fd');
+      queueLog('●', `METHOD 3 (HTML scan): FAILED`, '#c4b5fd');
+      
+      fetchCompleted = true;
+      fetchResult = {
+        url: CONFIG.fallbackRedirectUrl,
+        apiData: null,
+        pin: currentPinCache,
+        isReal: false,
+        serverMessage: '❌ NO VPLINK.IN URL FOUND',
+        isError: true,
+        isFakeUrl: true
+      };
+      
+      actualProgressTime = Date.now() - fetchStartTime;
+      completeProgressNow();
+      return;
+    }
+    
+    queueLog('✅', `FOUND: ${vplinkUrl.length > 50 ? vplinkUrl.substring(0, 50) + '...' : vplinkUrl}`, '#2ecc71', 'log-success');
+    
+    const vpKey = extractVpKey(vplinkUrl);
+    
+    if (!vpKey) {
+      queueLog('❌', 'FAILED TO EXTRACT KEY FROM URL', '#ff4757', 'log-error');
+      queueLog('⚠', 'KEY EXTRACTION FAILED', '#ffa500', 'log-highlight');
+      
+      fetchCompleted = true;
+      fetchResult = {
+        url: CONFIG.fallbackRedirectUrl,
+        apiData: null,
+        pin: currentPinCache,
+        isReal: false,
+        serverMessage: '❌ KEY EXTRACTION FAILED',
+        isError: true,
+        isFakeUrl: true
+      };
+      
+      actualProgressTime = Date.now() - fetchStartTime;
+      completeProgressNow();
+      return;
+    }
+    
+    queueLog('🔑', `VP KEY: ${vpKey.toUpperCase()}`, '#ff00ff', 'log-key-found');
+    queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+    queueLog('📡', 'INITIALIZING POWERCHEATS CONNECTION...', '#00f2ff', 'log-highlight');
+    
+    await fetchVipteamRedirectUrl(apiType, vpKey);
+  }
+
+  // ═══════════════════ UNIVERSAL VPLINK.IN PANEL ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  function renderUniversalVplinkPanel(apiType) {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('UI', 'Rendering UNIVERSAL VPLINK panel, apiType=' + apiType);
+    document.getElementById("nebula-exploit")?.remove();
+    
+    fetchCompleted = false;
+    fetchResult = null;
+    progressCompleted = false;
+    logQueue = [];
+    fillerLogsScheduled = false;
+
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    function resetUniversalPanel() {
+      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      exploitProgressActive = false;
+      progressCompleted = false;
+      fetchCompleted = false;
+      fetchResult = null;
+      logQueue = [];
+      isRedirecting = false;
+      isLoggingActive = false;
+      if (logInterval) { clearInterval(logInterval); logInterval = null; }
+
+      const bar = document.getElementById("nb-progress-exploit");
+      const pct = document.getElementById("nb-progress-pct");
+      if (bar) { bar.style.transition = "none"; bar.style.width = "0%"; bar.classList.remove('error-fill', 'vipteam-success'); }
+      if (pct) pct.textContent = "0%";
+
+      const statusEl = document.getElementById("nb-live-status");
+      if (statusEl) {
+        statusEl.textContent = '● LIVE';
+        statusEl.style.color = 'var(--info-color)';
+        statusEl.style.animation = 'nb-pulse 1.5s infinite';
+      }
+
+      const urlInput = document.getElementById("vplink-url-input");
+      const submitBtn = document.getElementById("vplink-submit-btn");
+      if (urlInput) {
+        urlInput.disabled = false;
+        urlInput.value = '';
+        urlInput.classList.remove('error', 'success');
+        urlInput.focus();
+      }
+      if (submitBtn) submitBtn.disabled = true;
+    }
+
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    function handleUniversalVplinkFailure(message) {
+      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      DBG.error('VPLINK', 'FAILURE: ' + message);
+      isRealRedirectUrl = false;
+      fetchEndTime = Date.now();
+      const elapsed = fetchEndTime - fetchStartTime;
+
+      exploitProgressActive = false;
+
+      queueLog('❌', message, '#ff4757', 'log-error');
+      queueLog('⚠', 'PLEASE TRY AGAIN WITH A VALID URL', '#ffa500', 'log-highlight');
+      queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+      queueLog('📊', 'FAILURE ANALYSIS', '#ff4757', 'log-highlight');
+      queueLog('●', `STATUS: FAILED`, '#ff4757');
+      queueLog('●', `TYPE: UNIVERSAL VPLINK`, '#ff00ff');
+      queueLog('●', `ELAPSED: ${(elapsed / 1000).toFixed(1)}s`, '#7dd3fc');
+
+      stopLogQueue();
+
+      setTimeout(() => { resetUniversalPanel(); }, 2500);
+    }
+
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    function processUniversalVplinkResponse(data, pin, vpKey, attempt) {
+      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      const maxRetries = 3;
+      const destinationUrl = data.destinationLink || null;
+
+      queueLog('📋', 'PARSING SERVER RESPONSE...', '#00f2ff', 'log-highlight');
+      queueLog('●', `TYPE: ${(data.type || 'N/A').toUpperCase()}`, '#7dd3fc');
+      queueLog('●', `VERIFIED: ${data.verified ? '✅ YES' : '❌ NO'}`, data.verified ? '#2ecc71' : '#ff4757');
+      queueLog('●', `OWNER: ${data.owner || '@A2MBD3'}`, '#c4b5fd');
+
+      if (data.destinationLink) {
+        const truncated = data.destinationLink.length > 50 ? data.destinationLink.substring(0, 50) + '...' : data.destinationLink;
+        queueLog('🔗', `DESTINATION: ${truncated}`, '#7dd3fc');
+      }
+
+      if (isHoneypotUrl(destinationUrl) || isTelegramLink(destinationUrl)) {
+        queueLog('⚠', `FAKE URL DETECTED (Attempt ${attempt}/${maxRetries})`, '#ffa500', 'log-highlight');
+        if (attempt < maxRetries) {
+          queueLog('🔄', `RETRYING... Attempt ${attempt + 1} of ${maxRetries}`, '#ffa500', 'log-highlight');
+          return fetchUniversalVplinkRedirectUrl(data.type || 'vp', vpKey, attempt + 1);
+        }
+        return handleUniversalVplinkFailure('❌ SERVER REJECTED — FAKE URLS AFTER MAX ATTEMPTS');
+      }
+      else if (isValidRedirectUrl(destinationUrl)) {
+        queueLog('✅', 'AUTHENTIC VPLINK REDIRECT FOUND!', '#2ecc71', 'log-success');
+        return handleVipteamSuccess(destinationUrl, data, pin);
+      }
+      else {
+        queueLog('⚠', `INVALID URL FORMAT (Attempt ${attempt}/${maxRetries})`, '#ffa500', 'log-highlight');
+        if (attempt < maxRetries) {
+          queueLog('🔄', `RETRYING... Attempt ${attempt + 1} of ${maxRetries}`, '#ffa500', 'log-highlight');
+          return fetchUniversalVplinkRedirectUrl(data.type || 'vp', vpKey, attempt + 1);
+        }
+        return handleUniversalVplinkFailure('❌ SERVER REJECTED — INVALID URLS AFTER MAX ATTEMPTS');
+      }
+    }
+
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    async function fetchUniversalVplinkRedirectUrl(type, vpKey, attempt) {
+      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      attempt = attempt || 1;
+      const maxRetries = 3;
+      DBG.log('VPLINK', `fetchUniversalVplinkRedirectUrl: type=${type}, vpKey=${vpKey}, attempt=${attempt}/${maxRetries}`);
+
+      try {
+        const pin = getRequestPin(typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? '' : await totpGenerator.generate());
+        currentPinCache = pin;
+
+        if (attempt > 1) {
+          queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
+        }
+
+        queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+
+        const response = await callA2MBD3Api({
+          mode: type,
+          pin: pin,
+          vp: vpKey,
+          signal: controller.signal
+        });
+
+        clearTimeout(timeout);
+        queueLog('📡', `RESPONSE: ${response.status} ${response.statusText}`, response.ok ? '#2ecc71' : '#ff4757');
+
+        if (!response.ok) {
+          const prevPin = getRequestPin(typeof __NEBULA_SECURE_TOKEN__ !== 'undefined' && __NEBULA_SECURE_TOKEN__ ? '' : await totpGenerator.generate(-1));
+          currentPinCache = prevPin;
+          queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
+
+          const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin, vp: vpKey });
+
+          queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
+
+          if (!retryResponse.ok) {
+            if (attempt < maxRetries) {
+              queueLog('⏳', `RETRYING (${attempt + 1}/${maxRetries})...`, '#ffa500');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              return fetchUniversalVplinkRedirectUrl(type, vpKey, attempt + 1);
+            }
+            throw new Error(`FAILED AFTER ${maxRetries} ATTEMPTS`);
+          }
+
+          const retryData = await retryResponse.json();
+          apiResponseCache = retryData;
+          return processUniversalVplinkResponse(retryData, prevPin, vpKey, attempt);
+        }
+
+        const data = await response.json();
+        apiResponseCache = data;
+        return processUniversalVplinkResponse(data, pin, vpKey, attempt);
+
+      } catch (error) {
+        DBG.error('VPLINK', 'Error: ' + error.message);
+        queueLog('❌', `ERROR: ${error.message}`, '#ff4757', 'log-error');
+
+        if (attempt < maxRetries) {
+          queueLog('⏳', `RETRYING (${attempt + 1}/${maxRetries})...`, '#ffa500');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return fetchUniversalVplinkRedirectUrl(type, vpKey, attempt + 1);
+        }
+
+        return handleUniversalVplinkFailure('❌ SERVER REJECTED AFTER MAX ATTEMPTS');
+      }
+    }
+
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    async function performUniversalVplinkExtraction(vplinkUrl) {
+      // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+      DBG.log('VPLINK', 'Starting universal extraction process');
+
+      queueLog('🔍', 'EXTRACTING VP KEY FROM URL...', '#ff00ff', 'log-highlight');
+
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      const vpKey = extractVpKey(vplinkUrl);
+
+      if (!vpKey) {
+        queueLog('❌', 'FAILED TO EXTRACT KEY FROM URL', '#ff4757', 'log-error');
+        queueLog('⚠', 'KEY EXTRACTION FAILED — INVALID URL FORMAT', '#ffa500', 'log-highlight');
+
+        fetchCompleted = true;
+        fetchResult = null;
+
+        exploitProgressActive = false;
+        stopLogQueue();
+
+        setTimeout(() => { resetUniversalPanel(); }, 2500);
+        return;
+      }
+
+      queueLog('✅', `VP KEY EXTRACTED: ${vpKey.toUpperCase()}`, '#2ecc71', 'log-success');
+      queueLog('🔑', `KEY: ${vpKey.toUpperCase()}`, '#ff00ff', 'log-key-found');
+      queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+      queueLog('📡', 'INITIALIZING VPLINK CONNECTION...', '#00f2ff', 'log-highlight');
+
+      await fetchUniversalVplinkRedirectUrl(apiType, vpKey, 1);
+    }
+
+    const ov = document.createElement("div");
+    ov.id = "nebula-exploit";
+    ov.className = "nb-overlay";
+
+    const { wrapper, focusGlow1, focusGlow2 } = createWrapper(`
+      <button id="exploit-music-btn" class="nb-music-btn">♪</button>
+      <div class="nb-exploit-header">
+        <span class="nb-live-dot"></span>
+        <span style="width:7px;height:7px;background:#ff00ff;border-radius:50%;box-shadow:0 0 6px #ff00ff;flex-shrink:0;"></span>
+        <span style="width:7px;height:7px;background:var(--electric-glow-1);border-radius:50%;box-shadow:0 0 6px var(--electric-glow-1);flex-shrink:0;"></span>
+        <span class="nb-exploit-title">${APP_NAME}://${USER_DATA.name.replace(/\s+/g,'_').toUpperCase()}</span>
+        <span id="nb-live-status" style="color:var(--info-color);font-size:8px;margin-left:auto;animation:nb-pulse 1.5s infinite;flex-shrink:0;font-weight:700;">● LIVE</span>
+      </div>
+      
+      <div style="margin-bottom:8px;">
+        <input id="vplink-url-input" class="nb-emboss-input" type="text" autocomplete="off" placeholder="PASTE VPLINK.IN URL">
+      </div>
+      <p id="vplink-url-error" class="nb-error-text">⛔ INVALID VPLINK.IN URL</p>
+      
+      <button id="vplink-submit-btn" class="nb-emboss-btn" disabled>⬡ VERIFY & EXTRACT</button>
+      
+      <div id="log-output" class="nb-log-area"></div>
+      
+      <div class="nb-progress-label">
+        <span>PROGRESS</span>
+        <span id="nb-progress-pct" style="font-weight:700;">0%</span>
+      </div>
+      <div class="nb-progress-bar-bg">
+        <div id="nb-progress-exploit" class="nb-progress-bar-fill"></div>
+      </div>
+      
+      <div class="nb-footer"><a href="https://crxx.netlify.app" target="_blank">© Team CRX</a> | ${APP_FULL_NAME} | 📳 Shake to change track 🎵</div>
+    `);
+    ov.appendChild(wrapper);
+    document.body.appendChild(ov);
+
+    setupMusicToggle("exploit-music-btn");
+
+    const urlInput = document.getElementById("vplink-url-input");
+    const submitBtn = document.getElementById("vplink-submit-btn");
+    const urlError = document.getElementById("vplink-url-error");
+
+    urlInput.addEventListener("focus", () => activateFocusGlow(focusGlow1, focusGlow2));
+    urlInput.addEventListener("blur", () => deactivateFocusGlow(focusGlow1, focusGlow2));
+
+    urlInput.addEventListener("input", function() {
+      const rawUrl = urlInput.value.trim();
+      urlError.style.display = "none";
+      urlInput.classList.remove("error", "success");
+      
+      if (rawUrl.length > 0) {
+        if (rawUrl.toLowerCase().includes('vplink.in')) {
+          submitBtn.disabled = false;
+          urlInput.classList.add("success");
+        } else {
+          submitBtn.disabled = true;
+        }
+      } else {
+        submitBtn.disabled = true;
+      }
+    });
+
+    submitBtn.addEventListener("click", async function() {
+      if (submitBtn.disabled) return;
+
+      const rawUrl = urlInput.value.trim();
+      if (!rawUrl.toLowerCase().includes('vplink.in')) {
+        urlError.style.display = "block";
+        urlInput.classList.add("error");
+        setTimeout(() => urlInput.classList.remove("error"), 400);
+        return;
+      }
+
+      let normalizedUrl = rawUrl;
+      if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+        normalizedUrl = 'https://' + normalizedUrl;
+      }
+
+      submitBtn.disabled = true;
+      urlInput.disabled = true;
+      deactivateFocusGlow(focusGlow1, focusGlow2);
+
+      startLogQueue();
+
+      queueLog('⚡', `${APP_FULL_NAME} — ${selectedTargetName}`, '#ff00ff', 'log-highlight');
+      queueLog('◆', `PLATFORM: ${navigator.platform.toUpperCase()}`, '#c4b5fd');
+      queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+      queueLog('⚙', 'SYSTEM CONFIGURATION', '#ffa500', 'log-highlight');
+      queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
+      queueLog('●', `MODULE: UNIVERSAL VPLINK EXTRACTOR`, '#ff00ff');
+      queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
+      queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+      queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
+      queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
+      queueLog('●', `USER ID: ${USER_DATA.id}`, '#7dd3fc');
+      queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
+      queueLog('🔍', 'VERIFYING VPLINK.IN URL...', '#ff00ff', 'log-highlight');
+      queueLog('🔗', `INPUT: ${normalizedUrl.length > 50 ? normalizedUrl.substring(0, 50) + '...' : normalizedUrl}`, '#7dd3fc');
+
+      fetchStartTime = Date.now();
+      actualProgressTime = CONFIG.minProgressTime;
+
+      startProgressBar();
+      performUniversalVplinkExtraction(normalizedUrl);
+    });
+
+    urlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); submitBtn.click(); }
+    });
+  }
+
+  // ═══════════════════ BOOT ═══════════════════
+  // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+  (async function () {
+    // Credit: Abdullah Al Mamun (@a2mbd3) - a2mbd3.paged.dev
+    DBG.log('BOOT', '═══════ ' + APP_FULL_NAME + ' BOOTING ═══════');
+    DBG.log('BOOT', 'USER_ID: ' + USER_ID);
+    DBG.log('BOOT', 'directTarget: ' + (directTarget ? directTarget.name : 'none'));
+    
+    await fetchConfig();
+    
+    musicAutoPlay = !isMeteredConnection();
+    DBG.log('BOOT', 'Network check: musicAutoPlay=' + musicAutoPlay + ', musicUserEnabled=' + musicUserEnabled);
+    
+    const userDataLoaded = await fetchUserData();
+    if (!userDataLoaded) {
+      DBG.log('BOOT', '⚠ Failed to load user data, using defaults');
+    } else {
+      DBG.log('BOOT', '✅ User data loaded successfully');
+    }
+    
+    DBG.log('BOOT', 'User: ' + USER_DATA.name + ' (ID:' + USER_DATA.id + ')');
+    
+    if (isBannedUser()) { showBanPanel(); return; }
+    if (isSuspendedUser()) { showSuspendedPanel(); return; }
+    if (CONFIG.status === 0) { showOutdated(); return; }
+    if (CONFIG.status === 2) { showMaintenance(); return; }
+    
+    await fetchMusicList();
+    
+    DBG.log('BOOT', '═══════ BOOT COMPLETE ═══════');
+    renderInitPanel();
+  })();
 
 })();
