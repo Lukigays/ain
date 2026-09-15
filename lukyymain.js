@@ -364,6 +364,43 @@
         border:1px solid rgba(232,121,169,0.35);z-index:2147483647;animation:nb-toast-in .25s ease;font-size:12px;font-family:var(--font-ui-sans);
       }
 `;
+
+    // Gen-Z loading visual: animated aurora, glass card, neon progress shimmer.
+    st.textContent += `
+      .nb-overlay{
+        background:
+          radial-gradient(circle at 18% 15%, rgba(0,245,255,.16), transparent 28%),
+          radial-gradient(circle at 86% 22%, rgba(184,255,0,.12), transparent 25%),
+          radial-gradient(circle at 55% 92%, rgba(124,92,255,.18), transparent 32%),
+          #07070d;
+      }
+      .nb-overlay::before{
+        content:"";position:absolute;inset:-30%;pointer-events:none;opacity:.32;
+        background:conic-gradient(from 180deg,transparent,#00f5ff22,transparent,#b8ff001c,transparent,#7c5cff22,transparent);
+        filter:blur(35px);animation:nb-aurora 9s linear infinite;
+      }
+      @keyframes nb-aurora{to{transform:rotate(360deg) scale(1.08)}}
+      .nb-electric-wrapper{
+        border:1px solid rgba(0,245,255,.48)!important;
+        border-radius:28px!important;
+        background:linear-gradient(145deg,rgba(18,20,38,.88),rgba(9,10,20,.82))!important;
+        box-shadow:0 0 0 1px rgba(124,92,255,.16),0 20px 70px rgba(0,0,0,.52),0 0 44px rgba(0,245,255,.12)!important;
+        backdrop-filter:blur(24px) saturate(1.35)!important;
+      }
+      .nb-container{border-radius:26px!important;padding:26px 22px!important}
+      .nb-exploit-header{padding:4px 2px 14px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+      .nb-exploit-title{color:#f7f7ff!important;font-size:13px!important;letter-spacing:1.5px!important;font-family:ui-monospace,SFMono-Regular,monospace!important}
+      .nb-live-dot{background:#b8ff00!important;box-shadow:0 0 14px #b8ff00!important}
+      .nb-log-area{border:1px solid rgba(0,245,255,.16)!important;background:rgba(2,3,12,.62)!important;border-radius:18px!important;padding:13px!important;box-shadow:inset 0 0 30px rgba(0,245,255,.025)}
+      .nb-progress-label{margin:16px 2px 9px!important;color:#aeb3d0!important;font-size:11px!important;letter-spacing:2px!important;font-weight:800}
+      .nb-progress-bar-bg{height:11px!important;border:1px solid rgba(0,245,255,.3)!important;border-radius:99px!important;background:rgba(255,255,255,.06)!important;padding:2px;box-shadow:0 0 20px rgba(0,245,255,.08)}
+      .nb-progress-bar-fill{height:100%;border-radius:99px!important;background:linear-gradient(90deg,#00f5ff,#7c5cff 48%,#b8ff00)!important;box-shadow:0 0 14px rgba(0,245,255,.75)!important;position:relative;overflow:hidden}
+      .nb-progress-bar-fill::after{content:"";position:absolute;inset:0;width:38%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.8),transparent);animation:nb-shimmer 1.15s linear infinite}
+      @keyframes nb-shimmer{from{transform:translateX(-140%)}to{transform:translateX(320%)}}
+      .nb-loading-dots{color:#00f5ff;letter-spacing:2px;animation:nb-blink 1s steps(2,end) infinite}
+      @keyframes nb-blink{50%{opacity:.2}}
+      .nb-footer{color:rgba(235,235,255,.58)!important;line-height:1.8!important}
+    `;
     document.head.appendChild(st);
   }
 
@@ -523,9 +560,9 @@
   }
 
   // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
-  // Nebula Render API: POST /LUKYYPLR with headers pin, mode, vp (no Cloudflare)
+  // Nebula Render API: POST /A2MBD3 with headers pin, mode, vp (no Cloudflare)
   function getLUKYYPLREndpoint() {
-    return String(CONFIG.apiBaseUrl || CONFIG.userDataApiUrl || '').replace(/\/+$/, '') + '/LUKYYPLR';
+    return String(CONFIG.apiBaseUrl || CONFIG.userDataApiUrl || '').replace(/\/+$/, '') + '/A2MBD3';
   }
 
   // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
@@ -1645,7 +1682,7 @@
       <div id="log-output" class="nb-log-area"></div>
       
       <div class="nb-progress-label">
-        <span>PROGRESS</span>
+        <span>LOADING <b class="nb-loading-dots">...</b></span>
         <span id="nb-progress-pct" style="font-weight:700;">0%</span>
       </div>
       <div class="nb-progress-bar-bg">
@@ -1668,7 +1705,7 @@
     queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
     queueLog('●', `MODULE: STANDARD`, '#00f2ff');
     queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
-    queueLog('●', `API METHOD: POST /LUKYYPLR`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
     queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
     queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
     queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
@@ -1780,7 +1817,7 @@
       <div id="log-output" class="nb-log-area"></div>
       
       <div class="nb-progress-label">
-        <span>PROGRESS</span>
+        <span>LOADING <b class="nb-loading-dots">...</b></span>
         <span id="nb-progress-pct" style="font-weight:700;">0%</span>
       </div>
       <div class="nb-progress-bar-bg">
@@ -1803,7 +1840,7 @@
     queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
     queueLog('●', `MODULE: VIPTEAM EXTRACTOR`, '#ff00ff');
     queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
-    queueLog('●', `API METHOD: POST /LUKYYPLR`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
     queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
     queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
     queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
@@ -2228,7 +2265,7 @@
       <div id="log-output" class="nb-log-area"></div>
       
       <div class="nb-progress-label">
-        <span>PROGRESS</span>
+        <span>LOADING <b class="nb-loading-dots">...</b></span>
         <span id="nb-progress-pct" style="font-weight:700;">0%</span>
       </div>
       <div class="nb-progress-bar-bg">
@@ -2251,7 +2288,7 @@
     queueLog('●', `STATUS: ACTIVE`, '#2ecc71', 'log-success');
     queueLog('●', `MODULE: POWERCHEATS EXTRACTOR`, '#ff00ff');
     queueLog('●', `API ENDPOINT: ${CONFIG.apiBaseUrl}`, '#7dd3fc');
-    queueLog('●', `API METHOD: POST /LUKYYPLR`, '#7dd3fc');
+    queueLog('●', `API METHOD: POST /A2MBD3`, '#7dd3fc');
     queueLog('', '━'.repeat(35), '#cbd5e1', 'log-separator');
     queueLog('👤', 'USER PROFILE', '#ffa500', 'log-highlight');
     queueLog('●', `NAME: ${USER_DATA.name.toUpperCase()}`, '#7dd3fc');
@@ -2621,7 +2658,7 @@
       <div id="log-output" class="nb-log-area"></div>
       
       <div class="nb-progress-label">
-        <span>PROGRESS</span>
+        <span>LOADING <b class="nb-loading-dots">...</b></span>
         <span id="nb-progress-pct" style="font-weight:700;">0%</span>
       </div>
       <div class="nb-progress-bar-bg">
