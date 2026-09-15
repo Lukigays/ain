@@ -561,7 +561,7 @@
 
   // Credit: Abdullah Al Mamun (@lukyyplr) - lukyyplr.paged.dev
   // Nebula Render API: POST /A2MBD3 with headers pin, mode, vp (no Cloudflare)
-  function getLUKYYPLREndpoint() {
+  function getA2MBD3Endpoint() {
     return String(CONFIG.apiBaseUrl || CONFIG.userDataApiUrl || '').replace(/\/+$/, '') + '/A2MBD3';
   }
 
@@ -572,7 +572,7 @@
     return fallbackPin == null ? '' : String(fallbackPin);
   }
 
-  async function callLUKYYPLRApi({ mode, vp, pin, signal }) {
+  async function callA2MBD3Api({ mode, vp, pin, signal }) {
     const modeStr = String(mode || '');
     const pinStr = getRequestPin(pin);
     const bodyObj = { pin: pinStr, mode: modeStr, type: modeStr };
@@ -584,7 +584,7 @@
       'mode': modeStr
     };
     if (vp) headers['vp'] = String(vp);
-    return fetch(getLUKYYPLREndpoint(), {
+    return fetch(getA2MBD3Endpoint(), {
       method: 'POST',
       signal: signal,
       headers: headers,
@@ -608,7 +608,7 @@
         queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
       }
       
-      queueLog('📡', `POST ${getLUKYYPLREndpoint()} | mode=${type} | pin=******`, '#7dd3fc');
+      queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=******`, '#7dd3fc');
       
       const controller = new AbortController();
       const timeout = setTimeout(() => {
@@ -617,7 +617,7 @@
       }, 15000);
       
       const fetchStart = performance.now();
-      const response = await callLUKYYPLRApi({
+      const response = await callA2MBD3Api({
         mode: type,
         pin: pin,
         signal: controller.signal
@@ -635,7 +635,7 @@
         
         queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
         
-        const retryResponse = await callLUKYYPLRApi({ mode: type, pin: prevPin });
+        const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin });
         
         DBG.log('API', `Retry response: ${retryResponse.status}`);
         queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
@@ -666,7 +666,7 @@
             const altPin = getRequestPin(await totpGenerator.generate(off));
             currentPinCache = altPin;
             queueLog('🔐', `TRYING TOTP OFFSET ${off}...`, '#00f2ff');
-            const altRes = await callLUKYYPLRApi({ mode: type, pin: altPin });
+            const altRes = await callA2MBD3Api({ mode: type, pin: altPin });
             if (altRes.ok) {
               const altData = await altRes.json();
               if (altData && !isHoneypotUrl(altData.destinationLink) && isValidRedirectUrl(altData.destinationLink)) {
@@ -2045,7 +2045,7 @@
         queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
       }
       
-      queueLog('📡', `POST ${getLUKYYPLREndpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
+      queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
       
       const controller = new AbortController();
       const timeout = setTimeout(() => {
@@ -2054,7 +2054,7 @@
       }, 15000);
       
       const fetchStart = performance.now();
-      const response = await callLUKYYPLRApi({
+      const response = await callA2MBD3Api({
         mode: type,
         pin: pin,
         vp: vpKey,
@@ -2073,7 +2073,7 @@
         
         queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
         
-        const retryResponse = await callLUKYYPLRApi({ mode: type, pin: prevPin, vp: vpKey });
+        const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin, vp: vpKey });
         
         DBG.log('VPLINK', `Retry response: ${retryResponse.status}`);
         queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
@@ -2545,12 +2545,12 @@
           queueLog('🔄', `ATTEMPT ${attempt} OF ${maxRetries}`, '#ffa500', 'log-highlight');
         }
 
-        queueLog('📡', `POST ${getLUKYYPLREndpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
+        queueLog('📡', `POST ${getA2MBD3Endpoint()} | mode=${type} | pin=****** | vp=${vpKey}`, '#7dd3fc');
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 15000);
 
-        const response = await callLUKYYPLRApi({
+        const response = await callA2MBD3Api({
           mode: type,
           pin: pin,
           vp: vpKey,
@@ -2565,7 +2565,7 @@
           currentPinCache = prevPin;
           queueLog('🔐', 'CHECKING PREVIOUS WINDOW...', '#00f2ff');
 
-          const retryResponse = await callLUKYYPLRApi({ mode: type, pin: prevPin, vp: vpKey });
+          const retryResponse = await callA2MBD3Api({ mode: type, pin: prevPin, vp: vpKey });
 
           queueLog('📡', `RETRY RESPONSE: ${retryResponse.status}`, retryResponse.ok ? '#2ecc71' : '#ff4757');
 
