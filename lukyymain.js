@@ -12,12 +12,11 @@
   const CONFIG = {
     keyUrl: "https://database-nine-flax.vercel.app/getkeys",
     apiBaseUrl: "https://nebula-bot-g8ey.onrender.com",
+    nebulaEndpointPath: "/A2MBD3",
     apiKey: "abdullah",
-    userDataApiUrl: "https://nebula-bot-g8ey.onrender.com",
-    appName: "LUKYYPLR",
-    appVersion: "27.0",
     requestTimeoutMs: 15000,
     maxApiAttempts: 3,
+    // Isi dengan secret TOTP base32 milik Anda dari bot Nebula.
     totpSecret: "YOURTOTPSECRETFROM@YOURNEBULABOT",
     fallbackRedirectUrl: "https://htmlpreview.github.io/?https://github.com/Lukigays/ain/blob/main/index.html",
     telegramUrl: "https://t.me/lukyyarch",
@@ -42,19 +41,6 @@
       "Kunci sukses itu dikit bicara, banyak bypass. ⚡",
       "Masa depan lu tergantung key yang lu masukin. 🔮"
     ]
-  };
-
-  // Nebula-compatible debug logger. Use window.LUKYY_DEBUG = false to silence logs.
-  const DBG = {
-    enabled: window.LUKYY_DEBUG !== false,
-    log(tag, message, data) {
-      if (!this.enabled) return;
-      console.log(`[LUKYY/${tag}] ${message}`, data ?? '');
-    },
-    error(tag, message, data) {
-      if (!this.enabled) return;
-      console.error(`[LUKYY/${tag}] ${message}`, data ?? '');
-    }
   };
 
   let audioPlayer = null;
@@ -342,18 +328,44 @@
     }
   }
 
+  function getNebulaEndpoint() {
+    return `${String(CONFIG.apiBaseUrl).replace(/\/+$/, '')}${CONFIG.nebulaEndpointPath}`;
+  }
+
+  async function callNebulaApi({ mode, vp, pin, signal }) {
+    const modeValue = String(mode || '');
+    const pinValue = String(pin || '');
+    const body = { pin: pinValue, mode: modeValue, type: modeValue };
+    if (vp) body.vp = String(vp);
+
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      pin: pinValue,
+      mode: modeValue
+    };
+    if (vp) headers.vp = String(vp);
+
+    return fetch(getNebulaEndpoint(), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      signal
+    });
+  }
+
   async function fetchDestination(type, attempt = 1, vpKey = null, offset = 0) {
     const maxAttempts = Number(CONFIG.maxApiAttempts || 3);
     const totp = new TOTP(CONFIG.totpSecret);
 
+    if (!CONFIG.totpSecret || CONFIG.totpSecret.includes('YOURTOTP')) {
+      throw new Error('TOTP secret Nebula belum diisi');
+    }
+
     try {
       const pin = await totp.generate(offset);
-      DBG.log('API', `Nebula request attempt ${attempt}/${maxAttempts}`, {
-        endpoint: getNebulaEndpoint(), mode: type, hasVp: Boolean(vpKey)
-      });
-
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), Number(CONFIG.requestTimeoutMs || 15000));
+      const timeout = setTimeout(() => controller.abort(), CONFIG.requestTimeoutMs);
       let response;
       try {
         response = await callNebulaApi({ mode: type, vp: vpKey, pin, signal: controller.signal });
@@ -362,24 +374,28 @@
       }
 
       if (!response.ok) {
-        // Accept the previous TOTP window because requests can cross a 30s boundary.
+        // Coba window TOTP sebelumnya karena request bisa melewati pergantian 30 detik.
         if (offset === 0) return fetchDestination(type, attempt, vpKey, -1);
         if (attempt < maxAttempts) {
           await new Promise(resolve => setTimeout(resolve, 1000));
           return fetchDestination(type, attempt + 1, vpKey, 0);
         }
-        throw new Error(`Nebula API rejected: HTTP ${response.status}`);
+        throw new Error(`Nebula API HTTP ${response.status}`);
       }
 
       const data = await response.json();
+      if (!data || data.success === false || !data.destinationLink) {
+        if (attempt < maxAttempts) {
+          return fetchDestination(type, attempt + 1, vpKey, 0);
+        }
+        throw new Error(data?.error || 'Nebula tidak mengembalikan destinationLink');
+      }
       return processApiResponse(data, type, attempt, vpKey);
     } catch (error) {
-      DBG.error('API', error.message);
-      if (attempt < maxAttempts) {
+      if (attempt < maxAttempts && !String(error.message).includes('TOTP secret')) {
         await new Promise(resolve => setTimeout(resolve, 1500));
         return fetchDestination(type, attempt + 1, vpKey, 0);
       }
-      // Do not silently redirect to an untrusted fallback after authentication failure.
       throw error;
     }
   }
@@ -1205,7 +1221,7 @@
 
         <button id="support-btn" class="holo-btn-secondary" title="Gabung Grup Telegram">💬 JOIN TELEGRAM</button>
         <div id="status-msg" class="holo-status">
-          <span>⚙️ WONG_PUSAT_STANDBY</span>
+          <span>⚙️ WONG_PUSAT_STANDBY · API @A2MBD3</span>
         </div>
       </div>
 
@@ -1744,8 +1760,6 @@
   // ============================================================
   // RUN
   // ============================================================
-  // Load Nebula configuration before rendering, but never block the UI if it is offline.
-  await fetchNebulaConfig();
   buildMainPanel();
 
 })();
