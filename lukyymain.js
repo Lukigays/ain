@@ -13,9 +13,6 @@
     keyUrl: "https://database-nine-flax.vercel.app/getkeys",
     apiBaseUrl: "https://nebula-bot-g8ey.onrender.com",
     apiKey: "abdullah",
-    // Nebula Dynamic configuration
-    configUrl: "https://nebula-bot-g8ey.onrender.com/conf",
-    nebulaEndpointPath: "/A2MBD3",
     userDataApiUrl: "https://nebula-bot-g8ey.onrender.com",
     appName: "LUKYYPLR",
     appVersion: "27.0",
